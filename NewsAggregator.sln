@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32630.192
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewsAggregatorAspNetCore", "NewsAggregatorAspNetCore\NewsAggregatorAspNetCore.csproj", "{FDBE6A9F-FD5C-4A52-895F-580A27DCE932}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NewsAggregator.DataBase", "NewsAggregator.DataBase\NewsAggregator.DataBase.csproj", "{6427EC50-1470-4048-9BCA-E6DB887801F0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FDBE6A9F-FD5C-4A52-895F-580A27DCE932}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FDBE6A9F-FD5C-4A52-895F-580A27DCE932}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FDBE6A9F-FD5C-4A52-895F-580A27DCE932}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDBE6A9F-FD5C-4A52-895F-580A27DCE932}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6427EC50-1470-4048-9BCA-E6DB887801F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6427EC50-1470-4048-9BCA-E6DB887801F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6427EC50-1470-4048-9BCA-E6DB887801F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6427EC50-1470-4048-9BCA-E6DB887801F0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BC409598-92B7-4D2F-A028-5CDF7AA8A2D2}
+	EndGlobalSection
+EndGlobal
