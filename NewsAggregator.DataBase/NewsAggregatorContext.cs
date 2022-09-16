@@ -1,6 +1,6 @@
 ﻿namespace NewsAggregator.DataBase
 {
-    public class Class1
+    public class NewsAggregatorContext
     {
 
     }
