@@ -1,0 +1,32 @@
+﻿@model ArticleWithCommentsViewModel
+
+@{
+    ViewData["Title"] = "Article details";
+}
+
+<div>
+    <h3>
+        @Model.Article.Title
+    </h3>
+    <h5>
+        @Model.Article.ShortDescription
+    </h5>
+    <h6>
+        @Model.Article.PublicationDate
+    </h6>
+</div>
+
+<hr />
+
+<div>
+    <h3>
+        Comments
+    </h3>
+
+    @foreach (var comment in Model.Comments)
+    {
+        <p>
+            comment bla bla bla;
+        </p>
+    }
+</div>

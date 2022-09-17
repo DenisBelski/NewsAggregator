@@ -1,24 +1,54 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NewsAggregator.Core;
+using NewsAggregator.Core.Abstractions;
 
 namespace NewsAggregatorAspNetCore.Controllers
 {
     public class ArticleController : Controller
     {
         private int _pageSize = 5;
-        public IActionResult Index(int page)
-        {
-            var articles = ArticlesStorage.ArticlesList
-                .Skip(page * _pageSize)
-                .Take(_pageSize)
-                .ToList();
+        private readonly IArticleService _articleService;
 
-            return View(articles);
+        public ArticleController(IArticleService articleService)
+        {
+            _articleService = articleService;
+        }
+
+        public async Task<IActionResult> Index(int page)
+        {
+            try
+            {
+                var articles = await _articleService
+                    .GetArticlesByPageNumberAndPageSizeAsync(page, _pageSize);
+
+                if (articles.Any())
+                {
+                    return View(articles);
+                }
+                else
+                {
+                    return View("NoArticles");
+                }
+
+            }
+            catch (Exception)
+            {
+                throw new ArgumentException(nameof(page));
+            }
         }
 
         public async Task<IActionResult> Details(Guid id)
         {
-            return Ok();
+            var dto = await _articleService.GetArticleByIdAsync(id);
+
+            if (dto != null)
+            {
+                return View(dto);
+            }
+            else
+            {
+                return NotFound();
+            }
         }
 
         [HttpGet]

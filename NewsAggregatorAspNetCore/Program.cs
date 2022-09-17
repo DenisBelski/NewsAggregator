@@ -1,3 +1,7 @@
+using NewsAggregator.Business.ServicesImplementations;
+using NewsAggregator.Core;
+using NewsAggregator.Core.Abstractions;
+
 namespace NewsAggregatorAspNetCore
 {
     public class Program
@@ -8,6 +12,8 @@ namespace NewsAggregatorAspNetCore
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+            builder.Services.AddScoped<IArticleService, ArticleService>();
+            //builder.Services.AddSingleton<ArticlesStorage>();
 
             var app = builder.Build();
 
