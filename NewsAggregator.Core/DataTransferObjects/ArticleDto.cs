@@ -7,5 +7,6 @@ namespace NewsAggregator.Core.DataTransferObjects
         public string Title { get; set; }
         public string ShortDescription { get; set; }
         public DateTime PublicationDate { get; set; }
+        public string Category { get; set; }
     }
 }

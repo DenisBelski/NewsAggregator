@@ -10,5 +10,4 @@ namespace NewsAggregator.DataBase.Entities
         public List<Comment> Comments { get; set; }
         public UserType UserType { get; set; }
     }
-
 }

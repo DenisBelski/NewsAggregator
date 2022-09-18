@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NewsAggregator.Core;
 using NewsAggregator.Core.Abstractions;
+using Serilog;
+using Serilog.Events;
 
 namespace NewsAggregatorAspNetCore.Controllers
 {
@@ -8,12 +10,10 @@ namespace NewsAggregatorAspNetCore.Controllers
     {
         private int _pageSize = 5;
         private readonly IArticleService _articleService;
-
         public ArticleController(IArticleService articleService)
         {
             _articleService = articleService;
         }
-
         public async Task<IActionResult> Index(int page)
         {
             try
@@ -27,16 +27,15 @@ namespace NewsAggregatorAspNetCore.Controllers
                 }
                 else
                 {
-                    return View("NoArticles");
+                    throw new ArgumentException(nameof(page));
                 }
-
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                throw new ArgumentException(nameof(page));
+                Log.Error($"{e.Message}. {Environment.NewLine} {e.StackTrace}");
+                return BadRequest();
             }
         }
-
         public async Task<IActionResult> Details(Guid id)
         {
             var dto = await _articleService.GetArticleByIdAsync(id);
@@ -50,18 +49,15 @@ namespace NewsAggregatorAspNetCore.Controllers
                 return NotFound();
             }
         }
-
         [HttpGet]
         public async Task<IActionResult> Edit()
         {
             return Ok();
         }
-
         //[HttpPost]
         //public async Task<IActionResult> Edit(TestModel model)
         //{
         //    return Ok();
         //}
-
     }
 }
