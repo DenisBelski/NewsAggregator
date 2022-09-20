@@ -1,4 +1,4 @@
-﻿@model ArticleWithCommentsViewModel
+﻿@model ArticleDto
 
 @{
     ViewData["Title"] = "Article details";
@@ -6,19 +6,24 @@
 
 <div>
     <h3>
-        @Model.Article.Title
+        @Model.Title
     </h3>
     <h5>
-        @Model.Article.ShortDescription
+        @Model.ShortDescription
     </h5>
+    <div>
+        <p>
+            @Model.ArticleText
+        </p>
+    </div>
     <h6>
-        @Model.Article.PublicationDate
+        @Model.PublicationDate
     </h6>
 </div>
 
 <hr />
 
-<div>
+@*<div>
     <h3>
         Comments
     </h3>
@@ -29,4 +34,4 @@
             comment bla bla bla;
         </p>
     }
-</div>
+</div>*@

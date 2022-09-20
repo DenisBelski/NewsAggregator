@@ -45,9 +45,9 @@ namespace NewsAggregator.Business.ServicesImplementations
         }
         public async Task<ArticleDto> GetArticleByIdAsync(Guid id)
         {
-            var dto = new ArticleDto();
-            //var dto = ArticlesStorage.ArticlesList
-            //    .FirstOrDefault(articleDto => articleDto.Id.Equals(id));
+            var entity = await _databaseContext.Articles.FirstOrDefaultAsync(article => article.Id.Equals(id));
+            var dto = _mapper.Map<ArticleDto>(entity);
+
             return dto;
         }
     }

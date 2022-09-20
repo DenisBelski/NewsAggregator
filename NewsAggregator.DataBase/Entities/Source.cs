@@ -9,5 +9,4 @@ namespace NewsAggregator.DataBase.Entities
         public List <Article> Articles { get; set; }
         public SourceType SourceType { get; set; }
     }
-
 }

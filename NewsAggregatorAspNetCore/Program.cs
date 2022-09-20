@@ -14,9 +14,9 @@ namespace NewsAggregatorAspNetCore
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Host.UseSerilog((ctx, lc) =>
-                lc.WriteTo.File(@"D:\IT\GitHub_Projects\NewsAggregator\data.log",
-                LogEventLevel.Information));
+            //builder.Host.UseSerilog((ctx, lc) =>
+            //    lc.WriteTo.File(@"D:\IT\GitHub_Projects\NewsAggregator\data.log",
+            //    LogEventLevel.Information));
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();

@@ -6,5 +6,4 @@ namespace NewsAggregator.DataBase.Entities
         Api,
         Rss
     }
-
 }
