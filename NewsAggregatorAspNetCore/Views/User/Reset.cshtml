@@ -1,0 +1,20 @@
+﻿@model UserModel
+
+@{
+    ViewData["Title"] = "Reset your password";
+}
+
+<div>
+    <h3>Reset your password</h3>
+    <h6>
+        Can’t remember your password? Enter your email address and we will send you an email to create a new password.
+    </h6>
+    <form asp-controller="User" asp-action="Reset" method="post">
+         <div class="index_email">
+             <label for="email" class="form-label">Email</label>
+             <input asp-for="Email" type="email" class="form-control" id="email">
+         </div>
+
+         <input type="submit" class="btn btn-primary" value="Send reset link">
+    </form>
+</div>

@@ -1,5 +1,4 @@
-﻿
-namespace NewsAggregator.DataBase.Entities
+﻿namespace NewsAggregator.Core
 {
     public enum SourceType
     {

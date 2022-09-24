@@ -1,5 +1,4 @@
-﻿
-namespace NewsAggregator.Core.DataTransferObjects
+﻿namespace NewsAggregator.Core.DataTransferObjects
 {
     public class ArticleDto
     {

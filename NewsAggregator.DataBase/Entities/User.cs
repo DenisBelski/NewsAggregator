@@ -1,5 +1,4 @@
-﻿
-namespace NewsAggregator.DataBase.Entities
+﻿namespace NewsAggregator.DataBase.Entities
 {
     public class User
     {

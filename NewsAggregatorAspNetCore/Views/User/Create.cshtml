@@ -1,0 +1,24 @@
+﻿@model UserModel
+
+@{
+    ViewData["Title"] = "Create an account";
+}
+
+<div>
+    <h3>Create your account</h3>
+    <h6>Already have an account? 
+        <a href="~/user/index">Log in.</a>    
+    </h6>
+    <form asp-controller="User" asp-action="Create" method="post">
+         <div class="index_email">
+             <label for="email" class="form-label">Email</label>
+             <input asp-for="Email" type="email" class="form-control" id="email">
+         </div>
+         <div class="index_password">
+             <label for="password" class="form-label">Password</label>
+             <input asp-for="Password" class="form-control" id="password">
+         </div>
+
+         <input type="submit" class="btn btn-primary" value="Create account">
+    </form>
+</div>

@@ -1,13 +1,12 @@
 ﻿using NewsAggregator.Core;
 
-namespace NewsAggregator.DataBase.Entities
+namespace NewsAggregatorAspNetCore.Models
 {
-    public class Source
+    public class SourceModel
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
         public string Url { get; set; }
-        public List <Article> Articles { get; set; }
         public SourceType SourceType { get; set; }
     }
 }
