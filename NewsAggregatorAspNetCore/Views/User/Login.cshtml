@@ -1,30 +1,31 @@
 ﻿@model UserModel
 
 @{
-    ViewData["Title"] = "Create an account";
+    ViewData["Title"] = "Log in to your account";
 }
 
 <div>
-    <h3>Create your account</h3>
-    <h6>Already have an account? 
-        <a href="~/user/login">Log in.</a>    
+    <h3>Log in to your account</h3>
+    <h6>Don't have an account? 
+        <a href="~/user/create">Sign up.</a>    
     </h6>
-    <form asp-controller="User" asp-action="Create" method="post">
+    <form asp-controller="User" asp-action="Login">
         <div asp-validation-summary="All" class="text-danger"></div>
-        <div class="create_email">
+        <div class="login_email">
             <label for="email" class="form-label">Email</label>
             <input asp-for="Email" type="email" class="form-control" id="email">
+            <span asp-validation-for="Email" class="text-danger"></span>
         </div>
-        <div class="create_password">
+        <div class="login_password">
             <label for="password" class="form-label">Password</label>
             <input type="password" asp-for="Password" class="form-control" id="password">
+            <span asp-validation-for="Password" class="text-danger"></span>
         </div>
-@*        <div class="create_password-confirmation">
-            <label for="password-confirmation" class="form-label">Password confirmation</label>
-            <input type="password" asp-for="PasswordConfirmation" class="form-control" id="password-confirmation">
-        </div>
-*@
-        <input type="submit" class="btn btn-primary" value="Create account">
+        <h6>Forgot password? 
+            <a href="~/user/reset">Click here</a>
+                to reset your password
+        </h6>
+        <input type="submit" class="btn btn-primary" value="Log In">
     </form>
 </div>
 
