@@ -26,6 +26,7 @@
   <ItemGroup>
     <ProjectReference Include="..\NewsAggregator.Business\NewsAggregator.Business.csproj" />
     <ProjectReference Include="..\NewsAggregator.Core\NewsAggregator.Core.csproj" />
+    <ProjectReference Include="..\NewsAggregator.Data.Repositories\NewsAggregator.Data.Repositories.csproj" />
     <ProjectReference Include="..\NewsAggregator.DataBase\NewsAggregator.DataBase.csproj" />
   </ItemGroup>
 

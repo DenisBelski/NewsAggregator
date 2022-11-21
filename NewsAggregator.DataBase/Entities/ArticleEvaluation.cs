@@ -7,5 +7,4 @@ namespace NewsAggregator.DataBase.Entities
         NeutralNews,
         GoodNews
     }
-
 }

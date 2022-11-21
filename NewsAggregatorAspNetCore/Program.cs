@@ -2,7 +2,11 @@ using Microsoft.EntityFrameworkCore;
 using NewsAggregator.Business.ServicesImplementations;
 using NewsAggregator.Core;
 using NewsAggregator.Core.Abstractions;
+using NewsAggregator.Data.Abstractions;
+using NewsAggregator.Data.Abstractions.Repositories;
+using NewsAggregator.Data.Repositories;
 using NewsAggregator.DataBase;
+using NewsAggregator.DataBase.Entities;
 using Serilog;
 using Serilog.Events;
 
@@ -27,6 +31,13 @@ namespace NewsAggregatorAspNetCore
             builder.Services.AddDbContext<NewsAggregatorContext>(optionsBuilder => optionsBuilder.UseSqlServer(connectionString));
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             builder.Services.AddScoped<IArticleService, ArticleService>();
+            builder.Services.AddScoped<IAdditionalArticleRepository, ArticleGenericRepository>();
+            builder.Services.AddScoped<IRepository<Source>, Repository<Source>>();
+            builder.Services.AddScoped<IRepository<User>, Repository<User>>();
+            builder.Services.AddScoped<IRepository<Role>, Repository<Role>>();
+            builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
+            builder.Services.AddScoped<ISourceRepository, SourceRepository>();
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             var app = builder.Build();
 

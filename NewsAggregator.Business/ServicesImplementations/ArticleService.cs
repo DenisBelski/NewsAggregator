@@ -3,29 +3,33 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using NewsAggregator.Core.Abstractions;
 using NewsAggregator.Core.DataTransferObjects;
+using NewsAggregator.Data.Abstractions;
 using NewsAggregator.DataBase;
+using NewsAggregator.DataBase.Entities;
 
 namespace NewsAggregator.Business.ServicesImplementations
 {
     public class ArticleService : IArticleService
     {
-        private readonly NewsAggregatorContext _databaseContext;
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
-        public ArticleService(NewsAggregatorContext databaseContext, 
-            IMapper mapper,
-            IConfiguration configuration)
+        private readonly IUnitOfWork _unitOfWork;
+
+        public ArticleService(IMapper mapper,
+            IConfiguration configuration, 
+            IUnitOfWork unitOfWork)
         {
-            _databaseContext = databaseContext;
             _mapper = mapper;
             _configuration = configuration;
+            _unitOfWork = unitOfWork;
         }
         public async Task<List<ArticleDto>> GetArticlesByPageNumberAndPageSizeAsync(int pageNumber, int pageSize)
         {
             try
             {
                 //var passwordSalt = _configuration["UserSecrets:PasswordSalt"];
-                var list = await _databaseContext.Articles
+                var list = await _unitOfWork.Articles
+                    .Get()
                     .Skip(pageNumber * pageSize)
                     .Take(pageSize)
                     .Select(article => _mapper.Map<ArticleDto>(article))
@@ -45,10 +49,18 @@ namespace NewsAggregator.Business.ServicesImplementations
         }
         public async Task<ArticleDto> GetArticleByIdAsync(Guid id)
         {
-            var entity = await _databaseContext.Articles.FirstOrDefaultAsync(article => article.Id.Equals(id));
+            var entity = await _unitOfWork.Articles.GetByIdAsync(id);
             var dto = _mapper.Map<ArticleDto>(entity);
 
             return dto;
+        }
+
+        public async Task Do()
+        {
+            await _unitOfWork.Articles.AddAsync(new Article());
+            await _unitOfWork.Sources.AddAsync(new Source());
+
+            await _unitOfWork.Commit();
         }
     }
 }

@@ -17,13 +17,14 @@ namespace NewsAggregatorAspNetCore.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    //Встраиваем логику проверки Email на существование такого-же в базе (серверная валидация):
+                    //Встраиваем логику проверки Email на существование такого-же в базе (серверная валидация, в идеале делать в паре с клиентской для перестраховки):
                     //if (model.Email.ToLowerInvariant().Equals("test@email.com"))
                     //{
                     //    ModelState.AddModelError(nameof(model.Email), "Email is already exist");
                     //    return View(model);
                     //}
-                    //либо используем атрибут[Remote("CheckEmail", "Account", HttpMethod = WebRequestMethods.Http.Post, ErrorMessage = "Email is already exists")]
+                    //клиентская валидация
+                    //используем атрибут[Remote("CheckEmail", "Account", HttpMethod = WebRequestMethods.Http.Post, ErrorMessage = "Email is already exists")]
                     //и соответствующий метод CheckEmail, см. ниже (валидация на стороне клиента)
                     //для корректной работы Remote необходимы подключенные скрипты jquery-validation...
 
@@ -96,6 +97,7 @@ namespace NewsAggregatorAspNetCore.Controllers
         [HttpPost]
         public IActionResult CheckEmail(string email)
         {
+            // в if вставить проверку на уже существующие emals в базе
             if (email.ToLowerInvariant().Equals("test@email.com"))
             {
                 return Ok(false);

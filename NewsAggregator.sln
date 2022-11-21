@@ -7,9 +7,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewsAggregatorAspNetCore", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewsAggregator.DataBase", "NewsAggregator.DataBase\NewsAggregator.DataBase.csproj", "{6427EC50-1470-4048-9BCA-E6DB887801F0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NewsAggregator.Business", "NewsAggregator.Business\NewsAggregator.Business.csproj", "{BD0521F7-B33B-473F-8166-191DC41E7957}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewsAggregator.Business", "NewsAggregator.Business\NewsAggregator.Business.csproj", "{BD0521F7-B33B-473F-8166-191DC41E7957}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NewsAggregator.Core", "NewsAggregator.Core\NewsAggregator.Core.csproj", "{3FCF2FF0-2F57-44B7-8255-C1C396D1DCC3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewsAggregator.Core", "NewsAggregator.Core\NewsAggregator.Core.csproj", "{3FCF2FF0-2F57-44B7-8255-C1C396D1DCC3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NewsAggregator.Data.Repositories", "NewsAggregator.Data.Repositories\NewsAggregator.Data.Repositories.csproj", "{C776FEFC-0F03-42B2-A292-8E145436C7E0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NewsAggregator.Data.Abstractions", "NewsAggregator.Data.Abstractions\NewsAggregator.Data.Abstractions.csproj", "{F02622E1-2122-4A61-9B10-1AEABC8C7892}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +37,14 @@ Global
 		{3FCF2FF0-2F57-44B7-8255-C1C396D1DCC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3FCF2FF0-2F57-44B7-8255-C1C396D1DCC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3FCF2FF0-2F57-44B7-8255-C1C396D1DCC3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C776FEFC-0F03-42B2-A292-8E145436C7E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C776FEFC-0F03-42B2-A292-8E145436C7E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C776FEFC-0F03-42B2-A292-8E145436C7E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C776FEFC-0F03-42B2-A292-8E145436C7E0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F02622E1-2122-4A61-9B10-1AEABC8C7892}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F02622E1-2122-4A61-9B10-1AEABC8C7892}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F02622E1-2122-4A61-9B10-1AEABC8C7892}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F02622E1-2122-4A61-9B10-1AEABC8C7892}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
