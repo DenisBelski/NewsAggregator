@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using NewsAggregator.Business.ServicesImplementations;
 using NewsAggregator.Core;
@@ -25,12 +26,28 @@ namespace NewsAggregatorAspNetCore
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
-            var connectionString = builder.Configuration.GetConnectionString("Default");
-            //var connectionString = "Server=DESKTOP-LNVP1TV;Database=NewsAggregatorDataBase;Trusted_Connection=True;";
+            builder.Services
+                .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options =>
+                {
+                    options.ExpireTimeSpan = TimeSpan.FromHours(1);
+                    options.LoginPath = new PathString(@"/Account/Login");
+                    options.LogoutPath = new PathString(@"/Account/Logout");
+                    options.AccessDeniedPath = new PathString(@"/Account/Login");
+                });
 
-            builder.Services.AddDbContext<NewsAggregatorContext>(optionsBuilder => optionsBuilder.UseSqlServer(connectionString));
+            var connectionString = builder.Configuration.GetConnectionString("Default");
+
+            builder.Services.AddDbContext<NewsAggregatorContext>(
+                optionsBuilder => optionsBuilder.UseSqlServer(connectionString));
+
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+            
+            
             builder.Services.AddScoped<IArticleService, ArticleService>();
+            //builder.Services.AddScoped<ISourceService, SourceService>();
+            builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<IRoleService, RoleService>();
             builder.Services.AddScoped<IAdditionalArticleRepository, ArticleGenericRepository>();
             builder.Services.AddScoped<IRepository<Source>, Repository<Source>>();
             builder.Services.AddScoped<IRepository<User>, Repository<User>>();
@@ -38,6 +55,7 @@ namespace NewsAggregatorAspNetCore
             builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
             builder.Services.AddScoped<ISourceRepository, SourceRepository>();
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            //builder.Services.AddScoped<ArticleCheckerActionFilter>();
 
             var app = builder.Build();
 
@@ -54,7 +72,8 @@ namespace NewsAggregatorAspNetCore
 
             app.UseRouting();
 
-            app.UseAuthorization();
+            app.UseAuthentication(); // Set HttpContext.User, add to context automatically 
+            app.UseAuthorization(); // check access to resource for user
 
             app.MapControllerRoute(
                 name: "default",

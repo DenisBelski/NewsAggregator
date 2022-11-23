@@ -1,4 +1,4 @@
-﻿@model UserModel
+﻿@model RegisterModel
 
 @{
     ViewData["Title"] = "Create an account";
@@ -7,9 +7,9 @@
 <div>
     <h3>Create your account</h3>
     <h6>Already have an account? 
-        <a href="~/user/login">Log in.</a>    
+        <a href="~/account/login">Log in.</a>    
     </h6>
-    <form asp-controller="User" asp-action="Create" method="post">
+    <form asp-controller="Account" asp-action="Create" method="post">
         <div asp-validation-summary="All" class="text-danger"></div>
         <div class="create_email">
             <label for="email" class="form-label">Email</label>
@@ -19,11 +19,11 @@
             <label for="password" class="form-label">Password</label>
             <input type="password" asp-for="Password" class="form-control" id="password">
         </div>
-@*        <div class="create_password-confirmation">
+        <div class="create_password-confirmation">
             <label for="password-confirmation" class="form-label">Password confirmation</label>
             <input type="password" asp-for="PasswordConfirmation" class="form-control" id="password-confirmation">
         </div>
-*@
+
         <input type="submit" class="btn btn-primary" value="Create account">
     </form>
 </div>

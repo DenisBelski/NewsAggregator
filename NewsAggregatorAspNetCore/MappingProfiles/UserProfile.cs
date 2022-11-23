@@ -9,11 +9,18 @@ namespace NewsAggregatorAspNetCore.MappingProfiles
     {
         public UserProfile()
         {
-            CreateMap<User, UserDto>();
-            CreateMap<UserDto, Source>();
+            CreateMap<User, UserDto>()
+                .ForMember(dto => dto.RoleName, 
+                opt => opt.MapFrom(entity => entity.Role.Name));
 
-            CreateMap<UserModel, UserDto>();
-            CreateMap<UserDto, UserModel>();
+            CreateMap<UserDto, User>()
+                .ForMember(ent => ent.Id, 
+                opt => opt.MapFrom(dto => Guid.NewGuid()))
+                .ForMember(ent => ent.RegistrationDate,
+                    opt => opt.MapFrom(dto => DateTime.Now));
+
+            CreateMap<RegisterModel, UserDto>();
+            CreateMap<LoginModel, UserDto>();
         }
     }
 }

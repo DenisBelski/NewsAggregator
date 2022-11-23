@@ -27,7 +27,6 @@ namespace NewsAggregator.Business.ServicesImplementations
         {
             try
             {
-                //var passwordSalt = _configuration["UserSecrets:PasswordSalt"];
                 var list = await _unitOfWork.Articles
                     .Get()
                     .Skip(pageNumber * pageSize)

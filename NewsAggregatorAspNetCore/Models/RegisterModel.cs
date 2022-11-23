@@ -4,23 +4,26 @@ using System.Net;
 
 namespace NewsAggregatorAspNetCore.Models
 {
-    public class UserModel
+    public class RegisterModel
     {
         public Guid Id { get; set; }
 
         [Required]
         [EmailAddress]
-        [Remote("CheckEmail", "User", HttpMethod = WebRequestMethods.Http.Post, ErrorMessage = "Email is already exists")]
+        [Remote("CheckEmail", "Account", HttpMethod = WebRequestMethods.Http.Post, ErrorMessage = "Email is already exists")]
         public string Email { get; set; }
 
         [Required]
+        [DataType(DataType.Password)]
         [MinLength(8)]
         [MaxLength(30)]
         public string Password { get; set; }
 
-        //[Compare("Password")]
-        //[MinLength(8)]
-        //[MaxLength(30)]
-        //public string PasswordConfirmation { get; set; }
+        [Required]
+        [DataType(DataType.Password)]
+        [Compare("Password")]
+        [MinLength(8)]
+        [MaxLength(30)]
+        public string PasswordConfirmation { get; set; }
     }
 }

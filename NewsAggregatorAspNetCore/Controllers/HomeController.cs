@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using NewsAggregatorAspNetCore.Filters;
 using NewsAggregatorAspNetCore.Models;
 using System.Diagnostics;
 
 namespace NewsAggregatorAspNetCore.Controllers
 {
+    [InternetExplorerBlockerFilter]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;

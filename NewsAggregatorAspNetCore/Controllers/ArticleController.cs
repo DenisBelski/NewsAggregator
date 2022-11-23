@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using NewsAggregator.Core;
 using NewsAggregator.Core.Abstractions;
 using Serilog;
@@ -6,6 +7,8 @@ using Serilog.Events;
 
 namespace NewsAggregatorAspNetCore.Controllers
 {
+    //get filter which allow to watch articles only Users
+    //[Authorize(Roles = "User")]
     public class ArticleController : Controller
     {
         private int _pageSize = 5;

@@ -1,4 +1,4 @@
-﻿@model UserModel
+﻿@model RegisterModel
 
 @{
     ViewData["Title"] = "Log in to your account";
@@ -7,9 +7,9 @@
 <div>
     <h3>Log in to your account</h3>
     <h6>Don't have an account? 
-        <a href="~/user/create">Sign up.</a>    
+        <a href="~/account/register">Sign up.</a>    
     </h6>
-    <form asp-controller="User" asp-action="Login">
+    <form asp-controller="Account" asp-action="Login">
         <div asp-validation-summary="All" class="text-danger"></div>
         <div class="login_email">
             <label for="email" class="form-label">Email</label>
@@ -22,7 +22,7 @@
             <span asp-validation-for="Password" class="text-danger"></span>
         </div>
         <h6>Forgot password? 
-            <a href="~/user/reset">Click here</a>
+            <a href="~/account/reset">Click here</a>
                 to reset your password
         </h6>
         <input type="submit" class="btn btn-primary" value="Log In">
