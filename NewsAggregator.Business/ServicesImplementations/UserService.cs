@@ -23,11 +23,30 @@ namespace NewsAggregator.Business.ServicesImplementations
             _unitOfWork = unitOfWork;
         }
 
+        public async Task<int> RegisterUser(UserDto dto, string password)
+        {
+            var user = _mapper.Map<User>(dto);
+            user.PasswordHash = CreateMd5($"{password}.{_configuration["Secret:PasswordSalt"]}");
+
+            await _unitOfWork.Users.AddAsync(user);
+            return await _unitOfWork.Commit();
+        }
+
         public async Task<bool> IsUserExists(Guid userId)
         {
             return await _unitOfWork.Users
                 .Get()
                 .AnyAsync(user => user.Id.Equals(userId));
+        }
+
+        // get user as entity, with his role
+        public async Task<UserDto> GetUserByEmailAsync(string email)
+        {
+            var userWithRole = await _unitOfWork.Users
+                .FindBy(user => user.Email.Equals(email), user => user.Role)
+                .FirstOrDefaultAsync();
+
+            return _mapper.Map<UserDto>(userWithRole);
         }
 
         public async Task<bool> CheckUserPassword(string email, string password)
@@ -36,9 +55,14 @@ namespace NewsAggregator.Business.ServicesImplementations
                 .FirstOrDefaultAsync(user => user.Email.Equals(email)))
                 ?.PasswordHash;
 
-            return
-                dbPasswordHash != null
-                && CreateMd5(password).Equals(dbPasswordHash);
+            if (dbPasswordHash != null 
+                && CreateMd5($"{password}.{_configuration["Secret:PasswordSalt"]}")
+                .Equals(dbPasswordHash))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         public async Task<bool> CheckUserPassword(Guid userId, string password)
@@ -46,36 +70,19 @@ namespace NewsAggregator.Business.ServicesImplementations
             var dbPasswordHash = (await _unitOfWork.Users.GetByIdAsync(userId))
                 ?.PasswordHash;
 
-            return
-                dbPasswordHash != null
-                && CreateMd5(password).Equals(dbPasswordHash);
-        }
+            if (dbPasswordHash != null 
+                && CreateMd5($"{password}.{_configuration["Secret:PasswordSalt"]}")
+                .Equals(dbPasswordHash))
+            {
+                return true;
+            }
 
-        public async Task<int> RegisterUser(UserDto dto)
-        {
-            var user = _mapper.Map<User>(dto);
-
-            //can be refactored
-            user.PasswordHash = CreateMd5(dto.PasswordHash);
-
-            await _unitOfWork.Users.AddAsync(user);
-            return await _unitOfWork.Commit();
-        }
-
-
-        // get user as entity, with his role
-        public async Task<UserDto> GetUserByEmailAsync(string email)
-        {
-            var user = await _unitOfWork.Users
-                .FindBy(us => us.Email.Equals(email), us => us.Role)
-                .FirstOrDefaultAsync();
-
-            return _mapper.Map<UserDto>(user);
+            return false;
         }
 
         private string CreateMd5(string password)
         {
-            var passwordSalt = _configuration["UserSecrets:PasswordSalt"];
+            var passwordSalt = _configuration["Secret:PasswordSalt"];
 
             using (System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create())
             {

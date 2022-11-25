@@ -26,6 +26,9 @@ namespace NewsAggregatorAspNetCore
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
+
+
+            // !!! change pathString
             builder.Services
                 .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options =>
@@ -40,6 +43,13 @@ namespace NewsAggregatorAspNetCore
 
             builder.Services.AddDbContext<NewsAggregatorContext>(
                 optionsBuilder => optionsBuilder.UseSqlServer(connectionString));
+
+            //builder.Services
+            //    .AddIdentity<ApplicationUser, IdentityRole<Guid>>()
+            //    .AddEntityFrameworkStores<AppDbContext>()
+            //    .AddDefaultTokenProviders();
+
+
 
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             

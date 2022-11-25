@@ -12,8 +12,8 @@ using NewsAggregator.DataBase;
 namespace NewsAggregator.DataBase.Migrations
 {
     [DbContext(typeof(NewsAggregatorContext))]
-    [Migration("20220918081427_init")]
-    partial class init
+    [Migration("20221125095824_AddRoleToContext")]
+    partial class AddRoleToContext
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -30,22 +30,27 @@ namespace NewsAggregator.DataBase.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("ArticleEvaluation")
-                        .HasColumnType("int");
-
                     b.Property<string>("ArticleText")
-                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Category")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("PublicationDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<double?>("Rate")
+                        .HasColumnType("float");
+
                     b.Property<string>("ShortDescription")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("SourceId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("SourceUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -86,6 +91,21 @@ namespace NewsAggregator.DataBase.Migrations
                     b.ToTable("Comments");
                 });
 
+            modelBuilder.Entity("NewsAggregator.DataBase.Entities.Role", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Roles");
+                });
+
             modelBuilder.Entity("NewsAggregator.DataBase.Entities.Source", b =>
                 {
                     b.Property<Guid>("Id")
@@ -94,6 +114,9 @@ namespace NewsAggregator.DataBase.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RssUrl")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("SourceType")
@@ -125,10 +148,12 @@ namespace NewsAggregator.DataBase.Migrations
                     b.Property<DateTime>("RegistrationDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("UserType")
-                        .HasColumnType("int");
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
 
                     b.ToTable("Users");
                 });
@@ -163,9 +188,25 @@ namespace NewsAggregator.DataBase.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("NewsAggregator.DataBase.Entities.User", b =>
+                {
+                    b.HasOne("NewsAggregator.DataBase.Entities.Role", "Role")
+                        .WithMany("Users")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Role");
+                });
+
             modelBuilder.Entity("NewsAggregator.DataBase.Entities.Article", b =>
                 {
                     b.Navigation("Comments");
+                });
+
+            modelBuilder.Entity("NewsAggregator.DataBase.Entities.Role", b =>
+                {
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("NewsAggregator.DataBase.Entities.Source", b =>

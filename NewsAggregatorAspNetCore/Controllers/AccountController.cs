@@ -24,49 +24,56 @@ namespace NewsAggregatorAspNetCore.Controllers
             _roleService = roleService;
         }
 
-
         [HttpGet]
-        public async Task<IActionResult> Login()
+        public IActionResult Login()
         {
             return View();
         }
 
         [HttpPost]
-        public IActionResult Login(string email, string password)
+        public async Task<IActionResult> Login(LoginModel model)
         {
-            return Ok("Logged in");
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Login(RegisterModel model)
-        {
-            try
+            var isPasswordCorrect = await _userService.CheckUserPassword(model.Email, model.Password);
+            if (isPasswordCorrect)
             {
-                if (ModelState.IsValid)
-                {
-                    //server validation (optional)
-                    //check email for the existence of the same in the database:
-                    //if (model.Email.ToLowerInvariant().Equals("test@email.com"))
-                    //{
-                    //    ModelState.AddModelError(nameof(model.Email), "Email is already exist");
-                    //    return View(model);
-                    //}
-                    //client validation
-                    //use attribute [Remote("CheckEmail", "Account", HttpMethod = WebRequestMethods.Http.Post, ErrorMessage = "Email is already exists")]
-                    //and method CheckEmail (see below)
-                    //for attribute Remote it is necessary to add scripts jquery-validation... (see views)
+                await Authenticate(model.Email);
+                return RedirectToAction("Index", "Home");
 
-                    return Ok("Login Successful");
-                }
-                else
-                {
-                    return View(model);
-                }
+                //return Ok("Login Successful");
             }
-            catch (Exception ex)
+            else
             {
-                return StatusCode(500);
+                return View();
             }
+
+            //try
+            //{
+            //    if (ModelState.IsValid)
+            //    {
+            //        //server validation (optional)
+            //        //check email for the existence of the same in the database:
+            //        //if (model.Email.ToLowerInvariant().Equals("test@email.com"))
+            //        //{
+            //        //    ModelState.AddModelError(nameof(model.Email), "Email is already exist");
+            //        //    return View(model);
+            //        //}
+
+            //        //client validation
+            //        //use attribute [Remote("CheckEmail", "Account", HttpMethod = WebRequestMethods.Http.Post, ErrorMessage = "Email is already exists")]
+            //        //and method CheckEmail (see below)
+            //        //for attribute Remote it is necessary to add scripts jquery-validation... (see views)
+
+            //        return Ok("Login Successful");
+            //    }
+            //    else
+            //    {
+            //        return View(model);
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    return StatusCode(500);
+            //}
         }
 
         [HttpGet]
@@ -87,7 +94,7 @@ namespace NewsAggregatorAspNetCore.Controllers
                 if (userDto != null && userRoleId != null)
                 {
                     userDto.RoleId = userRoleId.Value;
-                    var result = await _userService.RegisterUser(userDto);
+                    var result = await _userService.RegisterUser(userDto, model.Password);
 
                     if (result > 0)
                     {
@@ -163,8 +170,7 @@ namespace NewsAggregatorAspNetCore.Controllers
                 new Claim(ClaimsIdentity.DefaultRoleClaimType, userDto.RoleName)
             };
 
-            //create instance which describe user
-            //создаем экземпляр класса, which describes the user based on the claims that are created
+            //create instance, which describes the user based on the claims that were created
             var identity = new ClaimsIdentity(claims,
                 "ApplicationCookie",
                 ClaimsIdentity.DefaultNameClaimType,
@@ -176,11 +182,5 @@ namespace NewsAggregatorAspNetCore.Controllers
                 .AuthenticationScheme,
                 new ClaimsPrincipal(identity));
         }
-
-        //[HttpGet]
-        //public IActionResult Register()
-        //{
-        //    return Ok("Registred");
-        //}
     }
 }

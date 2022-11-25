@@ -11,12 +11,12 @@ namespace NewsAggregatorAspNetCore.MappingProfiles
         {
             CreateMap<User, UserDto>()
                 .ForMember(dto => dto.RoleName, 
-                opt => opt.MapFrom(entity => entity.Role.Name));
+                    opt => opt.MapFrom(entity => entity.Role.Name));
 
             CreateMap<UserDto, User>()
-                .ForMember(ent => ent.Id, 
-                opt => opt.MapFrom(dto => Guid.NewGuid()))
-                .ForMember(ent => ent.RegistrationDate,
+                .ForMember(entity => entity.Id, 
+                    opt => opt.MapFrom(dto => Guid.NewGuid()))
+                .ForMember(entity => entity.RegistrationDate,
                     opt => opt.MapFrom(dto => DateTime.Now));
 
             CreateMap<RegisterModel, UserDto>();

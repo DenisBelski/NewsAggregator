@@ -16,16 +16,16 @@ namespace NewsAggregator.Business.ServicesImplementations
         public async Task<string> GetRoleNameByIdAsync(Guid id)
         {
             var role = await _unitOfWork.Roles.GetByIdAsync(id);
-            
-            return role != null
-                ? role.Name
+
+            return role != null 
+                ? role.Name 
                 : string.Empty;
         }
 
         public async Task<Guid?> GetRoleIdByNameAsync(string name)
         {
             var role = await _unitOfWork.Roles
-                .FindBy(firstRole => firstRole.Name.Equals(name))
+                .FindBy(currentRole => currentRole.Name.Equals(name))
                 .FirstOrDefaultAsync();
             
             return role?.Id;
