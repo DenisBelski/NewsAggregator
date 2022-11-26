@@ -19,9 +19,9 @@ namespace NewsAggregatorAspNetCore
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            //builder.Host.UseSerilog((ctx, lc) =>
-            //    lc.WriteTo.File(@"D:\IT\GitHub_Projects\NewsAggregator\data.log",
-            //    LogEventLevel.Information));
+            builder.Host.UseSerilog((ctx, lc) =>
+                lc.WriteTo.File(@"D:\IT\GitHub_Projects\NewsAggregator\dataMvc.log",
+                LogEventLevel.Information));
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
@@ -40,9 +40,11 @@ namespace NewsAggregatorAspNetCore
                 });
 
             var connectionString = builder.Configuration.GetConnectionString("Default");
-
             builder.Services.AddDbContext<NewsAggregatorContext>(
                 optionsBuilder => optionsBuilder.UseSqlServer(connectionString));
+
+
+
 
             //builder.Services
             //    .AddIdentity<ApplicationUser, IdentityRole<Guid>>()
@@ -51,11 +53,33 @@ namespace NewsAggregatorAspNetCore
 
 
 
+
+            //builder.Services.AddHangfire(configuration => configuration
+            //    .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+            //    .UseSimpleAssemblyNameTypeSerializer()
+            //    .UseRecommendedSerializerSettings()
+            //    .UseSqlServerStorage(connectionString,
+            //        new SqlServerStorageOptions
+            //        {
+            //            CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+            //            SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+            //            QueuePollInterval = TimeSpan.Zero,
+            //            UseRecommendedIsolationLevel = true,
+            //            DisableGlobalLocks = true,
+            //        }));
+
+            //// Add the processing server as IHostedService
+            //builder.Services.AddHangfireServer();
+
+
+
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             
+
             
             builder.Services.AddScoped<IArticleService, ArticleService>();
-            //builder.Services.AddScoped<ISourceService, SourceService>();
+            builder.Services.AddScoped<ISourceService, SourceService>();
+            builder.Services.AddScoped<IRssService, RssService>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IRoleService, RoleService>();
             builder.Services.AddScoped<IAdditionalArticleRepository, ArticleGenericRepository>();
@@ -80,7 +104,11 @@ namespace NewsAggregatorAspNetCore
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
+            //app.UseHangfireDashboard();
+
             app.UseRouting();
+
+            //app.MapHangfireDashboard(); // check the place to connect this middleware, as an option: plase before app.Run()
 
             app.UseAuthentication(); // Set HttpContext.User, add to context automatically 
             app.UseAuthorization(); // check access to resource for user

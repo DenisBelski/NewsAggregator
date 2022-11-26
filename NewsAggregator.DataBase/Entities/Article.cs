@@ -10,6 +10,8 @@
         public Guid SourceId { get; set; }
         public string? Category { get; set; }
         public double? Rate { get; set; }
+
+        //url to news, not to source
         public string SourceUrl { get; set; }
         public Source Source { get; set; }
         public List<Comment> Comments { get; set; }

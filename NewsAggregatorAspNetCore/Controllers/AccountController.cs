@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NewsAggregator.Core.Abstractions;
 using NewsAggregator.Core.DataTransferObjects;
@@ -124,19 +125,36 @@ namespace NewsAggregatorAspNetCore.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync();
+
+            return RedirectToAction("Index", "Home");
+
+
+        }
+
+        [HttpGet]
         public async Task<IActionResult> Reset()
         {
             return View();
         }
 
         [HttpPost]
-        public async Task<IActionResult> Reset(RegisterModel model)
+        public async Task<IActionResult> ResetError()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Reset(LoginModel model)
         {
             try
             {
                 if (model.Email != null)
                 {
-                    return Ok("We have sent an email with instructions to your email.");
+                    return Ok("Oops, this part of the application hasn't been created yet. Just create a new account.");
+                    //return RedirectToAction("Index", "Home");
                 }
                 else
                 {
@@ -158,6 +176,22 @@ namespace NewsAggregatorAspNetCore.Controllers
                 return Ok(false);
             }
             return Ok(true);
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> GetUserData()
+        {
+            var userEmail = User.Identity?.Name;
+
+            if (string.IsNullOrEmpty(userEmail))
+            {
+                return BadRequest();
+            }
+
+            var user = _mapper.Map<UserDataModel>(_userService.GetUserByEmailAsync(userEmail));
+
+            return Ok(user);
         }
 
         private async Task Authenticate(string email)
