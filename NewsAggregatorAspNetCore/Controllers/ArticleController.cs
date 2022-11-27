@@ -14,7 +14,7 @@ namespace NewsAggregatorAspNetCore.Controllers
     //[Authorize(Roles = "User")]
     public class ArticleController : Controller
     {
-        private int _pageSize = 5;
+        private int _pageSize = 20;
         private readonly IArticleService _articleService;
         private readonly IRssService _rssService;
         private readonly IMapper _mapper;

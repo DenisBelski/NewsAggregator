@@ -10,9 +10,15 @@
 @foreach (var item in Model)
 {
     <div>
+        <br>
         <h3>
             @Html.DisplayFor(modelItem => item.Title)
         </h3>
+        <h6>
+            <p>
+                Категория: @Html.DisplayFor( modelItem => item.Category)
+            </p>
+        </h6>
         <h6>
             @Html.DisplayFor(modelItem => item.ShortDescription)
         </h6>
@@ -20,5 +26,6 @@
             @Html.DisplayFor(modelItem => item.PublicationDate)
         </h6>
         <a class="btn btn-success" href="~/article/details/@item.Id">Read details</a>
+        <br>
     </div>
 }

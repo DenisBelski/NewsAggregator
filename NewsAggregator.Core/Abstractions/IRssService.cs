@@ -4,6 +4,7 @@ namespace NewsAggregator.Core.Abstractions
 {
     public interface IRssService
     {
-        Task GetAllArticleDataFromRssAsync();
+        Task GetAllArticleDataFromOnlinerRssAsync();
+        Task GetAllArticleDataFromOnlinerRssAsync(Guid sourceId, string? sourceRssUrl);
     }
 }

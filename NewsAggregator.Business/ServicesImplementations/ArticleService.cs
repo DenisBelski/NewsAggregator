@@ -2,11 +2,17 @@
 using HtmlAgilityPack;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using NewsAggregator.Business.Models;
+using NewsAggregator.Core;
 using NewsAggregator.Core.Abstractions;
 using NewsAggregator.Core.DataTransferObjects;
 using NewsAggregator.Data.Abstractions;
 using NewsAggregator.DataBase;
 using NewsAggregator.DataBase.Entities;
+using Newtonsoft.Json;
+using System.Net.Http.Json;
+using System.ServiceModel.Syndication;
+using System.Xml;
 
 namespace NewsAggregator.Business.ServicesImplementations
 {
@@ -15,14 +21,17 @@ namespace NewsAggregator.Business.ServicesImplementations
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IRssService _rssService;
 
         public ArticleService(IMapper mapper,
             IConfiguration configuration, 
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            IRssService rssService)
         {
             _mapper = mapper;
             _configuration = configuration;
             _unitOfWork = unitOfWork;
+            _rssService = rssService;
         }
 
 
@@ -105,14 +114,6 @@ namespace NewsAggregator.Business.ServicesImplementations
 
 
 
-        public async Task<List<ArticleDto>> GetNewArticlesFromExternalSourcesAsync()
-        {
-            var list = new List<ArticleDto>();
-            return list;
-        }
-
-
-
         // for WebAPI
         public async Task<List<ArticleDto>> GetArticlesByNameAndSourcesAsync(string? name, Guid? sourceId)
         {
@@ -161,42 +162,34 @@ namespace NewsAggregator.Business.ServicesImplementations
 
 
 
-        //public async Task AggregateArticlesFromExternalSourcesAsync()
-        //{
-        //    var sources = await _unitOfWork.Sources.GetAllAsync();
+        public async Task AggregateArticlesFromExternalSourcesAsync()
+        {
+            var sources = await _unitOfWork.Sources.GetAllAsync();
 
-        //    foreach (var source in sources)
-        //    {
-        //        await GetAllArticleDataFromRssAsync(source.Id, source.RssUrl);
-        //        await AddArticleTextToArticlesAsync();
-        //    }
-        //}
-
-
-
-
-        //public async Task AddRateToArticlesAsync()
-        //{
-        //    var articlesWithEmptyRateIds = _unitOfWork.Articles.Get()
-        //        .Where(article => article.Rate == null && !string.IsNullOrEmpty(article.Text))
-        //        .Select(article => article.Id)
-        //        .ToList();
-
-        //    foreach (var articleId in articlesWithEmptyRateIds)
-        //    {
-        //        await RateArticleAsync(articleId);
-        //    }
-        //}
+            foreach (var source in sources)
+            {
+                await _rssService.GetAllArticleDataFromOnlinerRssAsync(source.Id, source.RssUrl);
+                await AddArticleTextToArticlesAsync();
+            }
+        }
 
 
 
 
-        //use Parallel for each sourceRssUrl, get data from sources effectively
-        //public async Task GetAllArticleDataFromRssAsync()
-        //{
-        //    var sources = await _unitOfWork.Sources.GetAllAsync();
-        //    Parallel.ForEach(sources, (source) => GetAllArticleDataFromRssAsync(source.Id, source.RssUrl).Wait());
-        //}
+        public async Task AddRateToArticlesAsync()
+        {
+            //get data where Rate == null, and article include Article text
+            var articlesWithEmptyRateIds = _unitOfWork.Articles.Get()
+                .Where(article => article.Rate == null && !string.IsNullOrEmpty(article.ArticleText))
+                .Select(article => article.Id)
+                .ToList();
+
+            foreach (var articleId in articlesWithEmptyRateIds)
+            {
+                await RateArticleAsync(articleId);
+            }
+        }
+
 
 
 
@@ -259,8 +252,18 @@ namespace NewsAggregator.Business.ServicesImplementations
                                         && !node.HasClass("news-banner")
                                         && !node.HasClass("news-widget")
                                         && !node.HasClass("news-vote")
+                                        && !node.HasClass("news-incut")
+                                        && !node.HasClass("button-style")
+                                        && !node.HasClass("news-entry__speech") //??
+                                        && !node.HasClass("news-entry") //??
+                                        && !node.HasClass("news-header")
+                                        && !node.HasClass("news-media")
+                                        && !node.HasClass("news-media__viewport")
+                                        && !node.HasClass("news-media__preview")
+                                        && !node.HasClass("news-media__inside")
+                                        && !node.HasClass("alignnone")
                                         && node.Attributes["style"] == null)
-                        .Select(node => node.OuterHtml)      // or => node.InnerText
+                        .Select(node => node.InnerText)      // or => node.InnerText node.OuterHtml
                         .Aggregate((i, j) => i + Environment.NewLine + j);
 
                     await _unitOfWork.Articles.UpdateArticleTextAsync(articleId, articleText);
@@ -313,74 +316,45 @@ namespace NewsAggregator.Business.ServicesImplementations
 
 
 
+        private async Task RateArticleAsync(Guid articleId)
+        {
+            try
+            {
+                var article = await _unitOfWork.Articles.GetByIdAsync(articleId);
 
-        //private async Task GetAllArticleDataFromRssAsync(Guid sourceId, string? sourceRssUrl)
-        //{
-        //    if (!string.IsNullOrEmpty(sourceRssUrl))
-        //    {
-        //        var list = new List<ArticleDto>();
-
-        //        using (var reader = XmlReader.Create(sourceRssUrl))
-        //        {
-        //            var feed = SyndicationFeed.Load(reader);
-
-        //            list.AddRange(feed.Items.Select(item => new ArticleDto()
-        //            {
-        //                Id = Guid.NewGuid(),
-        //                Title = item.Title.Text,
-        //                PublicationDate = item.PublishDate.UtcDateTime,
-        //                ShortSummary = item.Summary.Text,
-        //                Category = item.Categories.FirstOrDefault()?.Name,
-        //                SourceId = sourceId,
-        //                SourceUrl = item.Id
-        //            }));
-        //        }
-
-        //        await _mediator.Send(new AddArticleDataFromRssFeedCommand()
-        //        { Articles = list });
-        //    }
-        //}
+                if (article == null)
+                {
+                    throw new ArgumentException($"Article with id: {articleId} doesn't exists",
+                        nameof(articleId));
+                }
 
 
 
+                using (var client = new HttpClient())
+                {
+                    var httpRequest = new HttpRequestMessage(HttpMethod.Post,
+                        new Uri(@"http://api.ispras.ru/texterra/v1/nlp?targetType=lemma&apikey=1e03d79d9f01859fefbc04abe0a9c3f3660e117f"));
+                    
+                    httpRequest.Headers.Add("Accept", "application/json");
+                    httpRequest.Content = JsonContent.Create(
+                        new[] { new TextRequestModel() { Text = article.ArticleText } });
 
-        //private async Task RateArticleAsync(Guid articleId)
-        //{
-        //    try
-        //    {
-        //        var article = await _unitOfWork.Articles.GetByIdAsync(articleId);
+                    var httpResponse = await client.SendAsync(httpRequest);
+                    var responseStream = await httpResponse.Content.ReadAsStreamAsync();
 
-        //        if (article == null)
-        //        {
-        //            throw new ArgumentException($"Article with id: {articleId} doesn't exists",
-        //                nameof(articleId));
-        //        }
+                    //get lemma from words. Then compare with AFINN-ru.json file, and get average value (Rating)
+                    using (var stream = new StreamReader(responseStream))
+                    {
+                        var data = await stream.ReadToEndAsync();
 
-        //        using (var client = new HttpClient())
-        //        {
-        //            var httpRequest = new HttpRequestMessage(HttpMethod.Post,
-        //                new Uri(@"https://api.ispras.ru/texterra/v1/nlp?targetType=lemma&apikey=YOUR_KEY"));
-        //            httpRequest.Headers.Add("Accept", "application/json");
-
-        //            httpRequest.Content = JsonContent.Create(new[] { new TextRequestModel() { Text = article.Text } });
-
-        //            var response = await client.SendAsync(httpRequest);
-        //            var responseStr = await response.Content.ReadAsStreamAsync();
-
-        //            using (var sr = new StreamReader(responseStr))
-        //            {
-        //                var data = await sr.ReadToEndAsync();
-
-        //                var resp = JsonConvert.DeserializeObject<IsprassResponseObject[]>(data);
-        //            }
-        //        }
-
-
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw;
-        //    }
-        //}
+                        var responseObject = JsonConvert.DeserializeObject<IsprassResponseObject[]>(data);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
     }
 }

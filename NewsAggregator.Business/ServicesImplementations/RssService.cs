@@ -28,15 +28,19 @@ namespace NewsAggregator.Business.ServicesImplementations
 
 
         //use Parallel for each sourceRssUrl, get data from sources effectively
-        public async Task GetAllArticleDataFromRssAsync()
+        public async Task GetAllArticleDataFromOnlinerRssAsync()
         {
             var sources = await _unitOfWork.Sources.GetAllAsync();
-            Parallel.ForEach(sources, (source) => GetAllArticleDataFromRssAsync(source.Id, source.RssUrl).Wait());
+            Parallel.ForEach(sources, (source) => GetAllArticleDataFromOnlinerRssAsync(source.Id, source.RssUrl).Wait());
+
+            //foreach (var source in sources)
+            //{
+            //    await GetAllArticleDataFromOnlinerRssAsync(source.Id, source.RssUrl);
+            //}
         }
 
 
-
-        private async Task GetAllArticleDataFromRssAsync(Guid sourceId, string? sourceRssUrl)
+        public async Task GetAllArticleDataFromOnlinerRssAsync(Guid sourceId, string? sourceRssUrl)
         {
             if (!string.IsNullOrEmpty(sourceRssUrl))
             {
@@ -103,7 +107,7 @@ namespace NewsAggregator.Business.ServicesImplementations
 
         //    foreach (var source in sources)
         //    {
-        //        await GetAllArticleDataFromRssAsync(source.Id, source.RssUrl);
+        //        await GetAllArticleDataFromOnlinerRssAsync(source.Id, source.RssUrl);
         //        await AddArticleTextToArticlesAsync();
         //    }
         //}

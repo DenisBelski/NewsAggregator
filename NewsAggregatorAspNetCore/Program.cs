@@ -1,3 +1,5 @@
+using Hangfire;
+using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using NewsAggregator.Business.ServicesImplementations;
@@ -45,6 +47,23 @@ namespace NewsAggregatorAspNetCore
 
 
 
+            //!!! Read documentation. Adding Dashboard UI. Dashboard authorization must be configured in order to allow remote access.
+            builder.Services.AddHangfire(configuration => configuration
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UseSqlServerStorage(connectionString,
+                    new SqlServerStorageOptions
+                    {
+                        CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+                        SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+                        QueuePollInterval = TimeSpan.Zero,
+                        UseRecommendedIsolationLevel = true,
+                        DisableGlobalLocks = true,
+                    }));
+
+
+
 
             //builder.Services
             //    .AddIdentity<ApplicationUser, IdentityRole<Guid>>()
@@ -54,22 +73,22 @@ namespace NewsAggregatorAspNetCore
 
 
 
-            //builder.Services.AddHangfire(configuration => configuration
-            //    .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
-            //    .UseSimpleAssemblyNameTypeSerializer()
-            //    .UseRecommendedSerializerSettings()
-            //    .UseSqlServerStorage(connectionString,
-            //        new SqlServerStorageOptions
-            //        {
-            //            CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
-            //            SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
-            //            QueuePollInterval = TimeSpan.Zero,
-            //            UseRecommendedIsolationLevel = true,
-            //            DisableGlobalLocks = true,
-            //        }));
+            builder.Services.AddHangfire(configuration => configuration
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UseSqlServerStorage(connectionString,
+                    new SqlServerStorageOptions
+                    {
+                        CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+                        SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+                        QueuePollInterval = TimeSpan.Zero,
+                        UseRecommendedIsolationLevel = true,
+                        DisableGlobalLocks = true,
+                    }));
 
-            //// Add the processing server as IHostedService
-            //builder.Services.AddHangfireServer();
+            // Add the processing server as IHostedService
+            builder.Services.AddHangfireServer();
 
 
 
@@ -104,11 +123,16 @@ namespace NewsAggregatorAspNetCore
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
-            //app.UseHangfireDashboard();
+            app.UseHangfireDashboard();
 
             app.UseRouting();
 
-            //app.MapHangfireDashboard(); // check the place to connect this middleware, as an option: plase before app.Run()
+
+
+            // check the place to connect this middleware, as an option: plase before app.Run()
+            app.MapHangfireDashboard(); 
+
+
 
             app.UseAuthentication(); // Set HttpContext.User, add to context automatically 
             app.UseAuthorization(); // check access to resource for user

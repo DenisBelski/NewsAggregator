@@ -1,3 +1,5 @@
+using Hangfire;
+using Hangfire.SqlServer;
 using Microsoft.EntityFrameworkCore;
 using NewsAggregator.Business.ServicesImplementations;
 using NewsAggregator.Core.Abstractions;
@@ -24,8 +26,11 @@ namespace NewsAggregator.WebAPI
 
 
 
+
             // Add services to the container.
             builder.Services.AddControllers();
+
+
 
 
 
@@ -34,6 +39,26 @@ namespace NewsAggregator.WebAPI
                 optionsBuilder => optionsBuilder.UseSqlServer(connectionString));
 
 
+
+            //!!! Read documentation. Adding Dashboard UI. Dashboard authorization must be configured in order to allow remote access.
+            builder.Services.AddHangfire(configuration => configuration
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UseSqlServerStorage(connectionString,
+                    new SqlServerStorageOptions
+                    {
+                        CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+                        SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+                        QueuePollInterval = TimeSpan.Zero,
+                        UseRecommendedIsolationLevel = true,
+                        DisableGlobalLocks = true,
+                    }));
+
+
+
+            // Add the processing server as IHostedService
+            builder.Services.AddHangfireServer();
 
 
 
@@ -62,9 +87,16 @@ namespace NewsAggregator.WebAPI
                 options.IncludeXmlComments(builder.Configuration["XmlDoc"]);
             });
 
-
-
             var app = builder.Build();
+
+
+
+
+            app.UseStaticFiles();
+            app.UseHangfireDashboard();
+
+
+
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
@@ -73,10 +105,14 @@ namespace NewsAggregator.WebAPI
                 app.UseSwaggerUI();
             }
 
+            //app.UseSwagger();
+            //app.UseSwaggerUI();
+            //app.MapHangfireDashboard();
+
+            app.MapHangfireDashboard();
+
             app.UseHttpsRedirection();
-
             app.UseAuthorization();
-
 
             app.MapControllers();
 

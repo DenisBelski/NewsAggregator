@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Hangfire;
 using Microsoft.AspNetCore.Mvc;
 using NewsAggregator.Core.Abstractions;
 using NewsAggregator.WebAPI.Models.Requests;
@@ -62,7 +63,7 @@ namespace NewsAggregator.WebAPI.Controllers
 
                 foreach (var source in sources)
                 {
-                    await _rssService.GetAllArticleDataFromRssAsync();
+                    await _rssService.GetAllArticleDataFromOnlinerRssAsync();
                     await _articleService.AddArticleTextToArticlesAsync();
                 }
 
@@ -81,9 +82,11 @@ namespace NewsAggregator.WebAPI.Controllers
         //{
         //    try
         //    {
-        //        //RecurringJob.AddOrUpdate(() => _articleService.AggregateArticlesFromExternalSourcesAsync(),
-        //        //    "5,10,35 10-18 * * Mon-Fri");
+        //        RecurringJob.AddOrUpdate(() => _articleService.AggregateArticlesFromExternalSourcesAsync(),
+        //            "5,10,35 10-18 * * Mon-Fri");
 
+
+                   //Remove created jobs
         //        //RecurringJob.RemoveIfExists(nameof(_articleService.AggregateArticlesFromExternalSourcesAsync));
 
         //        //RecurringJob.AddOrUpdate(()=>_articleService.GetAllArticleDataFromRssAsync(),
@@ -99,12 +102,17 @@ namespace NewsAggregator.WebAPI.Controllers
         //    }
         //}
 
+
+
+
         [HttpGet]
         public async Task<IActionResult> RateArticles()
         {
             try
             {
-                //await _articleService.AddRateToArticlesAsync();
+                // Do for rate article separate RecurringJob
+                // Think algorithm "take no more than 10 data at a time, for minute"
+                await _articleService.AddRateToArticlesAsync();
 
                 return Ok();
             }

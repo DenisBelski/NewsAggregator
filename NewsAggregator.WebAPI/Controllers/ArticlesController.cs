@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Hangfire;
 using Microsoft.AspNetCore.Mvc;
 using NewsAggregator.Core.Abstractions;
 using NewsAggregator.Core.DataTransferObjects;
@@ -68,9 +69,12 @@ namespace NewsAggregator.WebAPI.Controllers
             IEnumerable<ArticleDto> articles = await _articleService
                 .GetArticlesByNameAndSourcesAsync(model?.Name, model?.SourceId);
 
-            //var jobId = BackgroundJob.Enqueue(() => Console.WriteLine(HttpContext.Request.Method));
-            //var jobId2 = BackgroundJob.Schedule(() => Console.WriteLine(HttpContext.Request.Method),
-            //    TimeSpan.FromMinutes(1));
+
+
+            // Don't do this in real project, added as an example
+            var jobId = BackgroundJob.Enqueue(() => Console.WriteLine(HttpContext.Request.Method));
+            var jobId2 = BackgroundJob.Schedule(() => Console.WriteLine(HttpContext.Request.Method),
+                TimeSpan.FromMinutes(1));
 
 
             return Ok(articles.ToList());
