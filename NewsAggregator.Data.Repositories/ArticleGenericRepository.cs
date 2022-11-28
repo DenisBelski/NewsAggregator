@@ -14,7 +14,9 @@ namespace NewsAggregator.Data.Repositories
 
         public async Task UpdateArticleTextAsync(Guid id, string text)
         {
-            var article = await DbSet.FirstOrDefaultAsync(a => a.Id.Equals(id));
+            var article = await DbSet
+                .FirstOrDefaultAsync(currentArticle => currentArticle.Id.Equals(id));
+
             if (article != null)
             {
                 article.ArticleText = text;

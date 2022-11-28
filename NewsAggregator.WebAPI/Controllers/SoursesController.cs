@@ -5,7 +5,7 @@ using NewsAggregator.WebAPI.Models.Requests;
 namespace NewsAggregator.WebAPI.Controllers
 {
     /// <summary>
-    /// Controller for work with articles
+    /// Controller for work with sources
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
@@ -30,16 +30,7 @@ namespace NewsAggregator.WebAPI.Controllers
         };
 
 
-
-
-        /// <summary>
-        /// Get article from storage with specified id
-        /// </summary>
-        /// <param name="id">Id of article</param>
-        /// <returns></returns>
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(ArticleDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(Nullable), StatusCodes.Status404NotFound)]
         public IActionResult GetArticleById(Guid id)
         {
 
@@ -51,27 +42,7 @@ namespace NewsAggregator.WebAPI.Controllers
             return Ok(article);
         }
 
-
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="model"></param>
-        /// <returns></returns>
-        [HttpGet]
-        public IActionResult GetArticles([FromQuery] GetArticlesRequestModel? model)
-        {
-            IEnumerable<ArticleDto> articles = Articles;
-
-          return Ok(articles.ToList());
-        }
-
-
-
-
-
-        [HttpPost]
+        [HttpPost("{id}")]
         public IActionResult AddArticles([FromBody] AddOrUpdateArticleRequestModel? model)
         {
 
@@ -94,10 +65,6 @@ namespace NewsAggregator.WebAPI.Controllers
 
             return BadRequest();
         }
-
-
-
-
 
         [HttpPut("{id}")]
         public IActionResult UpdateArticles(Guid id, [FromBody] AddOrUpdateArticleRequestModel? model)
@@ -130,10 +97,6 @@ namespace NewsAggregator.WebAPI.Controllers
             return BadRequest();
         }
 
-
-
-
-
         [HttpPatch("{id}")]
         public IActionResult UpdateArticles(Guid id, [FromBody] PatchRequestModel? model)
         {
@@ -153,9 +116,6 @@ namespace NewsAggregator.WebAPI.Controllers
 
             return BadRequest();
         }
-
-
-
 
 
         [HttpDelete("{id}")]

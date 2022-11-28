@@ -263,7 +263,7 @@ namespace NewsAggregator.Business.ServicesImplementations
                                         && !node.HasClass("news-media__inside")
                                         && !node.HasClass("alignnone")
                                         && node.Attributes["style"] == null)
-                        .Select(node => node.InnerText)      // or => node.InnerText node.OuterHtml
+                        .Select(node => node.InnerText)      // or => node.InnerText node.OuterHtml/InnerHtml
                         .Aggregate((i, j) => i + Environment.NewLine + j);
 
                     await _unitOfWork.Articles.UpdateArticleTextAsync(articleId, articleText);

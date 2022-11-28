@@ -7,6 +7,7 @@ using NewsAggregator.Data.Abstractions;
 using NewsAggregator.DataBase;
 using NewsAggregator.DataBase.Entities;
 using System.ServiceModel.Syndication;
+using System.Text.RegularExpressions;
 using System.Xml;
 
 namespace NewsAggregator.Business.ServicesImplementations
@@ -64,14 +65,17 @@ namespace NewsAggregator.Business.ServicesImplementations
                     //    SourceUrl = item.Id
                     //}));
 
+
                     foreach (SyndicationItem item in feed.Items)
                     {
+                        var textSummary = Regex.Replace(item.Summary.Text, @"<[^>]*>", String.Empty);
+
                         var articleDto = new ArticleDto()
                         {
                             Id = Guid.NewGuid(),
-                            Title = item.Title.Text,
+                            Title = Regex.Replace(item.Title.Text, "&nbsp", String.Empty),
                             PublicationDate = item.PublishDate.UtcDateTime,
-                            ShortDescription = item.Summary.Text,
+                            ShortDescription = Regex.Replace(textSummary, "Читать далее…", String.Empty),
                             Category = item.Categories.FirstOrDefault()?.Name,
                             SourceId = sourceId,
                             SourceUrl = item.Id

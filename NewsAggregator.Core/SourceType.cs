@@ -2,7 +2,7 @@
 {
     public enum SourceType
     {
-        Api,
-        Rss
+        Rss,
+        Api
     }
 }

@@ -7,9 +7,12 @@ using NewsAggregator.WebAPI.Models.Responses;
 
 namespace NewsAggregator.WebAPI.Controllers
 {
+    /// <summary>
+    /// Controller for getting articles from resources
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
-    public class ArticleResourseInitializer : ControllerBase
+    public class ReceiverNewsFromSources : ControllerBase
     {
 
         private readonly IArticleService _articleService;
@@ -17,7 +20,8 @@ namespace NewsAggregator.WebAPI.Controllers
         private readonly IRssService _rssService;
         private readonly IMapper _mapper;
 
-        public ArticleResourseInitializer(IArticleService articleService,
+
+        public ReceiverNewsFromSources(IArticleService articleService,
             ISourceService sourceService,
             IRssService rssService,
             IMapper mapper)
@@ -29,34 +33,13 @@ namespace NewsAggregator.WebAPI.Controllers
         }
 
         /// <summary>
-        /// Add Articles
+        /// Add texts of articles from sources to the storage
         /// </summary>
-        /// <param name="model">Contains Add or update article request model</param>
+        /// <param name="model">Contains article title, category, short summary and text</param>
         /// <returns></returns>
         [HttpPost]
         public async Task<IActionResult> AddArticles([FromBody] AddOrUpdateArticleRequestModel? model)
         {
-            //if (model != null)
-            //{
-            //    var dto = new ArticleDto()
-            //    {
-            //        Id = Guid.NewGuid(),
-            //        ArticleText = "Some article text",
-            //        Category = "Some category",
-            //        ShortDescription = "Some description",
-            //        Title = "New Title",
-            //        PublicationDate = DateTime.Now,
-            //    };
-
-            //    await _articleService.CreateArticleAsync(dto);
-
-            //    //return Ok(dto);
-            //    return CreatedAtAction(nameof(GetArticleById), new { id = dto.Id }, dto);
-            //}
-
-            //return BadRequest();
-
-
             try
             {
                 var sources = await _sourceService.GetSourcesAsync();
@@ -68,6 +51,12 @@ namespace NewsAggregator.WebAPI.Controllers
                 }
 
                 return Ok();
+
+                //RecurringJob.AddOrUpdate(() => _articleService.AggregateArticlesFromExternalSourcesAsync(), "5,10,35 10-18 * * Mon-Fri");
+                //Remove created jobs
+                //RecurringJob.RemoveIfExists(nameof(_articleService.AggregateArticlesFromExternalSourcesAsync));
+                //RecurringJob.AddOrUpdate(()=>_articleService.GetAllArticleDataFromRssAsync(), "*/15 * * * *");
+                //RecurringJob.AddOrUpdate(()=>_articleService.AddArticleTextToArticlesAsync(), "*/30 * * * *");
             }
             catch (Exception ex)
             {
@@ -76,35 +65,10 @@ namespace NewsAggregator.WebAPI.Controllers
             }
         }
 
-
-        //[HttpPost]
-        //public async Task<IActionResult> AddArticles()
-        //{
-        //    try
-        //    {
-        //        RecurringJob.AddOrUpdate(() => _articleService.AggregateArticlesFromExternalSourcesAsync(),
-        //            "5,10,35 10-18 * * Mon-Fri");
-
-
-                   //Remove created jobs
-        //        //RecurringJob.RemoveIfExists(nameof(_articleService.AggregateArticlesFromExternalSourcesAsync));
-
-        //        //RecurringJob.AddOrUpdate(()=>_articleService.GetAllArticleDataFromRssAsync(),
-        //        //    "*/15 * * * *");
-        //        //RecurringJob.AddOrUpdate(()=>_articleService.AddArticleTextToArticlesAsync(),
-        //        //    "*/30 * * * *");
-
-        //        return Ok();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, new ErrorModel() { Message = ex.Message });
-        //    }
-        //}
-
-
-
-
+        /// <summary>
+        /// Get articles with rate
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public async Task<IActionResult> RateArticles()
         {

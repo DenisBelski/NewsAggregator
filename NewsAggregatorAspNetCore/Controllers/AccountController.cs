@@ -194,6 +194,36 @@ namespace NewsAggregatorAspNetCore.Controllers
             return Ok(user);
         }
 
+        [AllowAnonymous]
+        [HttpGet]
+        public IActionResult IsLoggedIn()
+        {
+            if (User.Identities.Any(identity => identity.IsAuthenticated))
+            {
+                return Ok(true);
+            }
+
+            return Ok(false);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> UserLoginPreview()
+        {
+            if (User.Identities.Any(identity => identity.IsAuthenticated))
+            {
+                var userEmail = User.Identity?.Name;
+                if (string.IsNullOrEmpty(userEmail))
+                {
+                    return BadRequest();
+                }
+
+                var user = _mapper.Map<UserDataModel>(_userService.GetUserByEmailAsync(userEmail));
+                return View(user);
+            }
+
+            return View();
+        }
+
         private async Task Authenticate(string email)
         {
             var userDto = await _userService.GetUserByEmailAsync(email);

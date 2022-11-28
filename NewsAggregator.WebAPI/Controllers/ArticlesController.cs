@@ -31,18 +31,12 @@ namespace NewsAggregator.WebAPI.Controllers
             _mapper = mapper;
         }
 
-
-
-
         /// <summary>
         /// Get article from storage with specified id
         /// </summary>
         /// <param name="id">Id of article</param>
         /// <returns></returns>
         [HttpGet("{id}")]
-
-
-        // Documentation for responses. Very useful for API users!
         [ProducesResponseType(typeof(ArticleDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(Nullable), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetArticleById(Guid id)
@@ -57,7 +51,6 @@ namespace NewsAggregator.WebAPI.Controllers
             return Ok(article);
         }
 
-
         /// <summary>
         /// Get articles by article name substring and source id
         /// </summary>
@@ -69,75 +62,54 @@ namespace NewsAggregator.WebAPI.Controllers
             IEnumerable<ArticleDto> articles = await _articleService
                 .GetArticlesByNameAndSourcesAsync(model?.Name, model?.SourceId);
 
-
-
-            // Don't do this in real project, added as an example
-            var jobId = BackgroundJob.Enqueue(() => Console.WriteLine(HttpContext.Request.Method));
-            var jobId2 = BackgroundJob.Schedule(() => Console.WriteLine(HttpContext.Request.Method),
-                TimeSpan.FromMinutes(1));
-
-
             return Ok(articles.ToList());
             //return Ok();
         }
 
+        /// <summary>
+        /// Update all fields in article from storage with specified id
+        /// </summary>
+        /// <param name="id">Id of article</param>
+        /// <param name="model">Contains article name substring and source id</param>
+        /// <returns></returns>
+        [HttpPut("{id}")]
+        public IActionResult UpdateArticles(Guid id, [FromBody] AddOrUpdateArticleRequestModel? model)
+        {
+            if (model != null)
+            {
+                //var oldValue = Articles.FirstOrDefault(dto => dto.Id.Equals(id));
 
-        // Example, Articles must be created in this controller
-        //[HttpGet]
-        // public IActionResult GetArticlesByName(string? name, string? category)
-        // {
-        //     IEnumerable<ArticleDto> articles = Articles;
+                //if (oldValue == null)
+                //{
+                //    return NotFound();
+                //}
 
-        //     if (!string.IsNullOrEmpty(name))
-        //     {
-        //         articles = articles.Where(dto => dto.Title.Equals(name));
-        //     }
+                //var newValue = new ArticleDto()
+                //{
+                //    Id = oldValue.Id,
+                //    PublicationDate = DateTime.Now,
+                //    Title = model.Title,
+                //    ArticleText = model.Text,
+                //    Category = model.Category,
+                //    ShortDescription = model.ShortSummary
+                //};
 
-        //     if (!string.IsNullOrEmpty(category))
-        //     {
-        //         articles = articles.Where(dto => dto.Category.Equals(category));
-        //     }
+                //Articles.Remove(oldValue);
+                //Articles.Add(newValue);
 
-        //     return Ok(articles.ToList());
-        // }
+                return Ok();
+            }
 
-
-
-        //Exsample. Important! Put overwrites all parameters.
-        //[HttpPut("{id}")]
-        //public IActionResult UpdateArticles(Guid id, [FromBody] AddOrUpdateArticleRequestModel? model)
-        //{
-        //    if (model != null)
-        //    {
-        //        var oldValue = Articles.FirstOrDefault(dto => dto.Id.Equals(id));
-
-        //        if (oldValue == null)
-        //        {
-        //            return NotFound();
-        //        }
-
-        //        var newValue = new ArticleDto()
-        //        {
-        //            Id = oldValue.Id,
-        //            PublicationDate = DateTime.Now,
-        //            Title = model.Title,
-        //            ArticleText = model.Text,
-        //            Category = model.Category,
-        //            ShortDescription = model.ShortSummary
-        //        };
-
-        //        Articles.Remove(oldValue);
-        //        Articles.Add(newValue);
-
-        //        return Ok();
-        //    }
-
-        //    return BadRequest();
-        //}
+            return BadRequest();
+        }
 
 
-
-
+        /// <summary>
+        /// Update only some of the fields in the article from storage with specified id
+        /// </summary>
+        /// <param name="id">Id of article</param>
+        /// <param name="model">Contains article name substring and source id</param>
+        /// <returns></returns>
         [HttpPatch("{id}")]
         public IActionResult UpdateArticles(Guid id, [FromBody] PatchRequestModel? model)
         {
@@ -150,7 +122,7 @@ namespace NewsAggregator.WebAPI.Controllers
             //        return NotFound();
             //    }
 
-            //    //!!!!!! todo add patch implementation(change only fields from request
+            //    //!!!!!! todo add patch implementation(change only fields from request)
 
             //    return Ok();
             //}
@@ -158,13 +130,10 @@ namespace NewsAggregator.WebAPI.Controllers
             return BadRequest();
         }
 
-
-
-
         /// <summary>
-        /// Delete Article
+        /// Get article from storage with specified id
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="id">Id of article</param>
         /// <returns></returns>
         [HttpDelete("{id}")]
         [ProducesResponseType(typeof(Nullable), StatusCodes.Status200OK)]
@@ -179,8 +148,6 @@ namespace NewsAggregator.WebAPI.Controllers
             //    }
             //    Articles.Remove(oldValue);
             //    return Ok();
-
-
 
             try
             {
