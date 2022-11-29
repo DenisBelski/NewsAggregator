@@ -39,14 +39,36 @@ namespace NewsAggregator.Business.ServicesImplementations
                 .AnyAsync(user => user.Id.Equals(userId));
         }
 
-        // get user as entity, with his role
-        public async Task<UserDto> GetUserByEmailAsync(string email)
+        public async Task<bool> IsUserExists(string email)
         {
-            var userWithRole = await _unitOfWork.Users
-                .FindBy(user => user.Email.Equals(email), user => user.Role)
-                .FirstOrDefaultAsync();
+            return await _unitOfWork.Users
+                .Get()
+                .AnyAsync(user => user.Email.Equals(email));
+        }
 
-            return _mapper.Map<UserDto>(userWithRole);
+
+        // get user as entity, with his role
+        //public async Task<UserDto> GetUserByEmailAsync(string email)
+        //{
+        //    var userWithRole = await _unitOfWork.Users
+        //        .FindBy(user => user.Email.Equals(email), user => user.Role)
+        //        .FirstOrDefaultAsync();
+
+        //    return _mapper.Map<UserDto>(userWithRole);
+        //}
+
+        public UserDto? GetUserByEmailAsync(string email)
+        {
+            var userWithRole = _unitOfWork.Users
+                .FindBy(user => user.Email.Equals(email), user => user.Role)
+                .FirstOrDefault();
+
+            if (userWithRole != null)
+            {
+                return _mapper.Map<UserDto>(userWithRole);
+            }
+
+            return null;
         }
 
         public async Task<bool> CheckUserPassword(string email, string password)

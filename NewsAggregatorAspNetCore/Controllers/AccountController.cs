@@ -28,122 +28,112 @@ namespace NewsAggregatorAspNetCore.Controllers
         [HttpGet]
         public IActionResult Login()
         {
-            return View();
+            try
+            {
+                return View();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
         [HttpPost]
         public async Task<IActionResult> Login(LoginModel model)
         {
-            var isPasswordCorrect = await _userService.CheckUserPassword(model.Email, model.Password);
-            if (isPasswordCorrect)
+            try
             {
-                await Authenticate(model.Email);
-                return RedirectToAction("Index", "Home");
+                var isPasswordCorrect = await _userService.CheckUserPassword(model.Email, model.Password);
 
-                //return Ok("Login Successful");
+                if (isPasswordCorrect)
+                {
+                    await Authenticate(model.Email);
+                    return RedirectToAction("Index", "Home");
+                    //return Ok("Login Successful");
+                }
+                else
+                {
+                    return View();
+                }
             }
-            else
+            catch (Exception)
             {
-                return View();
+                throw;
             }
-
-            //try
-            //{
-            //    if (ModelState.IsValid)
-            //    {
-            //        //server validation (optional)
-            //        //check email for the existence of the same in the database:
-            //        //if (model.Email.ToLowerInvariant().Equals("test@email.com"))
-            //        //{
-            //        //    ModelState.AddModelError(nameof(model.Email), "Email is already exist");
-            //        //    return View(model);
-            //        //}
-
-            //        //client validation
-            //        //use attribute [Remote("CheckEmail", "Account", HttpMethod = WebRequestMethods.Http.Post, ErrorMessage = "Email is already exists")]
-            //        //and method CheckEmail (see below)
-            //        //for attribute Remote it is necessary to add scripts jquery-validation... (see views)
-
-            //        return Ok("Login Successful");
-            //    }
-            //    else
-            //    {
-            //        return View(model);
-            //    }
-            //}
-            //catch (Exception ex)
-            //{
-            //    return StatusCode(500);
-            //}
         }
 
         [HttpGet]
         public async Task<IActionResult> Register()
         {
-            return View();
+            try
+            {
+                return View();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
         [HttpPost]
         public async Task<IActionResult> Register(RegisterModel model)
         {
-            if (ModelState.IsValid)
+            try
             {
-                //add "User" constant to the config
-                var userRoleId = await _roleService.GetRoleIdByNameAsync("User");
-                var userDto = _mapper.Map<UserDto>(model);
-
-                if (userDto != null && userRoleId != null)
+                if (ModelState.IsValid)
                 {
-                    userDto.RoleId = userRoleId.Value;
-                    var result = await _userService.RegisterUser(userDto, model.Password);
+                    //add "User" constant to the config
+                    var userRoleId = await _roleService.GetRoleIdByNameAsync("User");
+                    var userDto = _mapper.Map<UserDto>(model);
 
-                    if (result > 0)
+                    if (userDto != null && userRoleId != null)
                     {
-                        await Authenticate(model.Email);
-                        return RedirectToAction("Index", "Home");
+                        userDto.RoleId = userRoleId.Value;
+                        var result = await _userService.RegisterUser(userDto, model.Password);
+
+                        if (result > 0)
+                        {
+                            await Authenticate(model.Email);
+                            return RedirectToAction("Index", "Home");
+                        }
                     }
                 }
-            }
-            return View(model);
 
-            //try
-            //{
-            //    if (ModelState.IsValid)
-            //    {
-            //        model.Id = Guid.NewGuid();
-            //        return Ok("New account successfully registered");
-            //    }
-            //    else
-            //    {
-            //        return View(model);
-            //    }
-            //}
-            //catch (Exception ex)
-            //{
-            //    return StatusCode(500);
-            //}
+                return View(model);
+            }
+            catch (Exception)
+            {
+                throw;
+                //return StatusCode(500);
+            }
         }
 
         [HttpGet]
         public async Task<IActionResult> Logout()
         {
-            await HttpContext.SignOutAsync();
+            try
+            {
+                await HttpContext.SignOutAsync();
 
-            return RedirectToAction("Index", "Home");
-
-
+                return RedirectToAction("Index", "Home");
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
         [HttpGet]
         public async Task<IActionResult> Reset()
         {
-            return View();
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> ResetError()
-        {
-            return View();
+            try
+            {
+                return View();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
         [HttpPost]
@@ -168,83 +158,146 @@ namespace NewsAggregatorAspNetCore.Controllers
         }
 
         [HttpPost]
-        public IActionResult CheckEmail(string email)
+        public async Task<IActionResult> ResetError()
         {
-            //check email for the existence of the same in the database:
-            if (email.ToLowerInvariant().Equals("test@email.com"))
+            try
             {
-                return Ok(false);
+                return View();
             }
-            return Ok(true);
+            catch (Exception)
+            {
+                throw;
+            }
         }
+
+
+        public async Task<IActionResult> CheckEmail(string email)
+        {
+            try
+            {
+                var isEmailExist = await _userService.IsUserExists(email);
+
+                if (isEmailExist)
+                {
+                    return Ok(false);
+                }
+
+                return Ok(true);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+
+        //[HttpPost]
+        //public IActionResult CheckEmail(string email)
+        //{
+        //    //check email for the existence of the same in the database:
+        //    if (email.ToLowerInvariant().Equals("test@email.com"))
+        //    {
+        //        return Ok(false);
+        //    }
+        //    return Ok(true);
+        //}
+
 
         [HttpGet]
         [Authorize]
         public async Task<IActionResult> GetUserData()
         {
-            var userEmail = User.Identity?.Name;
-
-            if (string.IsNullOrEmpty(userEmail))
-            {
-                return BadRequest();
-            }
-
-            var user = _mapper.Map<UserDataModel>(_userService.GetUserByEmailAsync(userEmail));
-
-            return Ok(user);
-        }
-
-        [AllowAnonymous]
-        [HttpGet]
-        public IActionResult IsLoggedIn()
-        {
-            if (User.Identities.Any(identity => identity.IsAuthenticated))
-            {
-                return Ok(true);
-            }
-
-            return Ok(false);
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> UserLoginPreview()
-        {
-            if (User.Identities.Any(identity => identity.IsAuthenticated))
+            try
             {
                 var userEmail = User.Identity?.Name;
+
                 if (string.IsNullOrEmpty(userEmail))
                 {
                     return BadRequest();
                 }
 
                 var user = _mapper.Map<UserDataModel>(_userService.GetUserByEmailAsync(userEmail));
-                return View(user);
-            }
 
-            return View();
+                return Ok(user);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        public IActionResult IsLoggedIn()
+        {
+            try
+            {
+                if (User.Identities.Any(identity => identity.IsAuthenticated))
+                {
+                    return Ok(true);
+                }
+
+                return Ok(false);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> UserLoginPreview()
+        {
+            try
+            {
+                if (User.Identities.Any(identity => identity.IsAuthenticated))
+                {
+                    var userEmail = User.Identity?.Name;
+                    if (string.IsNullOrEmpty(userEmail))
+                    {
+                        return BadRequest();
+                    }
+
+                    var user = _mapper.Map<UserDataModel>(_userService.GetUserByEmailAsync(userEmail));
+                    return View(user);
+                }
+
+                return View();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
         private async Task Authenticate(string email)
         {
-            var userDto = await _userService.GetUserByEmailAsync(email);
+            try
+            {
+                var userDto = _userService.GetUserByEmailAsync(email);
 
-            var claims = new List<Claim>()
+                var claims = new List<Claim>()
             {
                 new Claim(ClaimsIdentity.DefaultNameClaimType, userDto.Email),
                 new Claim(ClaimsIdentity.DefaultRoleClaimType, userDto.RoleName)
             };
 
-            //create instance, which describes the user based on the claims that were created
-            var identity = new ClaimsIdentity(claims,
-                "ApplicationCookie",
-                ClaimsIdentity.DefaultNameClaimType,
-                ClaimsIdentity.DefaultRoleClaimType);
+                //create instance, which describes the user based on the claims that were created
+                var identity = new ClaimsIdentity(claims,
+                    "ApplicationCookie",
+                    ClaimsIdentity.DefaultNameClaimType,
+                    ClaimsIdentity.DefaultRoleClaimType);
 
-            //claimsPrincipal - defines an object, which will put to theHTTPContext and to the session
-            //will assign an ID and give it to the client to write in a cookie
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults
-                .AuthenticationScheme,
-                new ClaimsPrincipal(identity));
+                //claimsPrincipal - defines an object, which will put to theHTTPContext and to the session
+                //will assign an ID and give it to the client to write in a cookie
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults
+                    .AuthenticationScheme,
+                    new ClaimsPrincipal(identity));
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
     }
 }

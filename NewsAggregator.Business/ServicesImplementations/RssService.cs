@@ -52,20 +52,7 @@ namespace NewsAggregator.Business.ServicesImplementations
                     var feed = SyndicationFeed.Load(reader);
 
                     // get information about available fields from rss data or from feed/items
-
-                    //should be checked for different rss sources
-                    //list.AddRange(feed.Items.Select(item => new ArticleDto()
-                    //{
-                    //    Id = Guid.NewGuid(),
-                    //    Title = item.Title.Text,
-                    //    PublicationDate = item.PublishDate.UtcDateTime,
-                    //    ShortSummary = item.Summary.Text,
-                    //    Category = item.Categories.FirstOrDefault()?.Name,
-                    //    SourceId = sourceId,
-                    //    SourceUrl = item.Id
-                    //}));
-
-
+                    // should be checked for different rss sources
                     foreach (SyndicationItem item in feed.Items)
                     {
                         var textSummary = Regex.Replace(item.Summary.Text, @"<[^>]*>", String.Empty);
@@ -80,6 +67,7 @@ namespace NewsAggregator.Business.ServicesImplementations
                             SourceId = sourceId,
                             SourceUrl = item.Id
                         };
+
                         list.Add(articleDto);
                     }
                 }
@@ -87,13 +75,14 @@ namespace NewsAggregator.Business.ServicesImplementations
                 var oldArticleUrls = await _unitOfWork.Articles.Get()
                     .Select(article => article.SourceUrl)
                     .Distinct()
-                    .ToListAsync(); // or ToArrayAsync
+                    .ToListAsync();
 
                 var entities = list.Where(dto => !oldArticleUrls.Contains(dto.SourceUrl))
                     .Select(dto => _mapper.Map<Article>(dto))
-                    .ToList(); // or ToArray
+                    .ToList();
 
                 //var entities = list.Select(dto => _mapper.Map<Article>(dto));
+
                 await _unitOfWork.Articles.AddRangeAsync(entities);
                 await _unitOfWork.Commit();
 

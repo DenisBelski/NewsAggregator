@@ -4,7 +4,25 @@
     ViewData["Title"] = "View";
 }
 
-<h1>Articles</h1>
+<h1 id="article-header">Articles</h1>
+
+@*@if(Model.IsAdmin){
+
+    <p> Hello Admin </p>
+    <a href="~/article/create">Create article</a>
+}
+*@
+@*<div class="row">
+    @if (Model.Articles.Any())
+    {
+        foreach (var item in Model.Articles)
+        {
+            @await Html.PartialAsync("ArticlePreview", item)
+            await Html.RenderPartialAsync("ArticlePreview", item);
+        }
+    }
+</div>
+*@
 
 
 @foreach (var item in Model)
@@ -27,24 +45,4 @@
             </div>
         </div>
     </div>
-
-
-@*    <div>
-        <br>
-        <h3>
-            @Html.DisplayFor(modelItem => item.Title)
-        </h3>
-        <p>
-            Категория: @Html.DisplayFor( modelItem => item.Category)
-        </p>
-        <h6>
-            @Html.DisplayFor(modelItem => item.ShortDescription)
-        </h6>
-        <p>
-            @Html.DisplayFor(modelItem => item.PublicationDate)
-        </p>
-        <a class="btn btn-success" href="~/article/details/@item.Id">Read details</a>
-        <br>
-    </div>
-*@
 }

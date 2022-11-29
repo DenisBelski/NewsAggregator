@@ -50,15 +50,22 @@ namespace NewsAggregatorAspNetCore.Controllers
         }
         public async Task<IActionResult> Details(Guid id)
         {
-            var dto = await _articleService.GetArticleByIdAsync(id);
+            try
+            {
+                var dto = await _articleService.GetArticleByIdAsync(id);
 
-            if (dto != null)
-            {
-                return View(dto);
-            }
-            else
-            {
+                if (dto != null)
+                {
+                    return View(dto);
+                }
+
                 return NotFound();
+            }
+            catch (Exception e)
+            {
+                throw;
+                //Log.Error($"{e.Message}. {Environment.NewLine} {e.StackTrace}");
+                //return RedirectToAction("Error", "Internal");
             }
         }
 
@@ -66,19 +73,26 @@ namespace NewsAggregatorAspNetCore.Controllers
         [HttpGet]
         public async Task<IActionResult> Create()
         {
-            //var model = new CreateArticleModel();
+            try
+            {
+                //var model = new CreateArticleModel();
 
-            //var sources = await _sourceService.GetSourcesAsync();
+                //var sources = await _sourceService.GetSourcesAsync();
 
-            //model.Sources = sources
-            //    .Select(dto => new SelectListItem(
-            //        dto.Name,
-            //        dto.Id.ToString("G")))
-            //    .ToList();
+                //model.Sources = sources
+                //    .Select(dto => new SelectListItem(
+                //        dto.Name,
+                //        dto.Id.ToString("G")))
+                //    .ToList();
 
-            //return View(model);
+                //return View(model);
 
-            return View();
+                return View();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
         [Authorize(Roles = "Admin")]
@@ -89,12 +103,6 @@ namespace NewsAggregatorAspNetCore.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    if (model.Title.ToUpperInvariant().Contains("123"))
-                    {
-                        ModelState.AddModelError("Title", "Article contains 123");
-                        return View(model);
-                    }
-
                     model.Id = Guid.NewGuid();
                     model.PublicationDate = DateTime.Now;
 
@@ -105,10 +113,7 @@ namespace NewsAggregatorAspNetCore.Controllers
                     return RedirectToAction("Index", "Article");
                 }
 
-                else
-                {
-                    return View(model);
-                }
+                return View(model);
             }
             catch (Exception ex)
             {
@@ -121,20 +126,27 @@ namespace NewsAggregatorAspNetCore.Controllers
         [HttpGet]
         public async Task<IActionResult> Edit(Guid id)
         {
-            if (id != Guid.Empty)
+            try
             {
-                var articleDto = await _articleService.GetArticleByIdAsync(id);
-                if (articleDto == null)
+                if (id != Guid.Empty)
                 {
-                    return BadRequest();
+                    var articleDto = await _articleService.GetArticleByIdAsync(id);
+                    if (articleDto == null)
+                    {
+                        return BadRequest();
+                    }
+
+                    var editModel = _mapper.Map<ArticleModel>(articleDto);
+
+                    return View(editModel);
                 }
 
-                var editModel = _mapper.Map<ArticleModel>(articleDto);
-
-                return View(editModel);
+                return BadRequest();
             }
-
-            return BadRequest();
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
         [Authorize(Roles = "Admin")]

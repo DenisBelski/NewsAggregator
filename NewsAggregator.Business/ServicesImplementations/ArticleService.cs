@@ -34,9 +34,6 @@ namespace NewsAggregator.Business.ServicesImplementations
             _rssService = rssService;
         }
 
-
-
-
         public async Task<ArticleDto> GetArticleByIdAsync(Guid id)
         {
             var entity = await _unitOfWork.Articles.GetByIdAsync(id);
@@ -44,9 +41,6 @@ namespace NewsAggregator.Business.ServicesImplementations
 
             return dto;
         }
-
-
-
 
         public async Task<int> CreateArticleAsync(ArticleDto dto)
         {
@@ -56,19 +50,16 @@ namespace NewsAggregator.Business.ServicesImplementations
             {
                 await _unitOfWork.Articles.AddAsync(entity);
                 var addingResult = await _unitOfWork.Commit();
+
                 return addingResult;
             }
-            else
-            {
-                throw new ArgumentException(nameof(dto));
-            }
+
+            throw new ArgumentException(nameof(dto));
         }
-
-
-
 
         public async Task<int> UpdateArticleAsync(Guid id, ArticleDto? dto)
         {
+
             var sourceDto = await GetArticleByIdAsync(id);
 
             //should be sure that dto property naming is the same with entity property naming
@@ -89,9 +80,6 @@ namespace NewsAggregator.Business.ServicesImplementations
             return await _unitOfWork.Commit();
         }
 
-
-
-
         public async Task<List<ArticleDto>> GetArticlesByPageNumberAndPageSizeAsync(int pageNumber, int pageSize)
         {
             try
@@ -111,14 +99,8 @@ namespace NewsAggregator.Business.ServicesImplementations
             }
         }
 
-
-
-
-        // for WebAPI
         public async Task<List<ArticleDto>> GetArticlesByNameAndSourcesAsync(string? name, Guid? sourceId)
         {
-            //var list = new List<ArticleDto>();
-
             var entities = _unitOfWork.Articles.Get();
 
             if (!string.IsNullOrEmpty(name))
@@ -138,13 +120,9 @@ namespace NewsAggregator.Business.ServicesImplementations
             return result;
         }
 
-
-
-
-        // for WebAPI
+        //It is not allowed to delete an article
         public async Task DeleteArticleAsync(Guid id)
         {
-
             var entity = await _unitOfWork.Articles.GetByIdAsync(id);
 
             if (entity != null)
@@ -159,9 +137,6 @@ namespace NewsAggregator.Business.ServicesImplementations
             }
         }
 
-
-
-
         public async Task AggregateArticlesFromExternalSourcesAsync()
         {
             var sources = await _unitOfWork.Sources.GetAllAsync();
@@ -173,12 +148,8 @@ namespace NewsAggregator.Business.ServicesImplementations
             }
         }
 
-
-
-
         public async Task AddRateToArticlesAsync()
         {
-            //get data where Rate == null, and article include Article text
             var articlesWithEmptyRateIds = _unitOfWork.Articles.Get()
                 .Where(article => article.Rate == null && !string.IsNullOrEmpty(article.ArticleText))
                 .Select(article => article.Id)
@@ -189,9 +160,6 @@ namespace NewsAggregator.Business.ServicesImplementations
                 await RateArticleAsync(articleId);
             }
         }
-
-
-
 
         public async Task AddArticleTextToArticlesAsync()
         {
@@ -206,8 +174,7 @@ namespace NewsAggregator.Business.ServicesImplementations
                 await AddArticleTextToArticleAsync(articleId);
             }
 
-            //    var articlesWithEmptyTextIds = await _mediator
-            //        .Send(new GetAllArticlesWithoutTextIdsQuery());
+            //var articlesWithEmptyTextIds = await _mediator.Send(new GetAllArticlesWithoutTextIdsQuery());
             //    if (articlesWithEmptyTextIds != null)
             //    {
             //        foreach (var articleId in articlesWithEmptyTextIds)
@@ -217,15 +184,13 @@ namespace NewsAggregator.Business.ServicesImplementations
             //    }
         }
 
-
-
-
         //Naming example - "AddArticleTextToOnlinerArticleAsync", will be unique for every source
         private async Task AddArticleTextToArticleAsync(Guid articleId)
         {
             try
             {
                 var article = await _unitOfWork.Articles.GetByIdAsync(articleId);
+
                 //var article = await _mediator.Send(new GetArticleByIdQuery { Id = articleId });
 
                 if (article == null)
@@ -254,8 +219,8 @@ namespace NewsAggregator.Business.ServicesImplementations
                                         && !node.HasClass("news-vote")
                                         && !node.HasClass("news-incut")
                                         && !node.HasClass("button-style")
-                                        && !node.HasClass("news-entry__speech") //??
-                                        && !node.HasClass("news-entry") //??
+                                        && !node.HasClass("news-entry__speech")    //??
+                                        && !node.HasClass("news-entry")            //??
                                         && !node.HasClass("news-header")
                                         && !node.HasClass("news-media")
                                         && !node.HasClass("news-media__viewport")
@@ -263,11 +228,12 @@ namespace NewsAggregator.Business.ServicesImplementations
                                         && !node.HasClass("news-media__inside")
                                         && !node.HasClass("alignnone")
                                         && node.Attributes["style"] == null)
-                        .Select(node => node.InnerText)      // or => node.InnerText node.OuterHtml/InnerHtml
+                        .Select(node => node.InnerText)                            // or => node.InnerText node.OuterHtml/InnerHtml
                         .Aggregate((i, j) => i + Environment.NewLine + j);
 
                     await _unitOfWork.Articles.UpdateArticleTextAsync(articleId, articleText);
                     await _unitOfWork.Commit();
+
                     //await _mediator.Send(new UpdateArticleTextCommand() { Id = articleId, Text = articleText });
                 }
             }
@@ -276,45 +242,6 @@ namespace NewsAggregator.Business.ServicesImplementations
                 throw;
             }
         }
-        //private async Task AddArticleTextToArticleAsync(Guid articleId)
-        //{
-        //    try
-        //    {
-        //        var article = await _mediator.Send(new GetArticleByIdQuery { Id = articleId });
-        //        if (article == null)
-        //        {
-        //            throw new ArgumentException($"Article with id: {articleId} doesn't exists",
-        //                nameof(articleId));
-        //        }
-        //        var articleSourceUrl = article.SourceUrl;
-        //        var web = new HtmlWeb();
-        //        var htmlDoc = web.Load(articleSourceUrl);
-        //        var nodes =
-        //            htmlDoc.DocumentNode.Descendants(0)
-        //                .Where(n => n.HasClass("news-text"));
-        //        if (nodes.Any())
-        //        {
-        //            var articleText = nodes.FirstOrDefault()?
-        //                .ChildNodes
-        //                .Where(node => (node.Name.Equals("p") || node.Name.Equals("div") || node.Name.Equals("h2"))
-        //                               && !node.HasClass("news-reference")
-        //                               && !node.HasClass("news-banner")
-        //                               && !node.HasClass("news-widget")
-        //                               && !node.HasClass("news-vote")
-        //                               && node.Attributes["style"] == null)
-        //                .Select(node => node.OuterHtml)
-        //                .Aggregate((i, j) => i + Environment.NewLine + j);
-        //            await _mediator.Send(new UpdateArticleTextCommand() { Id = articleId, Text = articleText });
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw;
-        //    }
-        //}
-
-
-
 
         private async Task RateArticleAsync(Guid articleId)
         {
@@ -324,11 +251,8 @@ namespace NewsAggregator.Business.ServicesImplementations
 
                 if (article == null)
                 {
-                    throw new ArgumentException($"Article with id: {articleId} doesn't exists",
-                        nameof(articleId));
+                    throw new ArgumentException($"Article with id: {articleId} doesn't exist", nameof(articleId));
                 }
-
-
 
                 using (var client = new HttpClient())
                 {
@@ -342,18 +266,73 @@ namespace NewsAggregator.Business.ServicesImplementations
                     var httpResponse = await client.SendAsync(httpRequest);
                     var responseStream = await httpResponse.Content.ReadAsStreamAsync();
 
-                    //get lemma from words. Then compare with AFINN-ru.json file, and get average value (Rating)
                     using (var stream = new StreamReader(responseStream))
                     {
-                        var data = await stream.ReadToEndAsync();
+                        var responseData = await stream.ReadToEndAsync();
+                        var responseObject = JsonConvert.DeserializeObject<IsprassResponseObject[]>(responseData);
 
-                        var responseObject = JsonConvert.DeserializeObject<IsprassResponseObject[]>(data);
+                        if (responseObject != null)
+                        {
+                            //article.Rate = AfinnComparer(responseObject[0].Annotations.Lemma);
+
+                            var rateResult = AfinnComparer(responseObject[0].Annotations.Lemma);
+
+                            //var nameValuePropertiesPairs = patchData
+                            //    .ToDictionary(
+                            //        patchModel => patchModel.PropertyName,
+                            //        patchModel => patchModel.PropertyValue);
+
+                            //var patchData = new List<PatchModel>()
+                            //{
+                            //    patchData.
+                            //};
+
+                            //await _unitOfWork.Articles.PatchAsync(articleId, article.Rate, rateResult);
+                        }
                     }
                 }
+
+                //var entity = await _unitOfWork.Articles.GetByIdAsync(articleId);
+                //_unitOfWork.Articles.Update(entity);
+
+
+                await _unitOfWork.Commit();
             }
             catch (Exception ex)
             {
                 throw;
+            }
+        }
+
+        private double? AfinnComparer(List<Lemma> listLemmas)
+        {
+            using (var stream = new StreamReader(@"D:\IT\GitHub_Projects\NewsAggregator\NewsAggregator.Business\ServicesImplementations\AFINN-ru.json"))
+            {
+                var afinnData = stream.ReadToEnd();
+                var afinnDictionary = JsonConvert.DeserializeObject<Dictionary<string, int>>(afinnData);
+
+                int amountOfEvaluatedWords = 0;
+                int totalTextScore = 0;
+
+                foreach (var afinnItem in afinnDictionary)
+                {
+                    for (int i = 0; i < listLemmas.Count - 1; i++)
+                    {
+                        if (!string.IsNullOrEmpty(listLemmas[i].Value)
+                            && afinnItem.Key == listLemmas[i].Value)
+                        {
+                            amountOfEvaluatedWords++;
+                            totalTextScore += afinnItem.Value;
+                        }
+                    }
+                }
+
+                if (amountOfEvaluatedWords != 0)
+                {
+                    return (totalTextScore / amountOfEvaluatedWords);
+                }
+
+                return 0;
             }
         }
     }

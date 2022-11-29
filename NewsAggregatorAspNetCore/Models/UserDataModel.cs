@@ -1,8 +1,9 @@
-﻿namespace NewsAggregatorAspNetCore.Models;
-
-public class UserDataModel
+﻿namespace NewsAggregatorAspNetCore.Models
 {
-    public Guid Id { get; set; }
-    public string Email { get; set; }
-    public string RoleName { get; set; }
+    public class UserDataModel
+    {
+        public Guid Id { get; set; }
+        public string Email { get; set; }
+        public string RoleName { get; set; }
+    }
 }
