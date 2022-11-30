@@ -5,15 +5,15 @@ using NewsAggregator.DataBase;
 using NewsAggregator.DataBase.Entities;
 using System.Linq.Expressions;
 
-namespace NewsAggregator.Data.Repositories
+namespace NewsAggregator.Data.Repositories.Implementations
 {
-    public class Repository<T> : IRepository<T>
+    public class GenericRepository<T> : IGenericRepository<T>
     where T : class, IBaseEntity
     {
         protected readonly NewsAggregatorContext Database;
         protected readonly DbSet<T> DbSet;
 
-        public Repository(NewsAggregatorContext database)
+        public GenericRepository(NewsAggregatorContext database)
         {
             Database = database;
             DbSet = database.Set<T>();

@@ -2,7 +2,7 @@
 
 namespace NewsAggregator.Data.Abstractions.Repositories
 {
-    public interface IAdditionalArticleRepository : IRepository<Article>
+    public interface IAdditionalArticleRepository : IGenericRepository<Article>
     {
         Task UpdateArticleTextAsync(Guid id, string text);
     }

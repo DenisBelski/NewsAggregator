@@ -8,6 +8,7 @@ using NewsAggregator.Core.Abstractions;
 using NewsAggregator.Data.Abstractions;
 using NewsAggregator.Data.Abstractions.Repositories;
 using NewsAggregator.Data.Repositories;
+using NewsAggregator.Data.Repositories.Implementations;
 using NewsAggregator.DataBase;
 using NewsAggregator.DataBase.Entities;
 using Serilog;
@@ -101,12 +102,10 @@ namespace NewsAggregatorAspNetCore
             builder.Services.AddScoped<IRssService, RssService>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IRoleService, RoleService>();
-            builder.Services.AddScoped<IAdditionalArticleRepository, ArticleGenericRepository>();
-            builder.Services.AddScoped<IRepository<Source>, Repository<Source>>();
-            builder.Services.AddScoped<IRepository<User>, Repository<User>>();
-            builder.Services.AddScoped<IRepository<Role>, Repository<Role>>();
-            builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
-            builder.Services.AddScoped<ISourceRepository, SourceRepository>();
+            builder.Services.AddScoped<IAdditionalArticleRepository, AdditionalArticleRepository>();
+            builder.Services.AddScoped<IGenericRepository<Source>, GenericRepository<Source>>();
+            builder.Services.AddScoped<IGenericRepository<User>, GenericRepository<User>>();
+            builder.Services.AddScoped<IGenericRepository<Role>, GenericRepository<Role>>();
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             //builder.Services.AddScoped<ArticleCheckerActionFilter>();
 

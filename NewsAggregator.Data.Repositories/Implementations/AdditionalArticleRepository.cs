@@ -3,11 +3,11 @@ using NewsAggregator.Data.Abstractions.Repositories;
 using NewsAggregator.DataBase;
 using NewsAggregator.DataBase.Entities;
 
-namespace NewsAggregator.Data.Repositories
+namespace NewsAggregator.Data.Repositories.Implementations
 {
-    public class ArticleGenericRepository : Repository<Article>, IAdditionalArticleRepository
+    public class AdditionalArticleRepository : GenericRepository<Article>, IAdditionalArticleRepository
     {
-        public ArticleGenericRepository(NewsAggregatorContext database)
+        public AdditionalArticleRepository(NewsAggregatorContext database)
             : base(database)
         {
         }
