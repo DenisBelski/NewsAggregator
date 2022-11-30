@@ -8,7 +8,7 @@ using System.Linq.Expressions;
 namespace NewsAggregator.Data.Repositories.Implementations
 {
     public class GenericRepository<T> : IGenericRepository<T>
-    where T : class, IBaseEntity
+        where T : class, IBaseEntity
     {
         protected readonly NewsAggregatorContext Database;
         protected readonly DbSet<T> DbSet;
@@ -33,18 +33,20 @@ namespace NewsAggregator.Data.Repositories.Implementations
 
         public virtual IQueryable<T> Get()
         {
-            return DbSet;
+            return DbSet.AsQueryable();
         }
 
         public virtual IQueryable<T> FindBy(Expression<Func<T, bool>> searchExpression,
             params Expression<Func<T, object>>[] includes)
         {
             var result = DbSet.Where(searchExpression);
+
             if (includes.Any())
             {
                 result = includes.Aggregate(result, (current, include) =>
                     current.Include(include));
             }
+
             return result;
         }
 
@@ -72,9 +74,12 @@ namespace NewsAggregator.Data.Repositories.Implementations
                     patchModel => patchModel.PropertyName,
                     patchModel => patchModel.PropertyValue);
 
-            var dbEntityEntry = Database.Entry(model);
-            dbEntityEntry.CurrentValues.SetValues(nameValuePropertiesPairs);
-            dbEntityEntry.State = EntityState.Modified;
+            if (model != null)
+            {
+                var dbEntityEntry = Database.Entry(model);
+                dbEntityEntry.CurrentValues.SetValues(nameValuePropertiesPairs);
+                dbEntityEntry.State = EntityState.Modified;
+            }
         }
 
         public virtual void Remove(T entity)

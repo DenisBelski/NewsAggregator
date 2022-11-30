@@ -20,6 +20,13 @@ namespace NewsAggregator.WebAPI.Controllers
         private readonly IRssService _rssService;
         private readonly IMapper _mapper;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ArticlesController"/> class
+        /// </summary>
+        /// <param name="articleService"></param>
+        /// <param name="sourceService"></param>
+        /// <param name="rssService"></param>
+        /// <param name="mapper"></param>
         public ArticlesController(IArticleService articleService,
             ISourceService sourceService,
             IRssService rssService,

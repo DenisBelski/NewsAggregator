@@ -57,27 +57,33 @@ namespace NewsAggregator.Business.ServicesImplementations
             throw new ArgumentException(nameof(dto));
         }
 
-        public async Task<int> UpdateArticleAsync(Guid id, ArticleDto? dto)
+        public async Task<int> UpdateArticleAsync(Guid id, ArticleDto? patchList)
         {
+            try
+            {
+                //var sourceDto = await GetArticleByIdAsync(id);
 
-            var sourceDto = await GetArticleByIdAsync(id);
+                //should be sure that dto property naming is the same with entity property naming
+                //var patchList = new List<PatchModel>();
+                //if (dto != null)
+                //{
+                //    if (!dto.Title.Equals(sourceDto.Title))
+                //    {
+                //        patchList.Add(new PatchModel()
+                //        {
+                //            PropertyName = nameof(dto.Title),
+                //            PropertyValue = dto.Title
+                //        });
+                //    }
+                //}
 
-            //should be sure that dto property naming is the same with entity property naming
-            //var patchList = new List<PatchModel>();
-            //if (dto != null)
-            //{
-            //    if (!dto.Title.Equals(sourceDto.Title))
-            //    {
-            //        patchList.Add(new PatchModel()
-            //        {
-            //            PropertyName = nameof(dto.Title),
-            //            PropertyValue = dto.Title
-            //        });
-            //    }
-            //}
-
-            //await _unitOfWork.Articles.PatchAsync(id, patchList);
-            return await _unitOfWork.Commit();
+                //await _unitOfWork.Articles.PatchAsync(id, patchList);
+                return await _unitOfWork.Commit();
+            }
+            catch (Exception)
+            {
+                throw new ArgumentException(nameof(id));
+            }
         }
 
         public async Task<List<ArticleDto>> GetArticlesByPageNumberAndPageSizeAsync(int pageNumber, int pageSize)
@@ -95,11 +101,11 @@ namespace NewsAggregator.Business.ServicesImplementations
             }
             catch (Exception)
             {
-                throw;
+                throw new ArgumentException(nameof(pageNumber));
             }
         }
 
-        public async Task<List<ArticleDto>> GetArticlesByNameAndSourcesAsync(string? name, Guid? sourceId)
+        public async Task<List<ArticleDto>> GetArticlesByNameAndSourcesAsync(string? name, Guid? id)
         {
             var entities = _unitOfWork.Articles.Get();
 
@@ -108,9 +114,9 @@ namespace NewsAggregator.Business.ServicesImplementations
                 entities = entities.Where(dto => dto.Title.Contains(name));
             }
 
-            if (sourceId != null && !Guid.Empty.Equals(sourceId))
+            if (id != null && !Guid.Empty.Equals(id))
             {
-                entities = entities.Where(dto => dto.SourceId.Equals(sourceId));
+                entities = entities.Where(dto => dto.SourceId.Equals(id));
             }
 
             var result = (await entities.ToListAsync())
@@ -143,8 +149,8 @@ namespace NewsAggregator.Business.ServicesImplementations
 
             foreach (var source in sources)
             {
-                await _rssService.GetAllArticleDataFromOnlinerRssAsync(source.Id, source.RssUrl);
-                await AddArticleTextToArticlesAsync();
+                await _rssService.GetAllArticleDataFromRssAsync(source.Id, source.RssUrl);
+                await AddArticleTextToArticlesFromOnlinerAsync();
             }
         }
 
@@ -161,7 +167,7 @@ namespace NewsAggregator.Business.ServicesImplementations
             }
         }
 
-        public async Task AddArticleTextToArticlesAsync()
+        public async Task AddArticleTextToArticlesFromOnlinerAsync()
         {
             var articlesWithEmptyTextIds = _unitOfWork.Articles
                 .Get()
@@ -169,23 +175,17 @@ namespace NewsAggregator.Business.ServicesImplementations
                 .Select(article => article.Id)
                 .ToList();
 
+            //var articlesWithEmptyTextIds = await _mediator.Send(new GetAllArticlesWithoutTextIdsQuery());
+            //if (articlesWithEmptyTextIds != null)
+
             foreach (var articleId in articlesWithEmptyTextIds)
             {
-                await AddArticleTextToArticleAsync(articleId);
+                await AddArticleTextToArticleFromOnlinerAsync(articleId);
             }
-
-            //var articlesWithEmptyTextIds = await _mediator.Send(new GetAllArticlesWithoutTextIdsQuery());
-            //    if (articlesWithEmptyTextIds != null)
-            //    {
-            //        foreach (var articleId in articlesWithEmptyTextIds)
-            //        {
-            //            await AddArticleTextToArticleAsync(articleId);
-            //        }
-            //    }
         }
 
         //Naming example - "AddArticleTextToOnlinerArticleAsync", will be unique for every source
-        private async Task AddArticleTextToArticleAsync(Guid articleId)
+        private async Task AddArticleTextToArticleFromOnlinerAsync(Guid articleId)
         {
             try
             {
@@ -237,9 +237,9 @@ namespace NewsAggregator.Business.ServicesImplementations
                     //await _mediator.Send(new UpdateArticleTextCommand() { Id = articleId, Text = articleText });
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw;
+                throw new ArgumentException(nameof(articleId));
             }
         }
 
@@ -273,38 +273,33 @@ namespace NewsAggregator.Business.ServicesImplementations
 
                         if (responseObject != null)
                         {
-                            //article.Rate = AfinnComparer(responseObject[0].Annotations.Lemma);
+                            double? rateResult = CompareArticleWithAfinnDictionary(responseObject[0].Annotations.Lemma);
 
-                            var rateResult = AfinnComparer(responseObject[0].Annotations.Lemma);
+                            var patchList = new List<PatchModel>()
+                            {
+                                new PatchModel()
+                                {
+                                    PropertyName = nameof(article.Rate),
+                                    PropertyValue = rateResult
+                                }
+                            };
 
-                            //var nameValuePropertiesPairs = patchData
-                            //    .ToDictionary(
-                            //        patchModel => patchModel.PropertyName,
-                            //        patchModel => patchModel.PropertyValue);
-
-                            //var patchData = new List<PatchModel>()
-                            //{
-                            //    patchData.
-                            //};
-
-                            //await _unitOfWork.Articles.PatchAsync(articleId, article.Rate, rateResult);
+                            await _unitOfWork.Articles.PatchAsync(articleId, patchList);
+                            await _unitOfWork.Commit();
                         }
                     }
                 }
 
                 //var entity = await _unitOfWork.Articles.GetByIdAsync(articleId);
                 //_unitOfWork.Articles.Update(entity);
-
-
-                await _unitOfWork.Commit();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw;
+                throw new ArgumentException(nameof(articleId));
             }
         }
 
-        private double? AfinnComparer(List<Lemma> listLemmas)
+        private double? CompareArticleWithAfinnDictionary(List<Lemma> listLemmas)
         {
             using (var stream = new StreamReader(@"D:\IT\GitHub_Projects\NewsAggregator\NewsAggregator.Business\ServicesImplementations\AFINN-ru.json"))
             {
@@ -312,24 +307,27 @@ namespace NewsAggregator.Business.ServicesImplementations
                 var afinnDictionary = JsonConvert.DeserializeObject<Dictionary<string, int>>(afinnData);
 
                 int amountOfEvaluatedWords = 0;
-                int totalTextScore = 0;
+                double totalTextScore = 0;
 
-                foreach (var afinnItem in afinnDictionary)
+                if (afinnDictionary != null)
                 {
-                    for (int i = 0; i < listLemmas.Count - 1; i++)
+                    foreach (var afinnItem in afinnDictionary)
                     {
-                        if (!string.IsNullOrEmpty(listLemmas[i].Value)
-                            && afinnItem.Key == listLemmas[i].Value)
+                        for (int i = 0; i < listLemmas.Count - 1; i++)
                         {
-                            amountOfEvaluatedWords++;
-                            totalTextScore += afinnItem.Value;
+                            if (!string.IsNullOrEmpty(listLemmas[i].Value)
+                                && afinnItem.Key == listLemmas[i].Value)
+                            {
+                                amountOfEvaluatedWords++;
+                                totalTextScore += afinnItem.Value;
+                            }
                         }
                     }
                 }
 
                 if (amountOfEvaluatedWords != 0)
                 {
-                    return (totalTextScore / amountOfEvaluatedWords);
+                    return Math.Round((totalTextScore / amountOfEvaluatedWords), 2);
                 }
 
                 return 0;

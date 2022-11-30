@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using NewsAggregator.Core.Abstractions;
 using NewsAggregator.Core.DataTransferObjects;
 using NewsAggregatorAspNetCore.Models;
+using Serilog;
 using System.Security.Claims;
 
 namespace NewsAggregatorAspNetCore.Controllers
@@ -32,9 +33,10 @@ namespace NewsAggregatorAspNetCore.Controllers
             {
                 return View();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
+                return BadRequest();
             }
         }
 
@@ -56,22 +58,24 @@ namespace NewsAggregatorAspNetCore.Controllers
                     return View();
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
+                return BadRequest();
             }
         }
 
         [HttpGet]
-        public async Task<IActionResult> Register()
+        public IActionResult Register()
         {
             try
             {
                 return View();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
+                return BadRequest();
             }
         }
 
@@ -101,10 +105,10 @@ namespace NewsAggregatorAspNetCore.Controllers
 
                 return View(model);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
-                //return StatusCode(500);
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
+                return StatusCode(500);
             }
         }
 
@@ -117,27 +121,29 @@ namespace NewsAggregatorAspNetCore.Controllers
 
                 return RedirectToAction("Index", "Home");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
+                return StatusCode(500);
             }
         }
 
         [HttpGet]
-        public async Task<IActionResult> Reset()
+        public IActionResult Reset()
         {
             try
             {
                 return View();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
+                return StatusCode(500);
             }
         }
 
         [HttpPost]
-        public async Task<IActionResult> Reset(LoginModel model)
+        public IActionResult Reset(LoginModel model)
         {
             try
             {
@@ -153,24 +159,24 @@ namespace NewsAggregatorAspNetCore.Controllers
             }
             catch (Exception ex)
             {
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
                 return StatusCode(500);
             }
         }
 
         [HttpPost]
-        public async Task<IActionResult> ResetError()
+        public IActionResult ResetError()
         {
             try
             {
                 return View();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
+                return StatusCode(500);
             }
         }
-
-
         public async Task<IActionResult> CheckEmail(string email)
         {
             try
@@ -184,12 +190,12 @@ namespace NewsAggregatorAspNetCore.Controllers
 
                 return Ok(true);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
+                return StatusCode(500);
             }
         }
-
 
         //[HttpPost]
         //public IActionResult CheckEmail(string email)
@@ -202,10 +208,9 @@ namespace NewsAggregatorAspNetCore.Controllers
         //    return Ok(true);
         //}
 
-
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> GetUserData()
+        public IActionResult GetUserData()
         {
             try
             {
@@ -220,9 +225,10 @@ namespace NewsAggregatorAspNetCore.Controllers
 
                 return Ok(user);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
+                return StatusCode(500);
             }
         }
 
@@ -239,14 +245,15 @@ namespace NewsAggregatorAspNetCore.Controllers
 
                 return Ok(false);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
+                return StatusCode(500);
             }
         }
 
         [HttpGet]
-        public async Task<IActionResult> UserLoginPreview()
+        public IActionResult UserLoginPreview()
         {
             try
             {
@@ -264,9 +271,10 @@ namespace NewsAggregatorAspNetCore.Controllers
 
                 return View();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
+                return StatusCode(500);
             }
         }
 
@@ -277,10 +285,10 @@ namespace NewsAggregatorAspNetCore.Controllers
                 var userDto = _userService.GetUserByEmailAsync(email);
 
                 var claims = new List<Claim>()
-            {
-                new Claim(ClaimsIdentity.DefaultNameClaimType, userDto.Email),
-                new Claim(ClaimsIdentity.DefaultRoleClaimType, userDto.RoleName)
-            };
+                {
+                    new Claim(ClaimsIdentity.DefaultNameClaimType, userDto.Email),
+                    new Claim(ClaimsIdentity.DefaultRoleClaimType, userDto.RoleName)
+                };
 
                 //create instance, which describes the user based on the claims that were created
                 var identity = new ClaimsIdentity(claims,
@@ -294,9 +302,9 @@ namespace NewsAggregatorAspNetCore.Controllers
                     .AuthenticationScheme,
                     new ClaimsPrincipal(identity));
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
             }
         }
     }

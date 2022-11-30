@@ -14,18 +14,26 @@ namespace NewsAggregatorAspNetCore.Controllers
     //[Authorize(Roles = "User")]
     public class ArticleController : Controller
     {
-        private int _pageSize = 20;
+        private readonly int _pageSize = 20;
         private readonly IArticleService _articleService;
         private readonly IRssService _rssService;
         private readonly IMapper _mapper;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ArticleController"/> class.
+        /// </summary>
+        /// <param name="articleService"></param>
+        /// <param name="rssService"></param>
+        /// <param name="mapper"></param>
         public ArticleController(IArticleService articleService,
             IRssService rssService,
             IMapper mapper)
         {
             _articleService = articleService;
+            _rssService = rssService;
             _mapper = mapper;
         }
+
         public async Task<IActionResult> Index(int page)
         {
             try
@@ -42,12 +50,13 @@ namespace NewsAggregatorAspNetCore.Controllers
                     throw new ArgumentException(nameof(page));
                 }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Log.Error($"{e.Message}. {Environment.NewLine} {e.StackTrace}");
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
                 return BadRequest();
             }
         }
+
         public async Task<IActionResult> Details(Guid id)
         {
             try
@@ -61,11 +70,10 @@ namespace NewsAggregatorAspNetCore.Controllers
 
                 return NotFound();
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                throw;
-                //Log.Error($"{e.Message}. {Environment.NewLine} {e.StackTrace}");
-                //return RedirectToAction("Error", "Internal");
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
+                return RedirectToAction("Error", "Internal");
             }
         }
 
@@ -75,8 +83,6 @@ namespace NewsAggregatorAspNetCore.Controllers
         {
             try
             {
-                //var model = new CreateArticleModel();
-
                 //var sources = await _sourceService.GetSourcesAsync();
 
                 //model.Sources = sources
@@ -87,11 +93,13 @@ namespace NewsAggregatorAspNetCore.Controllers
 
                 //return View(model);
 
+                //await _articleService.CreateArticleAsync(articleDto);
                 return View();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
+                return BadRequest();
             }
         }
 
@@ -117,8 +125,8 @@ namespace NewsAggregatorAspNetCore.Controllers
             }
             catch (Exception ex)
             {
-                Log.Error(ex, ex.Message);
-                return StatusCode(500);
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
+                return BadRequest();
             }
         }
 
@@ -143,9 +151,10 @@ namespace NewsAggregatorAspNetCore.Controllers
 
                 return BadRequest();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
+                return BadRequest();
             }
         }
 
@@ -158,10 +167,7 @@ namespace NewsAggregatorAspNetCore.Controllers
                 if (model != null)
                 {
                     var dto = _mapper.Map<ArticleDto>(model);
-
                     await _articleService.UpdateArticleAsync(model.Id, dto);
-
-                    //await _articleService.CreateArticleAsync(dto);
 
                     return RedirectToAction("Index", "Article");
                 }
@@ -172,8 +178,8 @@ namespace NewsAggregatorAspNetCore.Controllers
             }
             catch (Exception ex)
             {
-                Log.Error(ex, ex.Message);
-                return StatusCode(500);
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
+                return BadRequest();
             }
         }
     }

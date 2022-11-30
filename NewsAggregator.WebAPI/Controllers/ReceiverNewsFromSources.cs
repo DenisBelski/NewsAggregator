@@ -46,8 +46,8 @@ namespace NewsAggregator.WebAPI.Controllers
 
                 foreach (var source in sources)
                 {
-                    await _rssService.GetAllArticleDataFromOnlinerRssAsync();
-                    await _articleService.AddArticleTextToArticlesAsync();
+                    await _rssService.GetAllArticleDataFromRssAsync();
+                    await _articleService.AddArticleTextToArticlesFromOnlinerAsync();
                 }
 
                 return Ok();

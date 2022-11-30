@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NewsAggregatorAspNetCore.Filters;
 using NewsAggregatorAspNetCore.Models;
+using Serilog;
 using System.Diagnostics;
 
 namespace NewsAggregatorAspNetCore.Controllers
@@ -21,9 +22,10 @@ namespace NewsAggregatorAspNetCore.Controllers
             {
                 return View();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
+                return BadRequest();
             }
         }
 
@@ -33,9 +35,10 @@ namespace NewsAggregatorAspNetCore.Controllers
             {
                 return View();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
+                return BadRequest();
             }
         }
 

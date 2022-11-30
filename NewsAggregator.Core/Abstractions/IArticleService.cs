@@ -8,12 +8,8 @@ namespace NewsAggregator.Core.Abstractions
         Task<int> CreateArticleAsync(ArticleDto dto);
         Task<int> UpdateArticleAsync(Guid id, ArticleDto? patchList);
         Task<List<ArticleDto>> GetArticlesByPageNumberAndPageSizeAsync(int pageNumber, int pageSize);
-
-
-        Task AddArticleTextToArticlesAsync();
-
-        // for WebAPI
-        Task<List<ArticleDto>> GetArticlesByNameAndSourcesAsync(string? name, Guid? category);
+        Task AddArticleTextToArticlesFromOnlinerAsync();
+        Task<List<ArticleDto>> GetArticlesByNameAndSourcesAsync(string? name, Guid? id);
         Task DeleteArticleAsync(Guid id);
         Task AggregateArticlesFromExternalSourcesAsync();
         Task AddRateToArticlesAsync();
