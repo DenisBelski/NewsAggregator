@@ -46,6 +46,10 @@ namespace NewsAggregator.Business.ServicesImplementations
                 .AnyAsync(user => user.Email.Equals(email));
         }
 
+        public async Task<IEnumerable<UserDto>> GetAllUsers()
+        {
+            return (await _unitOfWork.Users.GetAllAsync()).Select(user => _mapper.Map<UserDto>(user)).ToArray();
+        }
 
         // get user as entity, with his role
         //public async Task<UserDto> GetUserByEmailAsync(string email)

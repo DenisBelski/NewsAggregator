@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using NewsAggregator.Core.DataTransferObjects;
 using NewsAggregator.DataBase.Entities;
+using NewsAggregator.WebAPI.Models.Requests;
 
 namespace NewsAggregator.WebAPI.MappingProfiles
 {
@@ -18,7 +19,7 @@ namespace NewsAggregator.WebAPI.MappingProfiles
                 .ForMember(ent => ent.RegistrationDate,
                     opt => opt.MapFrom(dto => DateTime.Now));
 
-            //CreateMap<RegisterUserRequestModel, UserDto>();
+            CreateMap<RegisterUserRequestModel, UserDto>();
         }
     }
 }

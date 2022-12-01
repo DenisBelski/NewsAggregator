@@ -1,6 +1,8 @@
 using Hangfire;
 using Hangfire.SqlServer;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using NewsAggregator.Business.ServicesImplementations;
 using NewsAggregator.Core.Abstractions;
 using NewsAggregator.Data.Abstractions;
@@ -9,8 +11,10 @@ using NewsAggregator.Data.Repositories;
 using NewsAggregator.Data.Repositories.Implementations;
 using NewsAggregator.DataBase;
 using NewsAggregator.DataBase.Entities;
+using NewsAggregator.WebAPI.Utils;
 using Serilog;
 using Serilog.Events;
+using System.Text;
 
 namespace NewsAggregator.WebAPI
 {
@@ -61,8 +65,6 @@ namespace NewsAggregator.WebAPI
             // Add the processing server as IHostedService
             builder.Services.AddHangfireServer();
 
-
-
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
             builder.Services.AddScoped<IArticleService, ArticleService>();
@@ -75,42 +77,49 @@ namespace NewsAggregator.WebAPI
             builder.Services.AddScoped<IGenericRepository<User>, GenericRepository<User>>();
             builder.Services.AddScoped<IGenericRepository<Role>, GenericRepository<Role>>();
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-
-
-
+            builder.Services.AddScoped<IJwtUtil, JwtUtilSha256>();
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(options =>
-            {
-                options.IncludeXmlComments(builder.Configuration["XmlDoc"]);
-            });
+                {
+                    options.IncludeXmlComments(builder.Configuration["XmlDoc"]);
+                });
+
+            builder.Services
+                .AddAuthentication(options =>
+                {
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                })
+                .AddJwtBearer(opt =>
+                {
+                    opt.RequireHttpsMetadata = false;
+                    opt.SaveToken = true;
+                    opt.TokenValidationParameters = new TokenValidationParameters()
+                    {
+                        ValidIssuer = builder.Configuration["Token:Issuer"],
+                        ValidAudience = builder.Configuration["Token:Issuer"],
+                        IssuerSigningKey =
+                            new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Token:JwtSecret"])),
+                        ClockSkew = TimeSpan.Zero
+                    };
+                });
 
             var app = builder.Build();
 
-
-
-
             app.UseStaticFiles();
             app.UseHangfireDashboard();
-
-
-
-
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
-
-            //app.UseSwagger();
-            //app.UseSwaggerUI();
-            //app.MapHangfireDashboard();
-
-            app.MapHangfireDashboard();
+            app.UseRouting();
 
             app.UseHttpsRedirection();
+
+            app.UseSwagger();
+            app.UseSwaggerUI();
+            app.MapHangfireDashboard();
+
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllers();

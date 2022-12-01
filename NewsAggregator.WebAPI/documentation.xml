@@ -9,6 +9,15 @@
             Controller for work with articles
             </summary>
         </member>
+        <member name="M:NewsAggregator.WebAPI.Controllers.ArticlesController.#ctor(NewsAggregator.Core.Abstractions.IArticleService,NewsAggregator.Core.Abstractions.ISourceService,NewsAggregator.Core.Abstractions.IRssService,AutoMapper.IMapper)">
+            <summary>
+            Initializes a new instance of the <see cref="T:NewsAggregator.WebAPI.Controllers.ArticlesController"/> class
+            </summary>
+            <param name="articleService"></param>
+            <param name="sourceService"></param>
+            <param name="rssService"></param>
+            <param name="mapper"></param>
+        </member>
         <member name="M:NewsAggregator.WebAPI.Controllers.ArticlesController.GetArticleById(System.Guid)">
             <summary>
             Get article from storage with specified id
@@ -73,6 +82,26 @@
             <summary>
             Controller for work with sources
             </summary>
+        </member>
+        <member name="M:NewsAggregator.WebAPI.Controllers.TokenController.CreateJwtToken(NewsAggregator.WebAPI.Models.Requests.LoginUserRequestModel)">
+            <summary>
+            Register user
+            </summary>
+            <param name="request"></param>
+            <returns></returns>
+        </member>
+        <member name="M:NewsAggregator.WebAPI.Controllers.UserController.Get">
+            <summary>
+            Get all register users
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:NewsAggregator.WebAPI.Controllers.UserController.Create(NewsAggregator.WebAPI.Models.Requests.RegisterUserRequestModel)">
+            <summary>
+            Register user.
+            </summary>
+            <param name="request">Contains user email, password and password confirmation.</param>
+            <returns></returns>
         </member>
         <member name="T:NewsAggregator.WebAPI.Models.Requests.AddOrUpdateArticleRequestModel">
             <summary>

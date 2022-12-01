@@ -10,8 +10,7 @@ public interface IUserService
     Task<bool> CheckUserPassword(Guid userId, string password);
     Task<int> RegisterUser(UserDto dto, string password);
     UserDto? GetUserByEmailAsync(string email);
-
-    //Task<IEnumerable<UserDto>> GetAllUsers();
+    Task<IEnumerable<UserDto>> GetAllUsers();
     //Task<UserDto?> GetUserByRefreshTokenAsync(Guid token);
 
 }

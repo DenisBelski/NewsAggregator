@@ -23,13 +23,12 @@
             <label for="password-confirmation" class="form-label">Password confirmation</label>
             <input type="password" asp-for="PasswordConfirmation" class="form-control" id="password-confirmation">
         </div>
-
-        <input type="submit" class="btn btn-primary" value="Create account">
+        <br />
+        <input type="submit" class="btn btn-primary" value="Sign up">
     </form>
 </div>
 
 
-@* Подключаем скрипты для клиентской валидации*@
 @section Scripts
 {
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>

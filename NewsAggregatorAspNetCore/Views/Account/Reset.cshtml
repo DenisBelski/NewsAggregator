@@ -15,7 +15,13 @@
             <input asp-for="Email" type="email" class="form-control" id="email">
             <span asp-validation-for="Email" class="text-danger"></span>
         </div>
-
-         <input type="submit" class="btn btn-primary" value="Send reset link">
+        <br />
+        <input type="submit" class="btn btn-primary" value="Send reset link">
+        <div class="reset_email">
+            <br />
+            <label for="email" class="form-label">OR</label>
+            <br />
+            <a href="~/account/register">Create a new account</a>    
+        </div>
     </form>
 </div>
