@@ -12,7 +12,7 @@ namespace NewsAggregator.WebAPI.Controllers
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
-    public class ReceiverNewsFromSources : ControllerBase
+    public class ArticlesDownloadController : ControllerBase
     {
 
         private readonly IArticleService _articleService;
@@ -21,7 +21,7 @@ namespace NewsAggregator.WebAPI.Controllers
         private readonly IMapper _mapper;
 
 
-        public ReceiverNewsFromSources(IArticleService articleService,
+        public ArticlesDownloadController(IArticleService articleService,
             ISourceService sourceService,
             IRssService rssService,
             IMapper mapper)
@@ -42,21 +42,27 @@ namespace NewsAggregator.WebAPI.Controllers
         {
             try
             {
-                var sources = await _sourceService.GetSourcesAsync();
+                //var sources = await _sourceService.GetSourcesAsync();
 
-                foreach (var source in sources)
-                {
-                    await _rssService.GetAllArticleDataFromRssAsync();
-                    await _articleService.AddArticleTextToArticlesFromOnlinerAsync();
-                }
+                //foreach (var source in sources)
+                //{
+                //    await _rssService.GetAllArticleDataFromRssAsync();
+                //    await _articleService.AddArticleTextToArticlesFromOnlinerAsync();
+                //}
 
-                return Ok();
 
                 //RecurringJob.AddOrUpdate(() => _articleService.AggregateArticlesFromExternalSourcesAsync(), "5,10,35 10-18 * * Mon-Fri");
+
                 //Remove created jobs
                 //RecurringJob.RemoveIfExists(nameof(_articleService.AggregateArticlesFromExternalSourcesAsync));
-                //RecurringJob.AddOrUpdate(()=>_articleService.GetAllArticleDataFromRssAsync(), "*/15 * * * *");
-                //RecurringJob.AddOrUpdate(()=>_articleService.AddArticleTextToArticlesAsync(), "*/30 * * * *");
+
+                RecurringJob.RemoveIfExists(nameof(_rssService.GetAllArticleDataFromRssAsync));
+                RecurringJob.RemoveIfExists(nameof(_articleService.AddArticleTextToArticlesFromOnlinerAsync));
+
+                RecurringJob.AddOrUpdate(() => _rssService.GetAllArticleDataFromRssAsync(), "15 */12 * * *");
+                RecurringJob.AddOrUpdate(() => _articleService.AddArticleTextToArticlesFromOnlinerAsync(), "15 */12 * * *");
+
+                return Ok();
             }
             catch (Exception ex)
             {

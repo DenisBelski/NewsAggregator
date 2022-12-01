@@ -55,28 +55,28 @@
             <param name="id">Id of article</param>
             <returns></returns>
         </member>
-        <member name="T:NewsAggregator.WebAPI.Controllers.CommentsController">
-            <summary>
-            Controller for working with comments to articles
-            </summary>
-        </member>
-        <member name="T:NewsAggregator.WebAPI.Controllers.ReceiverNewsFromSources">
+        <member name="T:NewsAggregator.WebAPI.Controllers.ArticlesDownloadController">
             <summary>
             Controller for getting articles from resources
             </summary>
         </member>
-        <member name="M:NewsAggregator.WebAPI.Controllers.ReceiverNewsFromSources.AddArticles(NewsAggregator.WebAPI.Models.Requests.AddOrUpdateArticleRequestModel)">
+        <member name="M:NewsAggregator.WebAPI.Controllers.ArticlesDownloadController.AddArticles(NewsAggregator.WebAPI.Models.Requests.AddOrUpdateArticleRequestModel)">
             <summary>
             Add texts of articles from sources to the storage
             </summary>
             <param name="model">Contains article title, category, short summary and text</param>
             <returns></returns>
         </member>
-        <member name="M:NewsAggregator.WebAPI.Controllers.ReceiverNewsFromSources.RateArticles">
+        <member name="M:NewsAggregator.WebAPI.Controllers.ArticlesDownloadController.RateArticles">
             <summary>
             Get articles with rate
             </summary>
             <returns></returns>
+        </member>
+        <member name="T:NewsAggregator.WebAPI.Controllers.CommentsController">
+            <summary>
+            Controller for working with comments to articles
+            </summary>
         </member>
         <member name="T:NewsAggregator.WebAPI.Controllers.SoursesController">
             <summary>

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using HtmlAgilityPack;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using NewsAggregator.Business.Models;
@@ -7,6 +8,8 @@ using NewsAggregator.Core;
 using NewsAggregator.Core.Abstractions;
 using NewsAggregator.Core.DataTransferObjects;
 using NewsAggregator.Data.Abstractions;
+using NewsAggregator.Data.CQS.Commands;
+using NewsAggregator.Data.CQS.Queries;
 using NewsAggregator.DataBase;
 using NewsAggregator.DataBase.Entities;
 using Newtonsoft.Json;
@@ -22,16 +25,19 @@ namespace NewsAggregator.Business.ServicesImplementations
         private readonly IConfiguration _configuration;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IRssService _rssService;
+        private readonly IMediator _mediator;
 
         public ArticleService(IMapper mapper,
             IConfiguration configuration, 
             IUnitOfWork unitOfWork,
-            IRssService rssService)
+            IRssService rssService,
+            IMediator mediator)
         {
             _mapper = mapper;
             _configuration = configuration;
             _unitOfWork = unitOfWork;
             _rssService = rssService;
+            _mediator = mediator;
         }
 
         public async Task<ArticleDto> GetArticleByIdAsync(Guid id)
@@ -40,6 +46,9 @@ namespace NewsAggregator.Business.ServicesImplementations
             var dto = _mapper.Map<ArticleDto>(entity);
 
             return dto;
+
+            //var dto = _mapper.Map<ArticleDto>(await _mediator.Send(new GetArticleByIdQuery() { Id = id }));
+            //return dto;
         }
 
         public async Task<int> CreateArticleAsync(ArticleDto dto)
@@ -169,29 +178,34 @@ namespace NewsAggregator.Business.ServicesImplementations
 
         public async Task AddArticleTextToArticlesFromOnlinerAsync()
         {
-            var articlesWithEmptyTextIds = _unitOfWork.Articles
-                .Get()
-                .Where(article => string.IsNullOrEmpty(article.ArticleText))
-                .Select(article => article.Id)
-                .ToList();
+            //var articlesWithEmptyTextIds = _unitOfWork.Articles
+            //    .Get()
+            //    .Where(article => string.IsNullOrEmpty(article.ArticleText))
+            //    .Select(article => article.Id)
+            //    .ToList();
+            //foreach (var articleId in articlesWithEmptyTextIds)
+            //{
+            //    await AddArticleTextToArticleFromOnlinerAsync(articleId);
+            //}
 
-            //var articlesWithEmptyTextIds = await _mediator.Send(new GetAllArticlesWithoutTextIdsQuery());
-            //if (articlesWithEmptyTextIds != null)
+            var articlesWithEmptyTextIds = await _mediator.Send(new GetAllArticlesWithoutTextIdsQuery());
 
-            foreach (var articleId in articlesWithEmptyTextIds)
+            if (articlesWithEmptyTextIds != null)
             {
-                await AddArticleTextToArticleFromOnlinerAsync(articleId);
+                foreach (var articleId in articlesWithEmptyTextIds)
+                {
+                    await AddArticleTextToArticleFromOnlinerAsync(articleId);
+                }
             }
         }
 
-        //Naming example - "AddArticleTextToOnlinerArticleAsync", will be unique for every source
         private async Task AddArticleTextToArticleFromOnlinerAsync(Guid articleId)
         {
             try
             {
-                var article = await _unitOfWork.Articles.GetByIdAsync(articleId);
+                //var article = await _unitOfWork.Articles.GetByIdAsync(articleId);
 
-                //var article = await _mediator.Send(new GetArticleByIdQuery { Id = articleId });
+                var article = await _mediator.Send(new GetArticleByIdQuery { Id = articleId });
 
                 if (article == null)
                 {
@@ -231,10 +245,10 @@ namespace NewsAggregator.Business.ServicesImplementations
                         .Select(node => node.InnerText)                            // or => node.InnerText node.OuterHtml/InnerHtml
                         .Aggregate((i, j) => i + Environment.NewLine + j);
 
-                    await _unitOfWork.Articles.UpdateArticleTextAsync(articleId, articleText);
-                    await _unitOfWork.Commit();
+                    //await _unitOfWork.Articles.UpdateArticleTextAsync(articleId, articleText);
+                    //await _unitOfWork.Commit();
 
-                    //await _mediator.Send(new UpdateArticleTextCommand() { Id = articleId, Text = articleText });
+                    await _mediator.Send(new UpdateArticleTextCommand() { Id = articleId, Text = articleText });
                 }
             }
             catch (Exception)

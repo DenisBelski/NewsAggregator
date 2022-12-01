@@ -19,8 +19,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="11.0.1" />
+    <PackageReference Include="AutoMapper" Version="12.0.0" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
+    <PackageReference Include="MediatR" Version="11.1.0" />
+    <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
     <PackageReference Include="System.ServiceModel.Syndication" Version="7.0.0" />
   </ItemGroup>
@@ -28,6 +30,7 @@
   <ItemGroup>
     <ProjectReference Include="..\NewsAggregator.Core\NewsAggregator.Core.csproj" />
     <ProjectReference Include="..\NewsAggregator.Data.Abstractions\NewsAggregator.Data.Abstractions.csproj" />
+    <ProjectReference Include="..\NewsAggregator.Data.CQS\NewsAggregator.Data.CQS.csproj" />
     <ProjectReference Include="..\NewsAggregator.DataBase\NewsAggregator.DataBase.csproj" />
   </ItemGroup>
 

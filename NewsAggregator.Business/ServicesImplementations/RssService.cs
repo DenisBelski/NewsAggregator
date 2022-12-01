@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using NewsAggregator.Core.Abstractions;
 using NewsAggregator.Core.DataTransferObjects;
 using NewsAggregator.Data.Abstractions;
+using NewsAggregator.Data.CQS.Commands;
 using NewsAggregator.DataBase;
 using NewsAggregator.DataBase.Entities;
 using System.ServiceModel.Syndication;
@@ -16,12 +18,15 @@ namespace NewsAggregator.Business.ServicesImplementations
     {
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMediator _mediator;
 
         public RssService(IMapper mapper,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            IMediator mediator)
         {
             _mapper = mapper;
             _unitOfWork = unitOfWork;
+            _mediator = mediator;
         }
 
         public async Task GetAllArticleDataFromRssAsync()
@@ -61,22 +66,19 @@ namespace NewsAggregator.Business.ServicesImplementations
                     }
                 }
 
-                var oldArticleUrls = await _unitOfWork.Articles.Get()
-                    .Select(article => article.SourceUrl)
-                    .Distinct()
-                    .ToListAsync();
+                //var oldArticleUrls = await _unitOfWork.Articles.Get()
+                //    .Select(article => article.SourceUrl)
+                //    .Distinct()
+                //    .ToListAsync();
 
-                var entities = list.Where(dto => !oldArticleUrls.Contains(dto.SourceUrl))
-                    .Select(dto => _mapper.Map<Article>(dto))
-                    .ToList();
+                //var entities = list.Where(dto => !oldArticleUrls.Contains(dto.SourceUrl))
+                //    .Select(dto => _mapper.Map<Article>(dto))
+                //    .ToList();
 
-                //var entities = list.Select(dto => _mapper.Map<Article>(dto));
+                //await _unitOfWork.Articles.AddRangeAsync(entities);
+                //await _unitOfWork.Commit();
 
-                await _unitOfWork.Articles.AddRangeAsync(entities);
-                await _unitOfWork.Commit();
-
-                //await _mediator.Send(new AddArticleDataFromRssFeedCommand()
-                //{ Articles = list });
+                await _mediator.Send(new AddArticleDataFromRssFeedCommand() { Articles = list });
             }
         }
     }

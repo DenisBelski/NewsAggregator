@@ -5,9 +5,9 @@ using NewsAggregator.DataBase.Entities;
 
 namespace NewsAggregator.Data.Repositories.Implementations
 {
-    public class AdditionalArticleRepository : GenericRepository<Article>, IAdditionalArticleRepository
+    public class ArticleRepository : Repository<Article>, IArticleRepository
     {
-        public AdditionalArticleRepository(NewsAggregatorContext database)
+        public ArticleRepository(NewsAggregatorContext database)
             : base(database)
         {
         }

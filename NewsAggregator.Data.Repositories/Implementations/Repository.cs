@@ -7,13 +7,13 @@ using System.Linq.Expressions;
 
 namespace NewsAggregator.Data.Repositories.Implementations
 {
-    public class GenericRepository<T> : IGenericRepository<T>
+    public class Repository<T> : IRepository<T>
         where T : class, IBaseEntity
     {
         protected readonly NewsAggregatorContext Database;
         protected readonly DbSet<T> DbSet;
 
-        public GenericRepository(NewsAggregatorContext database)
+        public Repository(NewsAggregatorContext database)
         {
             Database = database;
             DbSet = database.Set<T>();

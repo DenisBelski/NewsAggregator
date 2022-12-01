@@ -1,5 +1,6 @@
 using Hangfire;
 using Hangfire.SqlServer;
+using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -7,6 +8,7 @@ using NewsAggregator.Business.ServicesImplementations;
 using NewsAggregator.Core.Abstractions;
 using NewsAggregator.Data.Abstractions;
 using NewsAggregator.Data.Abstractions.Repositories;
+using NewsAggregator.Data.CQS.Commands;
 using NewsAggregator.Data.Repositories;
 using NewsAggregator.Data.Repositories.Implementations;
 using NewsAggregator.DataBase;
@@ -60,24 +62,24 @@ namespace NewsAggregator.WebAPI
                         DisableGlobalLocks = true,
                     }));
 
-
-
             // Add the processing server as IHostedService
             builder.Services.AddHangfireServer();
-
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-            builder.Services.AddScoped<IArticleService, ArticleService>();
-            builder.Services.AddScoped<ISourceService, SourceService>();
-            builder.Services.AddScoped<IRssService, RssService>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IRoleService, RoleService>();
-            builder.Services.AddScoped<IAdditionalArticleRepository, AdditionalArticleRepository>();
-            builder.Services.AddScoped<IGenericRepository<Source>, GenericRepository<Source>>();
-            builder.Services.AddScoped<IGenericRepository<User>, GenericRepository<User>>();
-            builder.Services.AddScoped<IGenericRepository<Role>, GenericRepository<Role>>();
+            builder.Services.AddScoped<IRssService, RssService>();
+            builder.Services.AddScoped<ISourceService, SourceService>();
+            builder.Services.AddScoped<IArticleService, ArticleService>();
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            builder.Services.AddScoped<IRepository<User>, Repository<User>>();
+            builder.Services.AddScoped<IRepository<Role>, Repository<Role>>();
+            builder.Services.AddScoped<IRepository<Source>, Repository<Source>>();
+            builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
             builder.Services.AddScoped<IJwtUtil, JwtUtilSha256>();
+
+            builder.Services.AddMediatR(typeof(AddArticleDataFromRssFeedCommand).Assembly);
+            builder.Services.AddMediatR(typeof(UpdateArticleTextCommand).Assembly);
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();

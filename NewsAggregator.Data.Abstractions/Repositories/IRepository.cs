@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 
 namespace NewsAggregator.Data.Abstractions.Repositories
 {
-    public interface IGenericRepository<T> where T : IBaseEntity
+    public interface IRepository<T> where T : IBaseEntity
     {
         //READ
         Task<T?> GetByIdAsync(Guid id);

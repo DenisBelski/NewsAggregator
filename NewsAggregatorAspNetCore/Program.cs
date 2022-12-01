@@ -1,5 +1,6 @@
 using Hangfire;
 using Hangfire.SqlServer;
+using MediatR;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using NewsAggregator.Business.ServicesImplementations;
@@ -90,23 +91,20 @@ namespace NewsAggregatorAspNetCore
 
             // Add the processing server as IHostedService
             builder.Services.AddHangfireServer();
-
-
-
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-            
 
-            
-            builder.Services.AddScoped<IArticleService, ArticleService>();
-            builder.Services.AddScoped<ISourceService, SourceService>();
-            builder.Services.AddScoped<IRssService, RssService>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IRoleService, RoleService>();
-            builder.Services.AddScoped<IAdditionalArticleRepository, AdditionalArticleRepository>();
-            builder.Services.AddScoped<IGenericRepository<Source>, GenericRepository<Source>>();
-            builder.Services.AddScoped<IGenericRepository<User>, GenericRepository<User>>();
-            builder.Services.AddScoped<IGenericRepository<Role>, GenericRepository<Role>>();
+            builder.Services.AddScoped<IRssService, RssService>();
+            builder.Services.AddScoped<ISourceService, SourceService>();
+            builder.Services.AddScoped<IArticleService, ArticleService>();
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            builder.Services.AddScoped<IRepository<User>, Repository<User>>();
+            builder.Services.AddScoped<IRepository<Role>, Repository<Role>>();
+            builder.Services.AddScoped<IRepository<Source>, Repository<Source>>();
+            builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
+
+            builder.Services.AddMediatR(AppDomain.CurrentDomain.GetAssemblies());
             //builder.Services.AddScoped<ArticleCheckerActionFilter>();
 
             var app = builder.Build();
