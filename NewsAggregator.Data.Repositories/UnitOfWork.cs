@@ -10,14 +10,14 @@ public class UnitOfWork : IUnitOfWork
     private readonly NewsAggregatorContext _database;
 
     public IArticleRepository Articles { get; }
-    public IRepository<Source> Sources { get; }
-    public IRepository<User> Users { get; }
+    public ISourceRepository Sources { get; }
+    public IUserRepository Users { get; }
     public IRepository<Role> Roles { get; }
 
     public UnitOfWork(NewsAggregatorContext database,
         IArticleRepository articleRepository,
-        IRepository<Source> sourceRepository, 
-        IRepository<User> users, 
+        ISourceRepository sourceRepository,
+        IUserRepository users, 
         IRepository<Role> roles)
     {
         _database = database;

@@ -6,19 +6,14 @@ using NewsAggregator.DataBase.Entities;
 
 namespace NewsAggregator.Data.Repositories.Implementations
 {
-    public class ArticleRepository : Repository<Article>, IArticleRepository
+    public class UserRepository : Repository<User>, IUserRepository
     {
-        public ArticleRepository(NewsAggregatorContext database)
+        public UserRepository(NewsAggregatorContext database)
             : base(database)
         {
         }
 
-        public async Task AddRangeArticlesAsync(IEnumerable<Article> articles)
-        {
-            await DbSet.AddRangeAsync(articles);
-        }
-
-        public async Task PatchArticleAsync(Guid id, List<PatchModel> patchData)
+        public async Task PatchUserAsync(Guid id, List<PatchModel> patchData)
         {
             var model = await DbSet.FirstOrDefaultAsync(entity => entity.Id.Equals(id));
 
@@ -35,15 +30,9 @@ namespace NewsAggregator.Data.Repositories.Implementations
             }
         }
 
-        public async Task UpdateArticleTextAsync(Guid id, string text)
+        public void RemoveUser(User user)
         {
-            var article = await DbSet
-                .FirstOrDefaultAsync(currentArticle => currentArticle.Id.Equals(id));
-
-            if (article != null)
-            {
-                article.ArticleText = text;
-            }
+            DbSet.Remove(user);
         }
     }
 }

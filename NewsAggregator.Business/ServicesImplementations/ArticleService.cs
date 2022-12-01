@@ -135,23 +135,6 @@ namespace NewsAggregator.Business.ServicesImplementations
             return result;
         }
 
-        //It is not allowed to delete an article
-        public async Task DeleteArticleAsync(Guid id)
-        {
-            var entity = await _unitOfWork.Articles.GetByIdAsync(id);
-
-            if (entity != null)
-            {
-                _unitOfWork.Articles.Remove(entity);
-
-                await _unitOfWork.Commit();
-            }
-            else
-            {
-                throw new ArgumentException("Article for removing doesn't exist", nameof(id));
-            }
-        }
-
         public async Task AggregateArticlesFromExternalSourcesAsync()
         {
             var sources = await _unitOfWork.Sources.GetAllAsync();
@@ -298,7 +281,7 @@ namespace NewsAggregator.Business.ServicesImplementations
                                 }
                             };
 
-                            await _unitOfWork.Articles.PatchAsync(articleId, patchList);
+                            await _unitOfWork.Articles.PatchArticleAsync(articleId, patchList);
                             await _unitOfWork.Commit();
                         }
                     }

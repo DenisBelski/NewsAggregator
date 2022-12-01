@@ -6,8 +6,8 @@ namespace NewsAggregator.Data.Abstractions;
 public interface IUnitOfWork
 {
     IArticleRepository Articles { get; }
-    IRepository<Source> Sources { get; }
-    IRepository<User> Users { get; }
+    ISourceRepository Sources { get; }
+    IUserRepository Users { get; }
     IRepository<Role> Roles { get; }
     Task<int> Commit();
 }

@@ -55,36 +55,9 @@ namespace NewsAggregator.Data.Repositories.Implementations
             await DbSet.AddAsync(entity);
         }
 
-        public virtual async Task AddRangeAsync(IEnumerable<T> entities)
-        {
-            await DbSet.AddRangeAsync(entities);
-        }
-
         public virtual void Update(T entity)
         {
             DbSet.Update(entity);
-        }
-
-        public virtual async Task PatchAsync(Guid id, List<PatchModel> patchData)
-        {
-            var model = await DbSet.FirstOrDefaultAsync(entity => entity.Id.Equals(id));
-
-            var nameValuePropertiesPairs = patchData
-                .ToDictionary(
-                    patchModel => patchModel.PropertyName,
-                    patchModel => patchModel.PropertyValue);
-
-            if (model != null)
-            {
-                var dbEntityEntry = Database.Entry(model);
-                dbEntityEntry.CurrentValues.SetValues(nameValuePropertiesPairs);
-                dbEntityEntry.State = EntityState.Modified;
-            }
-        }
-
-        public virtual void Remove(T entity)
-        {
-            DbSet.Remove(entity);
         }
     }
 }

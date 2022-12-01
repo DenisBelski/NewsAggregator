@@ -10,7 +10,6 @@ namespace NewsAggregator.Core.Abstractions
         Task<List<ArticleDto>> GetArticlesByPageNumberAndPageSizeAsync(int pageNumber, int pageSize);
         Task AddArticleTextToArticlesFromOnlinerAsync();
         Task<List<ArticleDto>> GetArticlesByNameAndSourcesAsync(string? name, Guid? id);
-        Task DeleteArticleAsync(Guid id);
         Task AggregateArticlesFromExternalSourcesAsync();
         Task AddRateToArticlesAsync();
     }
