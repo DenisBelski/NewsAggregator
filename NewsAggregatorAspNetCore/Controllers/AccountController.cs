@@ -49,9 +49,8 @@ namespace NewsAggregatorAspNetCore.Controllers
 
                 if (isPasswordCorrect)
                 {
-                    await Authenticate(model.Email);
+                    await AuthenticateAsync(model.Email);
                     return RedirectToAction("Index", "Home");
-                    //return Ok("Login Successful");
                 }
                 else
                 {
@@ -86,7 +85,6 @@ namespace NewsAggregatorAspNetCore.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    //add "User" constant to the config
                     var userRoleId = await _roleService.GetRoleIdByNameAsync("User");
                     var userDto = _mapper.Map<UserDto>(model);
 
@@ -97,7 +95,7 @@ namespace NewsAggregatorAspNetCore.Controllers
 
                         if (result > 0)
                         {
-                            await Authenticate(model.Email);
+                            await AuthenticateAsync(model.Email);
                             return RedirectToAction("Index", "Home");
                         }
                     }
@@ -150,7 +148,6 @@ namespace NewsAggregatorAspNetCore.Controllers
                 if (model.Email != null)
                 {
                     return Ok("Oops, this part of the application hasn't been created yet. Just create a new account.");
-                    //return RedirectToAction("Index", "Home");
                 }
                 else
                 {
@@ -177,6 +174,8 @@ namespace NewsAggregatorAspNetCore.Controllers
                 return StatusCode(500);
             }
         }
+
+        [HttpPost]
         public async Task<IActionResult> CheckEmail(string email)
         {
             try
@@ -197,17 +196,6 @@ namespace NewsAggregatorAspNetCore.Controllers
             }
         }
 
-        //[HttpPost]
-        //public IActionResult CheckEmail(string email)
-        //{
-        //    //check email for the existence of the same in the database:
-        //    if (email.ToLowerInvariant().Equals("test@email.com"))
-        //    {
-        //        return Ok(false);
-        //    }
-        //    return Ok(true);
-        //}
-
         [HttpGet]
         [Authorize]
         public IActionResult GetUserData()
@@ -221,7 +209,7 @@ namespace NewsAggregatorAspNetCore.Controllers
                     return BadRequest();
                 }
 
-                var user = _mapper.Map<UserDataModel>(_userService.GetUserWithRoleByEmail(userEmail));
+                var user = _mapper.Map<UserDataModel>(_userService.GetUserWithRoleByEmailAsync(userEmail));
 
                 return Ok(user);
             }
@@ -253,36 +241,29 @@ namespace NewsAggregatorAspNetCore.Controllers
         }
 
         [HttpGet]
-        public IActionResult UserLoginPreview()
+        public async Task<IActionResult> UserLoginPreviewAsync()
         {
-            try
+            if (User.Identities.Any(identity => identity.IsAuthenticated))
             {
-                if (User.Identities.Any(identity => identity.IsAuthenticated))
-                {
-                    var userEmail = User.Identity?.Name;
-                    if (string.IsNullOrEmpty(userEmail))
-                    {
-                        return BadRequest();
-                    }
+                var userEmail = User.Identity?.Name;
 
-                    var user = _mapper.Map<UserDataModel>(_userService.GetUserWithRoleByEmail(userEmail));
-                    return View(user);
+                if (string.IsNullOrEmpty(userEmail))
+                {
+                    return BadRequest();
                 }
 
-                return View();
+                var userDto = await _userService.GetUserWithRoleByEmailAsync(userEmail);
+                return View(_mapper.Map<UserDataModel>(userDto));
             }
-            catch (Exception ex)
-            {
-                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
-                return StatusCode(500);
-            }
+
+            return View();
         }
 
-        private async Task Authenticate(string email)
+        private async Task AuthenticateAsync(string email)
         {
             try
             {
-                var userDto = _userService.GetUserWithRoleByEmail(email);
+                var userDto = await _userService.GetUserWithRoleByEmailAsync(email);
 
                 var claims = new List<Claim>()
                 {
@@ -290,14 +271,11 @@ namespace NewsAggregatorAspNetCore.Controllers
                     new Claim(ClaimsIdentity.DefaultRoleClaimType, userDto.RoleName)
                 };
 
-                //create instance, which describes the user based on the claims that were created
                 var identity = new ClaimsIdentity(claims,
                     "ApplicationCookie",
                     ClaimsIdentity.DefaultNameClaimType,
                     ClaimsIdentity.DefaultRoleClaimType);
 
-                //claimsPrincipal - defines an object, which will put to theHTTPContext and to the session
-                //will assign an ID and give it to the client to write in a cookie
                 await HttpContext.SignInAsync(CookieAuthenticationDefaults
                     .AuthenticationScheme,
                     new ClaimsPrincipal(identity));

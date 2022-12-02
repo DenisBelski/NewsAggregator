@@ -19,12 +19,6 @@ namespace NewsAggregatorAspNetCore.Controllers
         private readonly IRssService _rssService;
         private readonly IMapper _mapper;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ArticleController"/> class.
-        /// </summary>
-        /// <param name="articleService"></param>
-        /// <param name="rssService"></param>
-        /// <param name="mapper"></param>
         public ArticleController(IArticleService articleService,
             IRssService rssService,
             IMapper mapper)
@@ -60,11 +54,11 @@ namespace NewsAggregatorAspNetCore.Controllers
         {
             try
             {
-                var dto = await _articleService.GetArticleByIdAsync(id);
+                var articleDto = await _articleService.GetArticleByIdAsync(id);
 
-                if (dto != null)
+                if (articleDto != null)
                 {
-                    return View(dto);
+                    return View(_mapper.Map<ArticleModel>(articleDto));
                 }
 
                 return NotFound();

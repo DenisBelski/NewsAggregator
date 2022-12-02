@@ -48,13 +48,6 @@
             <param name="model">Contains article name substring and source id</param>
             <returns></returns>
         </member>
-        <member name="M:NewsAggregator.WebAPI.Controllers.ArticlesController.DeleteArticle(System.Guid)">
-            <summary>
-            Get article from storage with specified id
-            </summary>
-            <param name="id">Id of article</param>
-            <returns></returns>
-        </member>
         <member name="T:NewsAggregator.WebAPI.Controllers.ArticlesDownloadController">
             <summary>
             Controller for getting articles from resources
@@ -69,7 +62,7 @@
         </member>
         <member name="M:NewsAggregator.WebAPI.Controllers.ArticlesDownloadController.RateArticles">
             <summary>
-            Get articles with rate
+            Add rate to articles
             </summary>
             <returns></returns>
         </member>
@@ -83,12 +76,40 @@
             Controller for work with sources
             </summary>
         </member>
+        <member name="T:NewsAggregator.WebAPI.Controllers.TokenController">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:NewsAggregator.WebAPI.Controllers.TokenController.#ctor(NewsAggregator.Core.Abstractions.IUserService,NewsAggregator.Core.Abstractions.IRoleService,AutoMapper.IMapper,NewsAggregator.WebAPI.Utils.IJwtUtil)">
+            <summary>
+            
+            </summary>
+            <param name="userService"></param>
+            <param name="roleService"></param>
+            <param name="mapper"></param>
+            <param name="jwtUtil"></param>
+        </member>
         <member name="M:NewsAggregator.WebAPI.Controllers.TokenController.CreateJwtToken(NewsAggregator.WebAPI.Models.Requests.LoginUserRequestModel)">
             <summary>
             Register user
             </summary>
             <param name="request"></param>
             <returns></returns>
+        </member>
+        <member name="T:NewsAggregator.WebAPI.Controllers.UserController">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:NewsAggregator.WebAPI.Controllers.UserController.#ctor(NewsAggregator.Core.Abstractions.IUserService,NewsAggregator.Core.Abstractions.IRoleService,AutoMapper.IMapper,NewsAggregator.WebAPI.Utils.IJwtUtil)">
+            <summary>
+            
+            </summary>
+            <param name="userService"></param>
+            <param name="roleService"></param>
+            <param name="mapper"></param>
+            <param name="jwtUtil"></param>
         </member>
         <member name="M:NewsAggregator.WebAPI.Controllers.UserController.Get">
             <summary>

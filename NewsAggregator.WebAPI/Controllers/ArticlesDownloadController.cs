@@ -72,7 +72,7 @@ namespace NewsAggregator.WebAPI.Controllers
         }
 
         /// <summary>
-        /// Get articles with rate
+        /// Add rate of articles to the storage
         /// </summary>
         /// <returns></returns>
         [HttpGet]

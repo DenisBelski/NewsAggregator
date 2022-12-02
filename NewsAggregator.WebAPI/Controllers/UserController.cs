@@ -9,6 +9,9 @@ using Serilog;
 
 namespace NewsAggregator.WebAPI.Controllers
 {
+    /// <summary>
+    /// 
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class UserController : ControllerBase
@@ -18,6 +21,13 @@ namespace NewsAggregator.WebAPI.Controllers
         private readonly IJwtUtil _jwtUtil;
         private readonly IMapper _mapper;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="userService"></param>
+        /// <param name="roleService"></param>
+        /// <param name="mapper"></param>
+        /// <param name="jwtUtil"></param>
         public UserController(IUserService userService,
             IRoleService roleService,
             IMapper mapper,
@@ -65,7 +75,7 @@ namespace NewsAggregator.WebAPI.Controllers
 
                     if (result > 0)
                     {
-                        var userInDbDto = _userService.GetUserWithRoleByEmail(userDto.Email);
+                        var userInDbDto = await _userService.GetUserWithRoleByEmailAsync(userDto.Email);
 
                         var response = await _jwtUtil.GenerateTokenAsync(userInDbDto);
                         return Ok(response);

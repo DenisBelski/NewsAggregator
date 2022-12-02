@@ -39,9 +39,9 @@ namespace NewsAggregator.Business.ServicesImplementations
             return -1;
         }
 
-        public UserDto? GetUserWithRoleByEmail(string email)
+        public async Task<UserDto?> GetUserWithRoleByEmailAsync(string email)
         {
-            var userWithRoleEntity = _unitOfWork.Users
+            var userWithRoleEntity = await _unitOfWork.Users
                 .FindBy(user => user.Email.Equals(email), user => user.Role)
                 .FirstOrDefaultAsync();
 
@@ -53,7 +53,7 @@ namespace NewsAggregator.Business.ServicesImplementations
             return null;
         }
 
-        public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
+        public async Task<IEnumerable<UserDto>?> GetAllUsersAsync()
         {
             var userEntities = await _unitOfWork.Users.GetAllAsync();
 

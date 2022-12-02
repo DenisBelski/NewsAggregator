@@ -72,10 +72,10 @@ namespace NewsAggregator.WebAPI
             builder.Services.AddScoped<ISourceService, SourceService>();
             builder.Services.AddScoped<IArticleService, ArticleService>();
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-            builder.Services.AddScoped<IRepository<User>, Repository<User>>();
             builder.Services.AddScoped<IRepository<Role>, Repository<Role>>();
-            builder.Services.AddScoped<IRepository<Source>, Repository<Source>>();
             builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
+            builder.Services.AddScoped<ISourceRepository, SourceRepository>();
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IJwtUtil, JwtUtilSha256>();
 
             builder.Services.AddMediatR(typeof(AddArticleDataFromRssFeedCommand).Assembly);
