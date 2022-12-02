@@ -5,6 +5,7 @@ using NewsAggregator.Core.Abstractions;
 using NewsAggregator.Core.DataTransferObjects;
 using NewsAggregator.Data.Abstractions;
 using NewsAggregator.DataBase.Entities;
+using Serilog;
 
 namespace NewsAggregator.Business.ServicesImplementations;
 
@@ -23,55 +24,89 @@ public class SourceService : ISourceService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<List<SourceDto>> GetSourcesAsync()
+    public async Task<int> CreateSourceAsync(SourceDto sourceDto)
     {
-        return await _unitOfWork.Sources.Get()
-            .Select(source => _mapper.Map<SourceDto>(source))
-            .ToListAsync();
-    }
+        var sourceEntity = _mapper.Map<Source>(sourceDto);
 
-    public async Task<SourceDto> GetSourceByIdAsync(Guid id)
-    {
-        return _mapper.Map<SourceDto>(await _unitOfWork.Sources.GetByIdAsync(id));
-    }
+        if (sourceEntity != null)
+        {
+            await _unitOfWork.Sources.AddAsync(sourceEntity);
+            return await _unitOfWork.Commit();
+        }
 
-    public async Task<int> CreateSourceAsync(SourceDto dto)
-    {
-        var entity = _mapper.Map<Source>(dto);
-        await _unitOfWork.Sources.AddAsync(entity);
-
-        return await _unitOfWork.Commit();
+        return -1;
     }
 
     public async Task<int> CreateSourcesAsync(IEnumerable<SourceDto> sourcesDto)
     {
+        var sourceEntities = _mapper.Map<IEnumerable<Source>>(sourcesDto);
 
-        await _unitOfWork.Sources.AddRangeSourcesAsync(_mapper.Map<IEnumerable<Source>>(sourcesDto));
-        return await _unitOfWork.Commit();
+        if (sourceEntities != null)
+        {
+            await _unitOfWork.Sources.AddRangeSourcesAsync(sourceEntities);
+            return await _unitOfWork.Commit();
+        }
 
-        //var listEntities = new List<Source>();
-
-        //foreach (var sourceDto in sourcesDto)
-        //{
-        //    listEntities.Add(_mapper.Map<Source>(sourceDto));
-        //}
-        //await _unitOfWork.Sources.AddRangeSourcesAsync(listEntities);
+        return -1;
     }
 
-    public async Task DeleteSourceAsync(Guid id)
+    public async Task<SourceDto?> GetSourceByIdAsync(Guid sourceId)
     {
-        var source = await _unitOfWork.Sources.GetByIdAsync(id);
+        var sourceEntity = await _unitOfWork.Sources.GetByIdAsync(sourceId);
 
-        if (source != null)
+        if (sourceEntity != null)
         {
-            _unitOfWork.Sources.RemoveSource(source);
+            return _mapper.Map<SourceDto>(sourceEntity);
+        }
 
-            await _unitOfWork.Commit();
-        }
-        else
-        {
-            throw new ArgumentException("Source for removing doesn't exist", nameof(id));
-        }
+        return null;
     }
 
+    public async Task<IEnumerable<SourceDto>?> GetAllSourcesAsync()
+    {
+        var sourceEntities = await _unitOfWork.Sources.GetAllAsync();
+
+        if (sourceEntities != null)
+        {
+            return _mapper.Map<IEnumerable<SourceDto>>(sourceEntities).ToList();
+        }
+
+        return null;
+    }
+
+    public async Task<int> UpdateSourceAsync(SourceDto sourceDto)
+    {
+        var sourceEntity = _mapper.Map<Source>(sourceDto);
+
+        if (sourceEntity != null)
+        {
+            _unitOfWork.Sources.Update(sourceEntity);
+            return await _unitOfWork.Commit();
+        }
+
+        return -1;
+    }
+
+    public async Task DeleteSourceByIdAsync(Guid sourceId)
+    {
+        try
+        {
+            var sourceEntity = await _unitOfWork.Sources.GetByIdAsync(sourceId);
+
+            if (sourceEntity != null)
+            {
+                _unitOfWork.Sources.RemoveSource(sourceEntity);
+                await _unitOfWork.Commit();
+            }
+            else
+            {
+                Log.Warning($"The logic in {nameof(DeleteSourceByIdAsync)} method wasn't implemented, " +
+                    $"because {nameof(sourceId)} parametr equals null");
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new ArgumentException(ex.Message, nameof(sourceId));
+        }
+    }
 }

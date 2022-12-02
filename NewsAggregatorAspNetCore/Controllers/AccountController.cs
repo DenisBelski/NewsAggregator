@@ -1,13 +1,13 @@
-﻿using AutoMapper;
+﻿using System.Security.Claims;
+using NewsAggregator.Core.Abstractions;
+using NewsAggregator.Core.DataTransferObjects;
+using NewsAggregatorAspNetCore.Models;
+using AutoMapper;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using NewsAggregator.Core.Abstractions;
-using NewsAggregator.Core.DataTransferObjects;
-using NewsAggregatorAspNetCore.Models;
 using Serilog;
-using System.Security.Claims;
 
 namespace NewsAggregatorAspNetCore.Controllers
 {
@@ -221,7 +221,7 @@ namespace NewsAggregatorAspNetCore.Controllers
                     return BadRequest();
                 }
 
-                var user = _mapper.Map<UserDataModel>(_userService.GetUserByEmailAsync(userEmail));
+                var user = _mapper.Map<UserDataModel>(_userService.GetUserWithRoleByEmail(userEmail));
 
                 return Ok(user);
             }
@@ -265,7 +265,7 @@ namespace NewsAggregatorAspNetCore.Controllers
                         return BadRequest();
                     }
 
-                    var user = _mapper.Map<UserDataModel>(_userService.GetUserByEmailAsync(userEmail));
+                    var user = _mapper.Map<UserDataModel>(_userService.GetUserWithRoleByEmail(userEmail));
                     return View(user);
                 }
 
@@ -282,7 +282,7 @@ namespace NewsAggregatorAspNetCore.Controllers
         {
             try
             {
-                var userDto = _userService.GetUserByEmailAsync(email);
+                var userDto = _userService.GetUserWithRoleByEmail(email);
 
                 var claims = new List<Claim>()
                 {

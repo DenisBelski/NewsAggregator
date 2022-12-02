@@ -18,9 +18,9 @@ namespace NewsAggregator.Data.Repositories.Implementations
             await DbSet.AddRangeAsync(articles);
         }
 
-        public async Task PatchArticleAsync(Guid id, List<PatchModel> patchData)
+        public async Task PatchArticleAsync(Guid articleId, List<PatchModel> patchData)
         {
-            var model = await DbSet.FirstOrDefaultAsync(entity => entity.Id.Equals(id));
+            var model = await DbSet.FirstOrDefaultAsync(entity => entity.Id.Equals(articleId));
 
             var nameValuePropertiesPairs = patchData
                 .ToDictionary(
@@ -35,14 +35,14 @@ namespace NewsAggregator.Data.Repositories.Implementations
             }
         }
 
-        public async Task UpdateArticleTextAsync(Guid id, string text)
+        public async Task UpdateArticleTextAsync(Guid articleId, string articleText)
         {
             var article = await DbSet
-                .FirstOrDefaultAsync(currentArticle => currentArticle.Id.Equals(id));
+                .FirstOrDefaultAsync(currentArticle => currentArticle.Id.Equals(articleId));
 
             if (article != null)
             {
-                article.ArticleText = text;
+                article.ArticleText = articleText;
             }
         }
     }

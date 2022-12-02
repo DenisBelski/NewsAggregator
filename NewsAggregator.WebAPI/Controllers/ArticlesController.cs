@@ -66,8 +66,7 @@ namespace NewsAggregator.WebAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetArticles([FromQuery] GetArticlesRequestModel? model)
         {
-            IEnumerable<ArticleDto> articles = await _articleService
-                .GetArticlesByNameAndSourcesAsync(model?.Name, model?.SourceId);
+            IEnumerable<ArticleDto> articles = await _articleService.GetArticlesBySourceIdAsync(model.SourceId);
 
             return Ok(articles.ToList());
             //return Ok();
@@ -135,37 +134,6 @@ namespace NewsAggregator.WebAPI.Controllers
             //}
 
             return BadRequest();
-        }
-
-        /// <summary>
-        /// Get article from storage with specified id
-        /// </summary>
-        /// <param name="id">Id of article</param>
-        /// <returns></returns>
-        [HttpDelete("{id}")]
-        [ProducesResponseType(typeof(Nullable), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> DeleteArticle(Guid id)
-        {
-            // Simple Example
-            //    var oldValue = Articles.FirstOrDefault(dto => dto.Id.Equals(id));
-            //    if (oldValue == null)
-            //    {
-            //        return NotFound();
-            //    }
-            //    Articles.Remove(oldValue);
-            //    return Ok();
-
-            try
-            {
-                await _articleService.DeleteArticleAsync(id);
-
-                return Ok();
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(new ErrorModel { Message = ex.Message });
-            }
         }
     }
 }

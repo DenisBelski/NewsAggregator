@@ -4,10 +4,11 @@ namespace NewsAggregator.Core.Abstractions
 {
     public interface ISourceService
     {
-        Task<List<SourceDto>> GetSourcesAsync();
-        Task<SourceDto> GetSourceByIdAsync(Guid id);
-        Task<int> CreateSourceAsync(SourceDto dto);
-        Task DeleteSourceAsync(Guid id);
+        Task<int> CreateSourceAsync(SourceDto sourceDto);
         Task<int> CreateSourcesAsync(IEnumerable<SourceDto> sourcesDto);
+        Task<SourceDto?> GetSourceByIdAsync(Guid sourceId);
+        Task<IEnumerable<SourceDto>?> GetAllSourcesAsync();
+        Task<int> UpdateSourceAsync(SourceDto sourceDto);
+        Task DeleteSourceByIdAsync(Guid sourceId);
     }
 }

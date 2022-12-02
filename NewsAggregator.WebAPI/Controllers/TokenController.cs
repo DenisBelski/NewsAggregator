@@ -35,7 +35,7 @@ namespace NewsAggregator.WebAPI.Controllers
         {
             try
             {
-                var user = _userService.GetUserByEmailAsync(request.Email);
+                var user = _userService.GetUserWithRoleByEmail(request.Email);
 
                 if (user == null)
                 {

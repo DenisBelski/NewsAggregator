@@ -38,8 +38,7 @@ namespace NewsAggregatorAspNetCore.Controllers
         {
             try
             {
-                var articles = await _articleService
-                    .GetArticlesByPageNumberAndPageSizeAsync(page, _pageSize);
+                var articles = await _articleService.GetArticlesByPageNumberAsync(page);
 
                 if (articles.Any())
                 {
@@ -166,8 +165,7 @@ namespace NewsAggregatorAspNetCore.Controllers
             {
                 if (model != null)
                 {
-                    var dto = _mapper.Map<ArticleDto>(model);
-                    await _articleService.UpdateArticleAsync(model.Id, dto);
+                    await _articleService.UpdateArticleAsync(_mapper.Map<ArticleDto>(model));
 
                     return RedirectToAction("Index", "Article");
                 }

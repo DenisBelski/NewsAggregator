@@ -5,6 +5,7 @@ using NewsAggregator.Core.Abstractions;
 using NewsAggregator.Core.DataTransferObjects;
 using NewsAggregator.Data.Abstractions;
 using NewsAggregator.DataBase.Entities;
+using Serilog;
 
 namespace NewsAggregator.Business.ServicesImplementations
 {
@@ -23,65 +24,113 @@ namespace NewsAggregator.Business.ServicesImplementations
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<int> RegisterUser(UserDto dto, string password)
+        public async Task<int> RegisterUser(UserDto userDto, string password)
         {
-            var user = _mapper.Map<User>(dto);
-            user.PasswordHash = CreateMd5($"{password}.{_configuration["Secret:PasswordSalt"]}");
+            var userEntity = _mapper.Map<User>(userDto);
 
-            await _unitOfWork.Users.AddAsync(user);
-            return await _unitOfWork.Commit();
-        }
-
-        public async Task<bool> IsUserExists(Guid userId)
-        {
-            return await _unitOfWork.Users
-                .Get()
-                .AnyAsync(user => user.Id.Equals(userId));
-        }
-
-        public async Task<bool> IsUserExists(string email)
-        {
-            return await _unitOfWork.Users
-                .Get()
-                .AnyAsync(user => user.Email.Equals(email));
-        }
-
-        public async Task<IEnumerable<UserDto>> GetAllUsers()
-        {
-            return (await _unitOfWork.Users.GetAllAsync()).Select(user => _mapper.Map<UserDto>(user)).ToArray();
-        }
-
-        // get user as entity, with his role
-        //public async Task<UserDto> GetUserByEmailAsync(string email)
-        //{
-        //    var userWithRole = await _unitOfWork.Users
-        //        .FindBy(user => user.Email.Equals(email), user => user.Role)
-        //        .FirstOrDefaultAsync();
-
-        //    return _mapper.Map<UserDto>(userWithRole);
-        //}
-
-        public UserDto? GetUserByEmailAsync(string email)
-        {
-            var userWithRole = _unitOfWork.Users
-                .FindBy(user => user.Email.Equals(email), user => user.Role)
-                .FirstOrDefault();
-
-            if (userWithRole != null)
+            if (userEntity != null)
             {
-                return _mapper.Map<UserDto>(userWithRole);
+                userEntity.PasswordHash = CreateMd5($"{password}.{_configuration["Secret:PasswordSalt"]}");
+
+                await _unitOfWork.Users.AddAsync(userEntity);
+                return await _unitOfWork.Commit();
+            }
+
+            return -1;
+        }
+
+        public UserDto? GetUserWithRoleByEmail(string email)
+        {
+            var userWithRoleEntity = _unitOfWork.Users
+                .FindBy(user => user.Email.Equals(email), user => user.Role)
+                .FirstOrDefaultAsync();
+
+            if (userWithRoleEntity != null)
+            {
+                return _mapper.Map<UserDto>(userWithRoleEntity);
             }
 
             return null;
         }
 
-        public async Task<bool> CheckUserPassword(string email, string password)
+        public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
         {
-            var dbPasswordHash = (await _unitOfWork.Users.Get()
-                .FirstOrDefaultAsync(user => user.Email.Equals(email)))
+            var userEntities = await _unitOfWork.Users.GetAllAsync();
+
+            if (userEntities != null)
+            {
+                return _mapper.Map<IEnumerable<UserDto>>(userEntities).ToList();
+            }
+
+            return null;
+        }
+
+        public async Task<int> UpdateUserAsync(UserDto userDto)
+        {
+            var userEntity = _mapper.Map<User>(userDto);
+
+            if (userEntity != null)
+            {
+                _unitOfWork.Users.Update(userEntity);
+                return await _unitOfWork.Commit();
+            }
+
+            return -1;
+        }
+
+        public async Task DeleteUserByIdAsync(Guid userId)
+        {
+            try
+            {
+                var userEntity = await _unitOfWork.Users.GetByIdAsync(userId);
+
+                if (userEntity != null)
+                {
+                    _unitOfWork.Users.RemoveUser(userEntity);
+                    await _unitOfWork.Commit();
+                }
+                else
+                {
+                    Log.Warning($"The logic in {nameof(DeleteUserByIdAsync)} method wasn't implemented, " +
+                        $"because {nameof(userId)} parametr equals null");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException(ex.Message, nameof(userId));
+            }
+        }
+
+        public async Task<bool> IsUserExists(Guid userId)
+        {
+            if (!Guid.Empty.Equals(userId))
+            {
+                return await _unitOfWork.Users
+                    .Get()
+                    .AnyAsync(user => user.Id.Equals(userId));
+            }
+
+            return false;
+        }
+
+        public async Task<bool> IsUserExists(string email)
+        {
+            if (!string.IsNullOrEmpty(email))
+            {
+                return await _unitOfWork.Users
+                    .Get()
+                    .AnyAsync(user => user.Email.Equals(email));
+            }
+
+            return false;
+        }
+
+        public async Task<bool> CheckUserPassword(Guid userId, string password)
+        {
+            var dbPasswordHash = (await _unitOfWork.Users.GetByIdAsync(userId))
                 ?.PasswordHash;
 
-            if (dbPasswordHash != null 
+            if (dbPasswordHash != null
                 && CreateMd5($"{password}.{_configuration["Secret:PasswordSalt"]}")
                 .Equals(dbPasswordHash))
             {
@@ -91,9 +140,10 @@ namespace NewsAggregator.Business.ServicesImplementations
             return false;
         }
 
-        public async Task<bool> CheckUserPassword(Guid userId, string password)
+        public async Task<bool> CheckUserPassword(string email, string password)
         {
-            var dbPasswordHash = (await _unitOfWork.Users.GetByIdAsync(userId))
+            var dbPasswordHash = (await _unitOfWork.Users.Get()
+                .FirstOrDefaultAsync(user => user.Email.Equals(email)))
                 ?.PasswordHash;
 
             if (dbPasswordHash != null 

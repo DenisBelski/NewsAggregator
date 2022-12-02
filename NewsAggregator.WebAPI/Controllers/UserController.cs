@@ -37,7 +37,7 @@ namespace NewsAggregator.WebAPI.Controllers
         [Authorize]
         public async Task<IActionResult> Get()
         {
-            var users = await _userService.GetAllUsers();
+            var users = await _userService.GetAllUsersAsync();
             return Ok(users);
         }
 
@@ -65,7 +65,7 @@ namespace NewsAggregator.WebAPI.Controllers
 
                     if (result > 0)
                     {
-                        var userInDbDto = _userService.GetUserByEmailAsync(userDto.Email);
+                        var userInDbDto = _userService.GetUserWithRoleByEmail(userDto.Email);
 
                         var response = await _jwtUtil.GenerateTokenAsync(userInDbDto);
                         return Ok(response);
