@@ -12,24 +12,27 @@
     <form asp-controller="Account" asp-action="Login">
         <div asp-validation-summary="All" class="text-danger"></div>
         <div class="login_email">
-            <label for="email" class="form-label">Email</label>
-            <input asp-for="Email" type="email" class="form-control" id="email">
+            <label class="form-label" for="email" style="text-align:left">Email address</label>
+            <input asp-for="Email" type="email" class="form-control" id="email" style="width:auto" placeholder="name@email.com">
             <span asp-validation-for="Email" class="text-danger"></span>
         </div>
+        <br />
         <div class="login_password">
-            <label for="password" class="form-label">Password</label>
-            <input type="password" asp-for="Password" class="form-control" id="password">
+            <label class="form-label" for="password" style="align-content:start">Password</label>
+            <input type="password" asp-for="Password" class="form-control" id="password" style="width:auto" placeholder="Password">
             <span asp-validation-for="Password" class="text-danger"></span>
         </div>
+        <br />
         <h6>Forgot password? 
-            <a href="~/account/reset">Click here</a>
-                to reset your password
+            <a href="~/account/reset">Click here.</a>
         </h6>
         <br />
         <input type="submit" class="btn btn-primary" value="Log In">
     </form>
 </div>
 
+
+<br />
 
 @section Scripts
 {

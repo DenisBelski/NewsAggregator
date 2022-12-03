@@ -259,6 +259,22 @@ namespace NewsAggregatorAspNetCore.Controllers
             return View();
         }
 
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        public async Task<IActionResult> PersonalCabinetForAdmin()
+        {
+            var userEmail = User.Identity?.Name;
+
+            if (string.IsNullOrEmpty(userEmail))
+            {
+                return BadRequest();
+            }
+
+            var userDto = await _userService.GetUserWithRoleByEmailAsync(userEmail);
+            return View(_mapper.Map<UserDataModel>(userDto));
+        }
+
+
         private async Task AuthenticateAsync(string email)
         {
             try

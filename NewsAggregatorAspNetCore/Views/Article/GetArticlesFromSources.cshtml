@@ -1,0 +1,18 @@
+﻿@model SourceModel
+
+<div>
+    <h3>Get articles from sources</h3>
+    <input type="submit" class="btn btn-primary" value="Get articles from Onliner.by" onclick="">
+    <input type="submit" class="btn btn-primary" value="Get articles from Dev.by">
+    <input type="submit" class="btn btn-primary" value="Get articles from external resource">
+
+    <br />
+    @using (Html.BeginForm("GetArticlesFromSources", "Article", FormMethod.Post))
+    {
+        <input type="submit" class="btn btn-primary" value="Submit">
+    }
+
+@*    <a class="btn btn-outline-secondary" href="~/article/details/@Model.Id">Get articles from Onliner.by</a>
+    <a class="btn btn-outline-secondary" href="~/article/details/@Model.Id">Get articles from Dev.by</a>
+*@
+</div>

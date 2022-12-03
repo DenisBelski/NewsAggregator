@@ -1,29 +1,6 @@
 ﻿@model IEnumerable<ArticleDto>
 
-@{
-    ViewData["Title"] = "View";
-}
-
-<h1 id="article-header">Articles</h1>
-
-@*@if(Model.IsAdmin){
-
-    <p> Hello Admin </p>
-    <a href="~/article/create">Create article</a>
-}
-*@
-@*<div class="row">
-    @if (Model.Articles.Any())
-    {
-        foreach (var item in Model.Articles)
-        {
-            @await Html.PartialAsync("ArticlePreview", item)
-            await Html.RenderPartialAsync("ArticlePreview", item);
-        }
-    }
-</div>
-*@
-
+<h3 id="article-header">Aggregated articles</h3>
 
 @foreach (var item in Model)
 {
@@ -31,18 +8,18 @@
         <div class="accordion-item">
             <h2 class="accordion-header">
                 <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseOne" aria-expanded="true" aria-controls="panelsStayOpen-collapseOne">
-                    <strong style="color:lightslategrey">@Html.DisplayFor(modelItem => item.Title)</strong>
+                    <strong style="color:darkslateblue">@Html.DisplayFor(modelItem => item.Title)</strong>
                 </button>
             </h2>
             <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse show" aria-labelledby="panelsStayOpen-headingOne">
                 <div>
-                    <code style="color:crimson">Категория: @Html.DisplayFor( modelItem => item.Category)</code>
+                    <span class="badge bg-secondary">@Html.DisplayFor( modelItem => item.Category)</span>
                     <br>@Html.DisplayFor(modelItem => item.ShortDescription)
                     <br><p style="color:rgba(0,0,0,0.5)">@Html.DisplayFor(modelItem => item.PublicationDate)</p>
-                    <a class="btn btn-success" style="background-color:cadetblue"  href="~/article/details/@item.Id">Read details</a>
-                    <hr />
+                    <a class="btn btn-outline-secondary" style="align-self:center" href="~/article/details/@item.Id">Read details</a>
                 </div>
             </div>
         </div>
+        <br>
     </div>
 }

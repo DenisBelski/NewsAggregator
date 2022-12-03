@@ -16,14 +16,17 @@ namespace NewsAggregatorAspNetCore.Controllers
     {
         private readonly int _pageSize = 20;
         private readonly IArticleService _articleService;
+        private readonly ISourceService _sourceService;
         private readonly IRssService _rssService;
         private readonly IMapper _mapper;
 
         public ArticleController(IArticleService articleService,
+            ISourceService sourceService,
             IRssService rssService,
             IMapper mapper)
         {
             _articleService = articleService;
+            _sourceService = sourceService;
             _rssService = rssService;
             _mapper = mapper;
         }
@@ -72,21 +75,10 @@ namespace NewsAggregatorAspNetCore.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpGet]
-        public async Task<IActionResult> Create()
+        public IActionResult GetArticlesFromSources()
         {
             try
             {
-                //var sources = await _sourceService.GetSourcesAsync();
-
-                //model.Sources = sources
-                //    .Select(dto => new SelectListItem(
-                //        dto.Name,
-                //        dto.Id.ToString("G")))
-                //    .ToList();
-
-                //return View(model);
-
-                //await _articleService.CreateArticleAsync(articleDto);
                 return View();
             }
             catch (Exception ex)
@@ -98,23 +90,19 @@ namespace NewsAggregatorAspNetCore.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<IActionResult> Create(ArticleModel model)
+        public async Task<IActionResult> GetArticlesFromSources(SourceModel model)
         {
             try
             {
-                if (ModelState.IsValid)
-                {
-                    model.Id = Guid.NewGuid();
-                    model.PublicationDate = DateTime.Now;
+                await _rssService.GetAllArticleDataFromRssAsync();
+                await _articleService.AddArticleTextToArticlesFromOnlinerAsync();
+                return RedirectToAction("PersonalCabinetForAdmin", "Account");
 
-                    var dto = _mapper.Map<ArticleDto>(model);
-
-                    await _articleService.CreateArticleAsync(dto);
-
-                    return RedirectToAction("Index", "Article");
-                }
-
-                return View(model);
+                //var sourceModel = await _sourceService.GetSourceByIdAsync(id);
+                //if (sourceModel != null)
+                //{
+                //    var sourceDto = _mapper.Map<SourceDto>(sourceModel);
+                //}
             }
             catch (Exception ex)
             {
@@ -125,24 +113,11 @@ namespace NewsAggregatorAspNetCore.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpGet]
-        public async Task<IActionResult> Edit(Guid id)
+        public IActionResult CreateCustomArticle()
         {
             try
             {
-                if (id != Guid.Empty)
-                {
-                    var articleDto = await _articleService.GetArticleByIdAsync(id);
-                    if (articleDto == null)
-                    {
-                        return BadRequest();
-                    }
-
-                    var editModel = _mapper.Map<ArticleModel>(articleDto);
-
-                    return View(editModel);
-                }
-
-                return BadRequest();
+                return View();
             }
             catch (Exception ex)
             {
@@ -153,20 +128,25 @@ namespace NewsAggregatorAspNetCore.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<IActionResult> Edit(ArticleModel model)
+        public async Task<IActionResult> CreateCustomArticle(ArticleModel model)
         {
             try
             {
-                if (model != null)
+                if (ModelState.IsValid)
                 {
-                    await _articleService.UpdateArticleAsync(_mapper.Map<ArticleDto>(model));
+                    model.Id = Guid.NewGuid();
+                    model.SourceId = new Guid("0026d18d-8ca8-4b5e-9357-60efb46527ee");
+                    model.PublicationDate = DateTime.Now;
+                    model.SourceUrl = "custom_article_text";
 
-                    return RedirectToAction("Index", "Article");
+                    var articleDto = _mapper.Map<ArticleDto>(model);
+
+                    await _articleService.CreateArticleAsync(articleDto);
+
+                    return RedirectToAction("PersonalCabinetForAdmin", "Account");
                 }
-                else
-                {
-                    return BadRequest();
-                }
+
+                return View(model);
             }
             catch (Exception ex)
             {

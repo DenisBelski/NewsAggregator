@@ -4,9 +4,6 @@
     Layout = null;
 }
 
-@*<link href="css/style_positioning.css" type="text/css" rel="stylesheet">
-*@
-
 @if (Model == null)
 {
     <div class="dropdown">
@@ -19,18 +16,28 @@
         </ul>
     </div>
 }
+else if (Model.RoleName == "Admin")
+{
+    <div class="dropdown">
+        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            @Model.Email
+        </button>
+        <ul class="dropdown-menu">
+            <li><span class="dropdown-item-text"><strong>Role: </strong>@Model.RoleName</span></li>
+            <li><a class="dropdown-item" asp-controller="Account" asp-action="PersonalCabinetForAdmin">Personal cabinet</a></li>
+            <li><a class="dropdown-item" asp-controller="Account" asp-action="Logout">Logout</a></li>
+        </ul>
+    </div>
+}
 else
 {
     <div class="dropdown">
         <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
             @Model.Email
         </button>
-        <ul class="dropdown-menu" style="font-size:small">
-            <li>Role: @Model.RoleName</li>
-            <li><hr class="dropdown-divider"></li>
-            <li>ID: @Model.Id</li>
-            <li><hr class="dropdown-divider"></li>
-            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Account" asp-action="Logout">Logout</a></li>
+        <ul class="dropdown-menu">
+            <li><span class="dropdown-item-text"><strong>Role: </strong>@Model.RoleName</span></li>
+            <li><a class="dropdown-item" asp-controller="Account" asp-action="Logout">Logout</a></li>
         </ul>
     </div>
 }

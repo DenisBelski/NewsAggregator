@@ -11,8 +11,8 @@
     </h6>
     <form asp-controller="Account" asp-action="Reset" method="post">
         <div class="reset_email">
-            <label for="email" class="form-label">Email</label>
-            <input asp-for="Email" type="email" class="form-control" id="email">
+            <label for="email" class="form-label">Email address</label>
+            <input asp-for="Email" type="email" class="form-control" id="email" style="width:auto" placeholder="name@email.com">
             <span asp-validation-for="Email" class="text-danger"></span>
         </div>
         <br />
@@ -21,7 +21,7 @@
             <br />
             <label for="email" class="form-label">OR</label>
             <br />
-            <a href="~/account/register">Create a new account</a>    
+            <a href="~/account/register"><strong>Create a new account</strong></a>    
         </div>
     </form>
 </div>
