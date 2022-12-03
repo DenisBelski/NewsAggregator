@@ -6,7 +6,6 @@ namespace NewsAggregator.WebAPI.Utils
     public interface IJwtUtil
     {
         Task<TokenResponse> GenerateTokenAsync(UserDto dto);
-
-        //Task RemoveRefreshTokenAsync(Guid requestRefreshToken);
+        Task RemoveRefreshTokenAsync(Guid requestRefreshToken);
     }
 }

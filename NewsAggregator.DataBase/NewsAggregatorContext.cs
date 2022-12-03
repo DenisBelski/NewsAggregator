@@ -10,6 +10,7 @@ namespace NewsAggregator.DataBase
         public DbSet<Source> Sources { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         public NewsAggregatorContext(DbContextOptions<NewsAggregatorContext> options)
             : base(options)

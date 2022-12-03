@@ -1,5 +1,7 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using MediatR;
+using Microsoft.IdentityModel.Tokens;
 using NewsAggregator.Core.DataTransferObjects;
+using NewsAggregator.Data.CQS.Commands;
 using NewsAggregator.WebAPI.Models.Responses;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -10,13 +12,13 @@ namespace NewsAggregator.WebAPI.Utils
     public class JwtUtilSha256 : IJwtUtil
     {
         private readonly IConfiguration _configuration;
-        //private readonly IMediator _mediator;
+        private readonly IMediator _mediator;
 
-        public JwtUtilSha256(IConfiguration configuration)
-            //IMediator mediator)
+        public JwtUtilSha256(IConfiguration configuration,
+            IMediator mediator)
         {
             _configuration = configuration;
-            //_mediator = mediator;
+            _mediator = mediator;
         }
 
         public async Task<TokenResponse> GenerateTokenAsync(UserDto dto)
@@ -45,11 +47,11 @@ namespace NewsAggregator.WebAPI.Utils
             
             var refreshTokenValue = Guid.NewGuid();
 
-            //await _mediator.Send(new AddRefreshTokenCommand()
-            //{
-            //    UserId = dto.Id,
-            //    TokenValue = refreshTokenValue
-            //});
+            await _mediator.Send(new AddRefreshTokenCommand()
+            {
+                UserId = dto.Id,
+                TokenValue = refreshTokenValue
+            });
 
             return new TokenResponse()
             {
@@ -61,12 +63,12 @@ namespace NewsAggregator.WebAPI.Utils
             };
         }
 
-        //public async Task RemoveRefreshTokenAsync(Guid requestRefreshToken)
-        //{
-        //    await _mediator.Send(new RemoveRefreshTokenCommand()
-        //    {
-        //        TokenValue = requestRefreshToken
-        //    });
-        //}
+        public async Task RemoveRefreshTokenAsync(Guid requestRefreshToken)
+        {
+            await _mediator.Send(new RemoveRefreshTokenCommand()
+            {
+                TokenValue = requestRefreshToken
+            });
+        }
     }
 }
