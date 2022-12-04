@@ -34,11 +34,15 @@ namespace NewsAggregatorAspNetCore.Controllers
             _mapper = mapper;
         }
 
-        public async Task<IActionResult> Index(double? rate)
+        //public async Task<IActionResult> Index(double? rate)
+
+        public async Task<IActionResult> IndexAsync(int page)
         {
             try
             {
-                var articles = await _articleService.GetArticlesByRateAsync(rate);
+                var articles = await _articleService.GetArticlesByPageNumberAsync(page);
+
+                //var articles = await _articleService.GetArticlesByRateAsync(rate);
 
                 if (articles.Any())
                 {
@@ -46,7 +50,7 @@ namespace NewsAggregatorAspNetCore.Controllers
                 }
                 else
                 {
-                    throw new ArgumentException(nameof(rate));
+                    throw new ArgumentException(nameof(page));
                 }
             }
             catch (Exception ex)
@@ -97,9 +101,15 @@ namespace NewsAggregatorAspNetCore.Controllers
         {
             try
             {
-                await _rssService.GetArticlesDataFromAllRssSourcesAsync();
-                await _articleService.AddArticleTextToArticlesFromOnlinerAsync();
-                await _articleService.AddRateToArticlesAsync();
+                //await _rssService.GetArticlesDataFromAllRssSourcesAsync();
+
+
+                //await _articleService.AddArticleTextToArticlesFromOnlinerAsync();
+                //await _articleService.AddArticleTextToArticlesFromDevbyAsync();
+                await _articleService.AddArticleTextToArticlesFromShazooAsync();
+
+
+                //await _articleService.AddRateToArticlesAsync();
 
                 return RedirectToAction("PersonalCabinetForAdmin", "Account");
 

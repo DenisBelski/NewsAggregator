@@ -14,8 +14,10 @@
             <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse show" aria-labelledby="panelsStayOpen-headingOne">
                 <div>
                     <span class="badge bg-secondary">@Html.DisplayFor( modelItem => item.Category)</span>
-                    <br>@Html.DisplayFor(modelItem => item.ShortDescription)
-                    <br><p style="color:rgba(0,0,0,0.5)">@Html.DisplayFor(modelItem => item.PublicationDate)</p>
+                    <br>
+                    @Html.DisplayFor(modelItem => item.ShortDescription)
+                    <br>
+                    <p style="color:rgba(0,0,0,0.5)">@Html.DisplayFor(modelItem => item.PublicationDate)</p>
                     <a class="btn btn-outline-secondary" style="align-self:center" href="~/article/details/@item.Id">Read details</a>
                 </div>
             </div>

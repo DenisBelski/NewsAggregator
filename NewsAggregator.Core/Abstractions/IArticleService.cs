@@ -14,6 +14,8 @@ namespace NewsAggregator.Core.Abstractions
         Task AggregateArticlesFromAllAvailableSourcesAsync();
         Task AggregateArticlesFromOnlinerAsync(Guid sourceId, string? sourceRssUrl);
         Task AddArticleTextToArticlesFromOnlinerAsync();
+        Task AddArticleTextToArticlesFromDevbyAsync();
+        Task AddArticleTextToArticlesFromShazooAsync();
         Task AddRateToArticlesAsync();
     }
 }

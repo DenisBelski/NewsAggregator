@@ -16,6 +16,7 @@ using Newtonsoft.Json;
 using Serilog;
 using System.Net.Http.Json;
 using System.ServiceModel.Syndication;
+using System.Text.RegularExpressions;
 using System.Xml;
 
 namespace NewsAggregator.Business.ServicesImplementations
@@ -209,6 +210,49 @@ namespace NewsAggregator.Business.ServicesImplementations
             }
         }
 
+        public async Task AddArticleTextToArticlesFromDevbyAsync()
+        {
+            try
+            {
+                var articlesWithEmptyTextIds = _unitOfWork.Articles
+                    .Get()
+                    .Where(article => string.IsNullOrEmpty(article.ArticleText))
+                    .Select(article => article.Id)
+                    .ToList();
+
+                foreach (var articleId in articlesWithEmptyTextIds)
+                {
+                    await AddArticleTextToArticleFromDevbyAsync(articleId);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException(ex.Message);
+            }
+        }
+
+        public async Task AddArticleTextToArticlesFromShazooAsync()
+        {
+            try
+            {
+                var articlesWithEmptyTextIds = _unitOfWork.Articles
+                    .Get()
+                    .Where(article => string.IsNullOrEmpty(article.ArticleText))
+                    .Select(article => article.Id)
+                    .ToList();
+
+                foreach (var articleId in articlesWithEmptyTextIds)
+                {
+                    await AddArticleTextToArticleFromShazooAsync(articleId);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException(ex.Message);
+            }
+        }
+
+
         public async Task AddRateToArticlesAsync()
         {
             try
@@ -275,6 +319,108 @@ namespace NewsAggregator.Business.ServicesImplementations
                         await _unitOfWork.Commit();
 
                         //await _mediator.Send(new UpdateArticleTextCommand() { Id = articleId, Text = articleText });
+                    }
+                }
+                else
+                {
+                    Log.Warning($"The logic in {nameof(AddArticleTextToArticleFromOnlinerAsync)} method wasn't implemented, " +
+                        $"because {nameof(articleId)} parametr equals null");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException(ex.Message);
+            }
+        }
+
+        private async Task AddArticleTextToArticleFromDevbyAsync(Guid articleId)
+        {
+            try
+            {
+                var article = await _unitOfWork.Articles.GetByIdAsync(articleId);
+
+                if (article != null)
+                {
+                    var articleSourceUrl = article.SourceUrl;
+                    var web = new HtmlWeb();
+                    var htmlDoc = web.Load(articleSourceUrl);
+
+                    // get class name "news-text" from web page with news
+                    var htmlNodes = htmlDoc.DocumentNode.Descendants(0).Where(n => n.HasClass("article__body"));
+
+                    if (htmlNodes.Any())
+                    {
+                        var articleText = htmlNodes.FirstOrDefault()?
+                            .ChildNodes
+                            .Where(node => (node.Name.Equals("p")
+                                            || node.Name.Equals("div")
+                                            || node.Name.Equals("li"))
+                                            && !node.Name.Equals("a")
+                                            && !node.Name.Equals("h2")
+                                            && !node.Name.Equals("span")
+                                            && !node.Name.Equals("figure")
+                                            && !Regex.IsMatch(node.GetAttributeValue("class", ""), @"\s*global-incut\s*")
+                                            && !Regex.IsMatch(node.GetAttributeValue("class", ""), @"\s*incut\s*")
+                                            && !Regex.IsMatch(node.GetAttributeValue("class", ""), @"\s*article-widget__content\s*")
+                                            && !Regex.IsMatch(node.GetAttributeValue("class", ""), @"\s*noopener\s*")
+                                            && node.Attributes["style"] == null)
+                            .Select(node => node.InnerText)
+                            .Aggregate((i, j) => i + Environment.NewLine + j)
+                            .Replace("&nbsp;", " ");
+
+                        await _unitOfWork.Articles.UpdateArticleTextAsync(articleId, articleText);
+                        await _unitOfWork.Commit();
+                    }
+                }
+                else
+                {
+                    Log.Warning($"The logic in {nameof(AddArticleTextToArticleFromOnlinerAsync)} method wasn't implemented, " +
+                        $"because {nameof(articleId)} parametr equals null");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException(ex.Message);
+            }
+        }
+
+        private async Task AddArticleTextToArticleFromShazooAsync(Guid articleId)
+        {
+            try
+            {
+                var article = await _unitOfWork.Articles.GetByIdAsync(articleId);
+
+                if (article != null)
+                {
+                    var articleSourceUrl = article.SourceUrl;
+                    var web = new HtmlWeb();
+                    var htmlDoc = web.Load(articleSourceUrl);
+
+                    var htmlNodes = htmlDoc.DocumentNode.Descendants(0).Where(node => node.HasClass("Entry__content"));
+
+                    if (htmlNodes.Any())
+                    {
+                        var articleText = htmlNodes.FirstOrDefault()?
+                            .ChildNodes
+                            .Where(node => node.Name.Equals("p")
+                                            && !node.Name.Equals("span")
+                                            && node.Attributes["style"] == null)
+                            .Select(node => node.InnerText)
+                            .Aggregate((i, j) => i + Environment.NewLine + j);
+
+
+                        var patchList = new List<PatchModel>()
+                        {
+                            new PatchModel()
+                            {
+                                PropertyName = nameof(article.ShortDescription),
+                                PropertyValue = articleText
+                            }
+                        };
+
+                        await _unitOfWork.Articles.UpdateArticleTextAsync(articleId, articleText);
+                        await _unitOfWork.Articles.PatchArticleAsync(articleId, patchList);
+                        await _unitOfWork.Commit();
                     }
                 }
                 else
