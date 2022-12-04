@@ -1,15 +1,18 @@
 ﻿@model SourceModel
 
-<div>
-    <h3>Get articles from sources</h3>
-    <input type="submit" class="btn btn-primary" value="Get articles from Onliner.by" onclick="">
-    <input type="submit" class="btn btn-primary" value="Get articles from Dev.by">
-    <input type="submit" class="btn btn-primary" value="Get articles from external resource">
+<div align="center">
+    <h5>Add articles with available rating to the feed</h5>
+    <div class="list-group" style="width: 25rem">
+        <a class="btn btn-outline-secondary" href="~/article/CreateCustomArticle" style="border:double">Add articles from Onliner.by source</a>
+        <a class="btn btn-outline-secondary" href="~/article/CreateCustomArticle" style="border:double">Add new articles from Devby.io soruce</a>
+        <a class="btn btn-outline-secondary" href="~/article/CreateCustomArticle" style="border:double">Add new articles from shazoo.ru soruce</a>
+    </div>
 
     <br />
     @using (Html.BeginForm("GetArticlesFromSources", "Article", FormMethod.Post))
     {
-        <input type="submit" class="btn btn-primary" value="Submit">
+        <input type="submit" class="btn btn-outline-success" value="Submit">
+        <a class="btn btn-outline-secondary" href="~/Account/PersonalCabinetForAdmin/">Back</a>
     }
 
 @*    <a class="btn btn-outline-secondary" href="~/article/details/@Model.Id">Get articles from Onliner.by</a>

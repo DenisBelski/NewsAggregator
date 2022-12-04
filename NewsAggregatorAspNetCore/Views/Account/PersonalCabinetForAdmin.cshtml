@@ -4,11 +4,11 @@
 @if (Model != null)
 {
     <div align="center">
-    <h6 id="article-header">Welcome to the personal account of the administrator</h6>
+    <h5 id="article-header">Welcome to the personal account of the administrator</h5>
     <div class="card" style="width: 25rem;" align="left">
         <img src="~/css/images/cat-avatar.png" class="card-img-top" alt="Your avatar should be here" width="400" height="333">
         <div class="card-body">
-            <h6 class="card-title" style="text-align:center">Personal card</h6>
+            <h5 class="card-title" style="text-align:center">Personal card</h5>
         </div>
         <ul class="list-group list-group-flush">
             <li class="list-group-item"><strong>role: </strong>@Model.RoleName</li>
@@ -20,8 +20,9 @@
     <div class="list-group" style="width: 25rem">
         <p><span class="dropdown-item-text">The following options are available to you:</span></p>
         <a class="btn btn-outline-secondary" href="~/article/CreateCustomArticle" style="border:double">Create custom article</a>
-        <a class="btn btn-outline-secondary" href="~/article/GetArticlesFromSources" style="border:double">Get articles from sources</a>
+        <a class="btn btn-outline-secondary" href="~/article/GetArticlesFromSources" style="border:double">Add new articles to feed</a>
         <a class="btn btn-outline-secondary" href="~/article/create" style="border:double">Change rate of articles to show</a>
+        <a class="btn btn-outline-secondary" href="~/article/index" style="border:double">Just read the news feed</a>
     </div>
 </div>
 }

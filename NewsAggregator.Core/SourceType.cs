@@ -3,6 +3,7 @@
     public enum SourceType
     {
         Rss,
+        Custom,
         Api
     }
 }

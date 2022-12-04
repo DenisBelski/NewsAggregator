@@ -22,22 +22,22 @@ namespace NewsAggregator.Business.ServicesImplementations
 {
     public class ArticleService : IArticleService
     {
-        private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IRssService _rssService;
+        private readonly IMapper _mapper;
         private readonly IMediator _mediator;
 
-        public ArticleService(IMapper mapper,
-            IConfiguration configuration, 
+        public ArticleService(IConfiguration configuration, 
             IUnitOfWork unitOfWork,
             IRssService rssService,
+            IMapper mapper,
             IMediator mediator)
         {
-            _mapper = mapper;
             _configuration = configuration;
             _unitOfWork = unitOfWork;
             _rssService = rssService;
+            _mapper = mapper;
             _mediator = mediator;
         }
 
@@ -51,19 +51,6 @@ namespace NewsAggregator.Business.ServicesImplementations
                 var addingResult = await _unitOfWork.Commit();
 
                 return addingResult;
-            }
-
-            return -1;
-        }
-
-        public async Task<int> CreateArticlesAsync(IEnumerable<ArticleDto> articlesDto)
-        {
-            var articleEntities = _mapper.Map<IEnumerable<Article>>(articlesDto);
-
-            if (articleEntities != null)
-            {
-                await _unitOfWork.Articles.AddRangeArticlesAsync(articleEntities);
-                return await _unitOfWork.Commit();
             }
 
             return -1;
@@ -83,6 +70,33 @@ namespace NewsAggregator.Business.ServicesImplementations
             return null;
         }
 
+        public async Task<List<ArticleDto>> GetArticlesByPageNumberAsync(int pageNumber)
+        {
+            var listArticlesDto = await _unitOfWork.Articles
+                .Get()
+                .Skip(pageNumber)
+                .Select(article => _mapper.Map<ArticleDto>(article))
+                .ToListAsync();
+
+            return listArticlesDto;
+        }
+
+        public async Task<List<ArticleDto>> GetArticlesByRateAsync(double? rate)
+        {
+            if (rate == null)
+            {
+                rate = Convert.ToDouble(_configuration["Rating: Acceptable rating"]);
+            }
+
+            var listArticlesDto = await _unitOfWork.Articles
+                .Get()
+                .Where(article => article.Rate != null && article.Rate > rate)
+                .Select(article => _mapper.Map<ArticleDto>(article))
+                .ToListAsync();
+
+            return listArticlesDto;
+        }
+
         public async Task<int> UpdateArticleAsync(ArticleDto articleDto)
         {
             var articleEntity = _mapper.Map<Article>(articleDto);
@@ -96,7 +110,7 @@ namespace NewsAggregator.Business.ServicesImplementations
             return -1;
         }
 
-        public async Task<int> PatchArticleAsync(Guid articleId, ArticleDto? patchList)
+        public async Task<int> UpdateOnlyNecessaryDataInArticleAsync(Guid articleId, ArticleDto? patchList)
         {
             //var articleDto = await GetArticleByIdAsync(id);
             //await _unitOfWork.Articles.PatchArticleAsync(id, patchList);
@@ -118,23 +132,11 @@ namespace NewsAggregator.Business.ServicesImplementations
             return await _unitOfWork.Commit();
         }
 
-        public async Task<List<ArticleDto>> GetArticlesByPageNumberAsync(int pageNumber)
-        {
-            var listArticlesDto = await _unitOfWork.Articles
-                .Get()
-                .Skip(pageNumber)
-                .Select(article => _mapper.Map<ArticleDto>(article))
-                .ToListAsync();
-
-            return listArticlesDto;
-        }
-
         public async Task<List<ArticleDto>?> GetArticlesBySourceIdAsync(Guid sourceId)
         {
             var articleEntities = _unitOfWork.Articles.Get();
 
-            if (articleEntities != null
-                && !Guid.Empty.Equals(sourceId))
+            if (articleEntities != null && !Guid.Empty.Equals(sourceId))
             {
                 articleEntities = articleEntities.Where(dto => dto.SourceId.Equals(sourceId));
 
@@ -146,7 +148,7 @@ namespace NewsAggregator.Business.ServicesImplementations
             return null;
         }
 
-        public async Task AggregateArticlesFromExternalSourcesAsync()
+        public async Task AggregateArticlesFromAllAvailableSourcesAsync()
         {
             try
             {
@@ -154,9 +156,52 @@ namespace NewsAggregator.Business.ServicesImplementations
 
                 foreach (var sourceEntity in sourceEntities)
                 {
-                    await _rssService.GetAllArticleDataFromRssAsync(sourceEntity.Id, sourceEntity.RssUrl);
+                    await _rssService.GetArticlesDataFromOnlinerRssAsync(sourceEntity.Id, sourceEntity.RssUrl);
                     await AddArticleTextToArticlesFromOnlinerAsync();
                 }
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException(ex.Message);
+            }
+        }
+
+        public async Task AggregateArticlesFromOnlinerAsync(Guid sourceId, string? sourceRssUrl)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(sourceRssUrl))
+                {
+                    await _rssService.GetArticlesDataFromOnlinerRssAsync(sourceId, sourceRssUrl);
+                    await AddArticleTextToArticlesFromOnlinerAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException(ex.Message);
+            }
+        }
+
+        public async Task AddArticleTextToArticlesFromOnlinerAsync()
+        {
+            try
+            {
+                var articlesWithEmptyTextIds = _unitOfWork.Articles
+                    .Get()
+                    .Where(article => string.IsNullOrEmpty(article.ArticleText))
+                    .Select(article => article.Id)
+                    .ToList();
+
+                foreach (var articleId in articlesWithEmptyTextIds)
+                {
+                    await AddArticleTextToArticleFromOnlinerAsync(articleId);
+                }
+
+                //var articlesWithEmptyTextIds = await _mediator.Send(new GetAllArticlesWithoutTextIdsQuery());
+                //foreach (var articleId in articlesWithEmptyTextIds)
+                //{
+                //    await AddArticleTextToArticleFromOnlinerAsync(articleId);
+                //}
             }
             catch (Exception ex)
             {
@@ -176,33 +221,6 @@ namespace NewsAggregator.Business.ServicesImplementations
                 foreach (var articleId in articlesWithEmptyRateIds)
                 {
                     await RateArticleAsync(articleId);
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new ArgumentException(ex.Message);
-            }
-        }
-
-        public async Task AddArticleTextToArticlesFromOnlinerAsync()
-        {
-            try
-            {
-                var articlesWithEmptyTextIds = _unitOfWork.Articles
-                    .Get()
-                    .Where(article => string.IsNullOrEmpty(article.ArticleText))
-                    .Select(article => article.Id)
-                    .ToList();
-                foreach (var articleId in articlesWithEmptyTextIds)
-                {
-                    await AddArticleTextToArticleFromOnlinerAsync(articleId);
-                }
-
-                //var articlesWithEmptyTextIds = await _mediator.Send(new GetAllArticlesWithoutTextIdsQuery());
-
-                foreach (var articleId in articlesWithEmptyTextIds)
-                {
-                    await AddArticleTextToArticleFromOnlinerAsync(articleId);
                 }
             }
             catch (Exception ex)

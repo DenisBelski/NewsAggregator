@@ -14,28 +14,31 @@ namespace NewsAggregatorAspNetCore.Controllers
     //[Authorize(Roles = "User")]
     public class ArticleController : Controller
     {
-        private readonly int _pageSize = 20;
+        private readonly IConfiguration _configuration;
         private readonly IArticleService _articleService;
         private readonly ISourceService _sourceService;
         private readonly IRssService _rssService;
         private readonly IMapper _mapper;
+        private readonly int _pageSize = 20;
 
-        public ArticleController(IArticleService articleService,
+        public ArticleController(IConfiguration configuration,
+            IArticleService articleService,
             ISourceService sourceService,
             IRssService rssService,
             IMapper mapper)
         {
+            _configuration = configuration;
             _articleService = articleService;
             _sourceService = sourceService;
             _rssService = rssService;
             _mapper = mapper;
         }
 
-        public async Task<IActionResult> Index(int page)
+        public async Task<IActionResult> Index(double? rate)
         {
             try
             {
-                var articles = await _articleService.GetArticlesByPageNumberAsync(page);
+                var articles = await _articleService.GetArticlesByRateAsync(rate);
 
                 if (articles.Any())
                 {
@@ -43,7 +46,7 @@ namespace NewsAggregatorAspNetCore.Controllers
                 }
                 else
                 {
-                    throw new ArgumentException(nameof(page));
+                    throw new ArgumentException(nameof(rate));
                 }
             }
             catch (Exception ex)
@@ -94,8 +97,10 @@ namespace NewsAggregatorAspNetCore.Controllers
         {
             try
             {
-                await _rssService.GetAllArticleDataFromRssAsync();
+                await _rssService.GetArticlesDataFromAllRssSourcesAsync();
                 await _articleService.AddArticleTextToArticlesFromOnlinerAsync();
+                await _articleService.AddRateToArticlesAsync();
+
                 return RedirectToAction("PersonalCabinetForAdmin", "Account");
 
                 //var sourceModel = await _sourceService.GetSourceByIdAsync(id);
@@ -135,12 +140,11 @@ namespace NewsAggregatorAspNetCore.Controllers
                 if (ModelState.IsValid)
                 {
                     model.Id = Guid.NewGuid();
-                    model.SourceId = new Guid("0026d18d-8ca8-4b5e-9357-60efb46527ee");
                     model.PublicationDate = DateTime.Now;
-                    model.SourceUrl = "custom_article_text";
-
+                    model.SourceUrl = "CustomUrl";
+                    model.SourceId = new Guid("C0DC8F82-933E-4FFE-A576-0BC9BE4DFC8F");
+                    
                     var articleDto = _mapper.Map<ArticleDto>(model);
-
                     await _articleService.CreateArticleAsync(articleDto);
 
                     return RedirectToAction("PersonalCabinetForAdmin", "Account");

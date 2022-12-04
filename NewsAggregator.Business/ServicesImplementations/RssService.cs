@@ -29,12 +29,18 @@ namespace NewsAggregator.Business.ServicesImplementations
             _mediator = mediator;
         }
 
-        public async Task GetAllArticleDataFromRssAsync()
+        public async Task GetArticlesDataFromAllRssSourcesAsync()
         {
             try
             {
                 var sourceEntities = await _unitOfWork.Sources.GetAllAsync();
-                Parallel.ForEach(sourceEntities, (source) => GetAllArticleDataFromRssAsync(source.Id, source.RssUrl).Wait());
+
+                //foreach (var sourceEntity in sourceEntities)
+                //{
+                //    await GetArticlesDataFromAllRssSourcesAsync(sourceEntity.Id, sourceEntity.RssUrl);
+                //}
+
+                Parallel.ForEach(sourceEntities, (source) => GetArticlesDataFromAllRssSourcesAsync(source.Id, source.RssUrl).Wait());
             }
             catch (Exception ex)
             {
@@ -42,7 +48,22 @@ namespace NewsAggregator.Business.ServicesImplementations
             }
         }
 
-        public async Task GetAllArticleDataFromRssAsync(Guid sourceId, string? sourceRssUrl)
+        public async Task GetArticlesDataFromAllRssSourcesAsync(Guid sourceId, string? sourceRssUrl)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(sourceRssUrl))
+                {
+                    await GetArticlesDataFromOnlinerRssAsync(sourceId, sourceRssUrl);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException(ex.Message);
+            }
+        }
+
+        public async Task GetArticlesDataFromOnlinerRssAsync(Guid sourceId, string? sourceRssUrl)
         {
             try
             {

@@ -5,14 +5,15 @@ namespace NewsAggregator.Core.Abstractions
     public interface IArticleService
     {
         Task<int> CreateArticleAsync(ArticleDto articleDto);
-        Task<int> CreateArticlesAsync(IEnumerable<ArticleDto> articlesDto);
         Task<ArticleDto?> GetArticleByIdAsync(Guid articleId);
-        Task<List<ArticleDto>?> GetArticlesBySourceIdAsync(Guid sourceId);
         Task<List<ArticleDto>> GetArticlesByPageNumberAsync(int pageNumber);
+        Task<List<ArticleDto>> GetArticlesByRateAsync(double? rate);
+        Task<List<ArticleDto>?> GetArticlesBySourceIdAsync(Guid sourceId);
         Task<int> UpdateArticleAsync(ArticleDto articleDto);
-        Task<int> PatchArticleAsync(Guid articleId, ArticleDto? patchList);
+        Task<int> UpdateOnlyNecessaryDataInArticleAsync(Guid articleId, ArticleDto? patchList);
+        Task AggregateArticlesFromAllAvailableSourcesAsync();
+        Task AggregateArticlesFromOnlinerAsync(Guid sourceId, string? sourceRssUrl);
         Task AddArticleTextToArticlesFromOnlinerAsync();
-        Task AggregateArticlesFromExternalSourcesAsync();
         Task AddRateToArticlesAsync();
     }
 }

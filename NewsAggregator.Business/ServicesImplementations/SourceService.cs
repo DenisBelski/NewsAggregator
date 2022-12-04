@@ -24,32 +24,6 @@ public class SourceService : ISourceService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<int> CreateSourceAsync(SourceDto sourceDto)
-    {
-        var sourceEntity = _mapper.Map<Source>(sourceDto);
-
-        if (sourceEntity != null)
-        {
-            await _unitOfWork.Sources.AddAsync(sourceEntity);
-            return await _unitOfWork.Commit();
-        }
-
-        return -1;
-    }
-
-    public async Task<int> CreateSourcesAsync(IEnumerable<SourceDto> sourcesDto)
-    {
-        var sourceEntities = _mapper.Map<IEnumerable<Source>>(sourcesDto);
-
-        if (sourceEntities != null)
-        {
-            await _unitOfWork.Sources.AddRangeSourcesAsync(sourceEntities);
-            return await _unitOfWork.Commit();
-        }
-
-        return -1;
-    }
-
     public async Task<SourceDto?> GetSourceByIdAsync(Guid sourceId)
     {
         var sourceEntity = await _unitOfWork.Sources.GetByIdAsync(sourceId);
@@ -72,19 +46,6 @@ public class SourceService : ISourceService
         }
 
         return null;
-    }
-
-    public async Task<int> UpdateSourceAsync(SourceDto sourceDto)
-    {
-        var sourceEntity = _mapper.Map<Source>(sourceDto);
-
-        if (sourceEntity != null)
-        {
-            _unitOfWork.Sources.Update(sourceEntity);
-            return await _unitOfWork.Commit();
-        }
-
-        return -1;
     }
 
     public async Task DeleteSourceByIdAsync(Guid sourceId)

@@ -13,17 +13,20 @@ namespace NewsAggregatorAspNetCore.Controllers
 {
     public class AccountController : Controller
     {
+        private readonly IConfiguration _configuration;
         private readonly IUserService _userService;
         private readonly IRoleService _roleService;
         private readonly IMapper _mapper;
 
-        public AccountController(IUserService userService,
+        public AccountController(IConfiguration configuration,
+            IUserService userService,
             IMapper mapper,
             IRoleService roleService)
         {
+            _configuration = configuration;
             _userService = userService;
-            _mapper = mapper;
             _roleService = roleService;
+            _mapper = mapper;
         }
 
         [HttpGet]
@@ -85,6 +88,8 @@ namespace NewsAggregatorAspNetCore.Controllers
             {
                 if (ModelState.IsValid)
                 {
+                    //var userRole = _configuration["UsersRole: DefaultUserRole"];
+
                     var userRoleId = await _roleService.GetRoleIdByNameAsync("User");
                     var userDto = _mapper.Map<UserDto>(model);
 
