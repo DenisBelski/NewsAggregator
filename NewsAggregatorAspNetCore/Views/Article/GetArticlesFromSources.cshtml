@@ -1,19 +1,25 @@
 ﻿@model SourceModel
 
+
+
+
 <div align="center">
     <h5>Add articles with available rating to the feed</h5>
-    <div class="list-group" style="width: 25rem">
-        <a class="btn btn-outline-secondary" href="~/article/CreateCustomArticle" style="border:double">Add articles from Onliner.by source</a>
-        <a class="btn btn-outline-secondary" href="~/article/CreateCustomArticle" style="border:double">Add new articles from Devby.io soruce</a>
-        <a class="btn btn-outline-secondary" href="~/article/CreateCustomArticle" style="border:double">Add new articles from shazoo.ru soruce</a>
-    </div>
-
     <br />
-    @using (Html.BeginForm("GetArticlesFromSources", "Article", FormMethod.Post))
-    {
-        <input type="submit" class="btn btn-outline-success" value="Submit">
-        <a class="btn btn-outline-secondary" href="~/Account/PersonalCabinetForAdmin/">Back</a>
-    }
+    <form asp-controller="Article" asp-action="GetArticlesFromSources" method="post">
+        <div class="list-group" style="width: 25rem">
+            <input class="btn btn-outline-success" type="submit" style="border:double" asp-for="Name" value="Onliner">
+            <input class="btn btn-outline-success" type="submit" style="border:double" asp-for="Name" value="Devby">
+            <input class="btn btn-outline-success" type="submit" style="border:double" asp-for="Name" value="Shazoo">
+            <br />
+@*            <a class="btn btn-outline-secondary" href="~/article/CreateCustomArticle" style="border:double">Add articles from Onliner.by source</a>
+            <a class="btn btn-outline-secondary" href="~/article/CreateCustomArticle" style="border:double">Add new articles from Devby.io soruce</a>
+            <a class="btn btn-outline-secondary" href="~/article/CreateCustomArticle" style="border:double">Add new articles from shazoo.ru soruce</a>
+*@        
+        </div>
+        <input class="btn btn-outline-success" type="submit" style="border:double" value="Get articles from any source">
+        <a class="btn btn-outline-secondary" style="border:double" href="~/Account/PersonalCabinetForAdmin/">Back</a>
+    </form>
 
 @*    <a class="btn btn-outline-secondary" href="~/article/details/@Model.Id">Get articles from Onliner.by</a>
     <a class="btn btn-outline-secondary" href="~/article/details/@Model.Id">Get articles from Dev.by</a>

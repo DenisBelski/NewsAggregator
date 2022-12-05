@@ -7,15 +7,11 @@ namespace NewsAggregator.Core.Abstractions
         Task<int> CreateArticleAsync(ArticleDto articleDto);
         Task<ArticleDto?> GetArticleByIdAsync(Guid articleId);
         Task<List<ArticleDto>> GetArticlesByPageNumberAsync(int pageNumber);
-        Task<List<ArticleDto>> GetArticlesByRateAsync(double? rate);
+        Task<List<ArticleDto>> GetArticlesByRateAsync();
         Task<List<ArticleDto>?> GetArticlesBySourceIdAsync(Guid sourceId);
         Task<int> UpdateArticleAsync(ArticleDto articleDto);
-        Task<int> UpdateOnlyNecessaryDataInArticleAsync(Guid articleId, ArticleDto? patchList);
         Task AggregateArticlesFromAllAvailableSourcesAsync();
-        Task AggregateArticlesFromOnlinerAsync(Guid sourceId, string? sourceRssUrl);
-        Task AddArticleTextToArticlesFromOnlinerAsync();
-        Task AddArticleTextToArticlesFromDevbyAsync();
-        Task AddArticleTextToArticlesFromShazooAsync();
-        Task AddRateToArticlesAsync();
+        Task AggregateArticlesFromSourceWithSpecifiedIdAsync(Guid sourceId);
+        Task RateArticleAsync(Guid articleId);
     }
 }

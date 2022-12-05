@@ -14,18 +14,18 @@ namespace NewsAggregator.Business.ServicesImplementations
     public class UserService : IUserService
     {
         private readonly IMapper _mapper;
-        private readonly IConfiguration _configuration;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IConfiguration _configuration;
         private readonly IMediator _mediator;
 
         public UserService(IMapper mapper,
-            IConfiguration configuration,
             IUnitOfWork unitOfWork,
+            IConfiguration configuration,
             IMediator mediator)
         {
             _mapper = mapper;
-            _configuration = configuration;
             _unitOfWork = unitOfWork;
+            _configuration = configuration;
             _mediator = mediator;
         }
 

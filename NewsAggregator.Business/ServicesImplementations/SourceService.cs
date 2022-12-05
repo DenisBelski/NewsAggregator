@@ -12,21 +12,32 @@ namespace NewsAggregator.Business.ServicesImplementations;
 public class SourceService : ISourceService
 {
     private readonly IMapper _mapper;
-    private readonly IConfiguration _configuration;
     private readonly IUnitOfWork _unitOfWork;
 
     public SourceService(IMapper mapper, 
-        IConfiguration configuration,
         IUnitOfWork unitOfWork)
     {
         _mapper = mapper;
-        _configuration = configuration;
         _unitOfWork = unitOfWork;
     }
 
     public async Task<SourceDto?> GetSourceByIdAsync(Guid sourceId)
     {
         var sourceEntity = await _unitOfWork.Sources.GetByIdAsync(sourceId);
+
+        if (sourceEntity != null)
+        {
+            return _mapper.Map<SourceDto>(sourceEntity);
+        }
+
+        return null;
+    }
+
+    public SourceDto? GetSourceByName(string sourceName)
+    {
+        var sourceEntity = _unitOfWork.Sources
+            .FindBy(source => source.Name.Equals(sourceName))
+            .FirstOrDefault();
 
         if (sourceEntity != null)
         {

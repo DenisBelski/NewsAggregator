@@ -56,10 +56,10 @@ namespace NewsAggregator.WebAPI.Controllers
                 //Remove created jobs
                 //RecurringJob.RemoveIfExists(nameof(_articleService.AggregateArticlesFromExternalSourcesAsync));
 
-                RecurringJob.RemoveIfExists(nameof(_rssService.GetArticlesDataFromAllRssSourcesAsync));
+                RecurringJob.RemoveIfExists(nameof(_rssService.GetArticlesDataFromAllAvailableRssSourcesAsync));
                 RecurringJob.RemoveIfExists(nameof(_articleService.AddArticleTextToArticlesFromOnlinerAsync));
 
-                RecurringJob.AddOrUpdate(() => _rssService.GetArticlesDataFromAllRssSourcesAsync(), "15 */12 * * *");
+                RecurringJob.AddOrUpdate(() => _rssService.GetArticlesDataFromAllAvailableRssSourcesAsync(), "15 */12 * * *");
                 RecurringJob.AddOrUpdate(() => _articleService.AddArticleTextToArticlesFromOnlinerAsync(), "15 */12 * * *");
 
                 return Ok();

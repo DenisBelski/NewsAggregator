@@ -34,24 +34,20 @@ namespace NewsAggregatorAspNetCore.Controllers
             _mapper = mapper;
         }
 
-        //public async Task<IActionResult> Index(double? rate)
-
-        public async Task<IActionResult> IndexAsync(int page)
+        public async Task<IActionResult> Index()
         {
             try
             {
-                var articles = await _articleService.GetArticlesByPageNumberAsync(page);
+                //var articles = await _articleService.GetArticlesByPageNumberAsync(page);
 
-                //var articles = await _articleService.GetArticlesByRateAsync(rate);
+                var articles = await _articleService.GetArticlesByRateAsync();
 
                 if (articles.Any())
                 {
                     return View(articles);
                 }
-                else
-                {
-                    throw new ArgumentException(nameof(page));
-                }
+
+                return View();
             }
             catch (Exception ex)
             {
@@ -97,27 +93,25 @@ namespace NewsAggregatorAspNetCore.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<IActionResult> GetArticlesFromSources(SourceModel model)
+        public async Task<IActionResult> GetArticlesFromSources(string name)
         {
             try
             {
-                //await _rssService.GetArticlesDataFromAllRssSourcesAsync();
+                if (!string.IsNullOrEmpty(name))
+                {
+                    var sourceDto = _sourceService.GetSourceByName(name); 
 
-
-                //await _articleService.AddArticleTextToArticlesFromOnlinerAsync();
-                //await _articleService.AddArticleTextToArticlesFromDevbyAsync();
-                await _articleService.AddArticleTextToArticlesFromShazooAsync();
-
-
-                //await _articleService.AddRateToArticlesAsync();
+                    if (sourceDto != null && sourceDto.Name == name)
+                    {
+                        await _articleService.AggregateArticlesFromSourceWithSpecifiedIdAsync(sourceDto.Id);
+                    }
+                }
+                else
+                {
+                    await _articleService.AggregateArticlesFromAllAvailableSourcesAsync();
+                }
 
                 return RedirectToAction("PersonalCabinetForAdmin", "Account");
-
-                //var sourceModel = await _sourceService.GetSourceByIdAsync(id);
-                //if (sourceModel != null)
-                //{
-                //    var sourceDto = _mapper.Map<SourceDto>(sourceModel);
-                //}
             }
             catch (Exception ex)
             {
@@ -151,11 +145,12 @@ namespace NewsAggregatorAspNetCore.Controllers
                 {
                     model.Id = Guid.NewGuid();
                     model.PublicationDate = DateTime.Now;
-                    model.SourceUrl = "CustomUrl";
-                    model.SourceId = new Guid("C0DC8F82-933E-4FFE-A576-0BC9BE4DFC8F");
+                    model.SourceUrl = _configuration["CustomSource:SourceUrl"];
+                    model.SourceId = new Guid(_configuration["CustomSource:SourceId"]);
                     
                     var articleDto = _mapper.Map<ArticleDto>(model);
                     await _articleService.CreateArticleAsync(articleDto);
+                    await _articleService.RateArticleAsync(articleDto.Id);
 
                     return RedirectToAction("PersonalCabinetForAdmin", "Account");
                 }

@@ -23,22 +23,22 @@ namespace NewsAggregator.Business.ServicesImplementations
 {
     public class ArticleService : IArticleService
     {
-        private readonly IConfiguration _configuration;
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IRssService _rssService;
         private readonly IMapper _mapper;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IConfiguration _configuration;
+        private readonly IRssService _rssService;
         private readonly IMediator _mediator;
 
-        public ArticleService(IConfiguration configuration, 
+        public ArticleService(IMapper mapper,
             IUnitOfWork unitOfWork,
+            IConfiguration configuration,
             IRssService rssService,
-            IMapper mapper,
             IMediator mediator)
         {
-            _configuration = configuration;
-            _unitOfWork = unitOfWork;
-            _rssService = rssService;
             _mapper = mapper;
+            _unitOfWork = unitOfWork;
+            _configuration = configuration;
+            _rssService = rssService;
             _mediator = mediator;
         }
 
@@ -82,12 +82,9 @@ namespace NewsAggregator.Business.ServicesImplementations
             return listArticlesDto;
         }
 
-        public async Task<List<ArticleDto>> GetArticlesByRateAsync(double? rate)
+        public async Task<List<ArticleDto>> GetArticlesByRateAsync()
         {
-            if (rate == null)
-            {
-                rate = Convert.ToDouble(_configuration["Rating: Acceptable rating"]);
-            }
+            var rate = Convert.ToDouble(_configuration["Rating:AcceptableRating"]);
 
             var listArticlesDto = await _unitOfWork.Articles
                 .Get()
@@ -96,41 +93,6 @@ namespace NewsAggregator.Business.ServicesImplementations
                 .ToListAsync();
 
             return listArticlesDto;
-        }
-
-        public async Task<int> UpdateArticleAsync(ArticleDto articleDto)
-        {
-            var articleEntity = _mapper.Map<Article>(articleDto);
-
-            if (articleEntity != null)
-            {
-                _unitOfWork.Articles.Update(articleEntity);
-                return await _unitOfWork.Commit();
-            }
-
-            return -1;
-        }
-
-        public async Task<int> UpdateOnlyNecessaryDataInArticleAsync(Guid articleId, ArticleDto? patchList)
-        {
-            //var articleDto = await GetArticleByIdAsync(id);
-            //await _unitOfWork.Articles.PatchArticleAsync(id, patchList);
-
-            //should be sure that dto property naming is the same with articleEntity property naming
-            //var patchList = new List<PatchModel>();
-            //if (dto != null)
-            //{
-            //    if (!dto.Title.Equals(sourceDto.Title))
-            //    {
-            //        patchList.Add(new PatchModel()
-            //        {
-            //            PropertyName = nameof(dto.Title),
-            //            PropertyValue = dto.Title
-            //        });
-            //    }
-            //}
-
-            return await _unitOfWork.Commit();
         }
 
         public async Task<List<ArticleDto>?> GetArticlesBySourceIdAsync(Guid sourceId)
@@ -149,6 +111,19 @@ namespace NewsAggregator.Business.ServicesImplementations
             return null;
         }
 
+        public async Task<int> UpdateArticleAsync(ArticleDto articleDto)
+        {
+            var articleEntity = _mapper.Map<Article>(articleDto);
+
+            if (articleEntity != null)
+            {
+                _unitOfWork.Articles.Update(articleEntity);
+                return await _unitOfWork.Commit();
+            }
+
+            return -1;
+        }
+
         public async Task AggregateArticlesFromAllAvailableSourcesAsync()
         {
             try
@@ -157,8 +132,9 @@ namespace NewsAggregator.Business.ServicesImplementations
 
                 foreach (var sourceEntity in sourceEntities)
                 {
-                    await _rssService.GetArticlesDataFromOnlinerRssAsync(sourceEntity.Id, sourceEntity.RssUrl);
-                    await AddArticleTextToArticlesFromOnlinerAsync();
+                    await _rssService.GetArticlesDataFromAllAvailableRssSourcesAsync();
+                    await AddArticleTextToArticlesForAllAvailableSourcesAsync();
+                    await AddRateToArticlesAsync();
                 }
             }
             catch (Exception ex)
@@ -167,14 +143,15 @@ namespace NewsAggregator.Business.ServicesImplementations
             }
         }
 
-        public async Task AggregateArticlesFromOnlinerAsync(Guid sourceId, string? sourceRssUrl)
+        public async Task AggregateArticlesFromSourceWithSpecifiedIdAsync(Guid sourceId)
         {
             try
             {
-                if (!string.IsNullOrEmpty(sourceRssUrl))
+                if (!Guid.Empty.Equals(sourceId))
                 {
-                    await _rssService.GetArticlesDataFromOnlinerRssAsync(sourceId, sourceRssUrl);
-                    await AddArticleTextToArticlesFromOnlinerAsync();
+                    await _rssService.GetArticlesDataFromRssSourceWithSpecifiedIdAsync(sourceId);
+                    await AddArticleTextToArticlesForSpecifiedSourceByIdAsync(sourceId);
+                    await AddRateToArticlesAsync();
                 }
             }
             catch (Exception ex)
@@ -183,259 +160,7 @@ namespace NewsAggregator.Business.ServicesImplementations
             }
         }
 
-        public async Task AddArticleTextToArticlesFromOnlinerAsync()
-        {
-            try
-            {
-                var articlesWithEmptyTextIds = _unitOfWork.Articles
-                    .Get()
-                    .Where(article => string.IsNullOrEmpty(article.ArticleText))
-                    .Select(article => article.Id)
-                    .ToList();
-
-                foreach (var articleId in articlesWithEmptyTextIds)
-                {
-                    await AddArticleTextToArticleFromOnlinerAsync(articleId);
-                }
-
-                //var articlesWithEmptyTextIds = await _mediator.Send(new GetAllArticlesWithoutTextIdsQuery());
-                //foreach (var articleId in articlesWithEmptyTextIds)
-                //{
-                //    await AddArticleTextToArticleFromOnlinerAsync(articleId);
-                //}
-            }
-            catch (Exception ex)
-            {
-                throw new ArgumentException(ex.Message);
-            }
-        }
-
-        public async Task AddArticleTextToArticlesFromDevbyAsync()
-        {
-            try
-            {
-                var articlesWithEmptyTextIds = _unitOfWork.Articles
-                    .Get()
-                    .Where(article => string.IsNullOrEmpty(article.ArticleText))
-                    .Select(article => article.Id)
-                    .ToList();
-
-                foreach (var articleId in articlesWithEmptyTextIds)
-                {
-                    await AddArticleTextToArticleFromDevbyAsync(articleId);
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new ArgumentException(ex.Message);
-            }
-        }
-
-        public async Task AddArticleTextToArticlesFromShazooAsync()
-        {
-            try
-            {
-                var articlesWithEmptyTextIds = _unitOfWork.Articles
-                    .Get()
-                    .Where(article => string.IsNullOrEmpty(article.ArticleText))
-                    .Select(article => article.Id)
-                    .ToList();
-
-                foreach (var articleId in articlesWithEmptyTextIds)
-                {
-                    await AddArticleTextToArticleFromShazooAsync(articleId);
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new ArgumentException(ex.Message);
-            }
-        }
-
-
-        public async Task AddRateToArticlesAsync()
-        {
-            try
-            {
-                var articlesWithEmptyRateIds = _unitOfWork.Articles.Get()
-                    .Where(article => article.Rate == null && !string.IsNullOrEmpty(article.ArticleText))
-                    .Select(article => article.Id)
-                    .ToList();
-
-                foreach (var articleId in articlesWithEmptyRateIds)
-                {
-                    await RateArticleAsync(articleId);
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new ArgumentException(ex.Message);
-            }
-        }
-
-        private async Task AddArticleTextToArticleFromOnlinerAsync(Guid articleId)
-        {
-            try
-            {
-                var article = await _unitOfWork.Articles.GetByIdAsync(articleId);
-
-                //var article = await _mediator.Send(new GetArticleByIdQuery { Id = articleId });
-
-                if (article != null)
-                {
-                    var articleSourceUrl = article.SourceUrl;
-                    var web = new HtmlWeb();
-                    var htmlDoc = web.Load(articleSourceUrl);
-
-                    // get class name "news-text" from web page with news
-                    var htmlNodes = htmlDoc.DocumentNode.Descendants(0).Where(n => n.HasClass("news-text"));
-
-                    if (htmlNodes.Any())
-                    {
-                        var articleText = htmlNodes.FirstOrDefault()?
-                            .ChildNodes
-                            .Where(node => (node.Name.Equals("p")
-                                            || node.Name.Equals("div")
-                                            || node.Name.Equals("h2"))
-                                            && !node.HasClass("news-reference")
-                                            && !node.HasClass("news-banner")
-                                            && !node.HasClass("news-widget")
-                                            && !node.HasClass("news-vote")
-                                            && !node.HasClass("news-incut")
-                                            && !node.HasClass("button-style")
-                                            && !node.HasClass("news-entry__speech")    //??
-                                            && !node.HasClass("news-entry")            //??
-                                            && !node.HasClass("news-header")
-                                            && !node.HasClass("news-media")
-                                            && !node.HasClass("news-media__viewport")
-                                            && !node.HasClass("news-media__preview")
-                                            && !node.HasClass("news-media__inside")
-                                            && !node.HasClass("alignnone")
-                                            && node.Attributes["style"] == null)
-                            .Select(node => node.InnerText)                            // or => node.InnerText node.OuterHtml/InnerHtml
-                            .Aggregate((i, j) => i + Environment.NewLine + j);
-
-                        await _unitOfWork.Articles.UpdateArticleTextAsync(articleId, articleText);
-                        await _unitOfWork.Commit();
-
-                        //await _mediator.Send(new UpdateArticleTextCommand() { Id = articleId, Text = articleText });
-                    }
-                }
-                else
-                {
-                    Log.Warning($"The logic in {nameof(AddArticleTextToArticleFromOnlinerAsync)} method wasn't implemented, " +
-                        $"because {nameof(articleId)} parametr equals null");
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new ArgumentException(ex.Message);
-            }
-        }
-
-        private async Task AddArticleTextToArticleFromDevbyAsync(Guid articleId)
-        {
-            try
-            {
-                var article = await _unitOfWork.Articles.GetByIdAsync(articleId);
-
-                if (article != null)
-                {
-                    var articleSourceUrl = article.SourceUrl;
-                    var web = new HtmlWeb();
-                    var htmlDoc = web.Load(articleSourceUrl);
-
-                    // get class name "news-text" from web page with news
-                    var htmlNodes = htmlDoc.DocumentNode.Descendants(0).Where(n => n.HasClass("article__body"));
-
-                    if (htmlNodes.Any())
-                    {
-                        var articleText = htmlNodes.FirstOrDefault()?
-                            .ChildNodes
-                            .Where(node => (node.Name.Equals("p")
-                                            || node.Name.Equals("div")
-                                            || node.Name.Equals("li"))
-                                            && !node.Name.Equals("a")
-                                            && !node.Name.Equals("h2")
-                                            && !node.Name.Equals("span")
-                                            && !node.Name.Equals("figure")
-                                            && !Regex.IsMatch(node.GetAttributeValue("class", ""), @"\s*global-incut\s*")
-                                            && !Regex.IsMatch(node.GetAttributeValue("class", ""), @"\s*incut\s*")
-                                            && !Regex.IsMatch(node.GetAttributeValue("class", ""), @"\s*article-widget__content\s*")
-                                            && !Regex.IsMatch(node.GetAttributeValue("class", ""), @"\s*noopener\s*")
-                                            && node.Attributes["style"] == null)
-                            .Select(node => node.InnerText)
-                            .Aggregate((i, j) => i + Environment.NewLine + j)
-                            .Replace("&nbsp;", " ");
-
-                        await _unitOfWork.Articles.UpdateArticleTextAsync(articleId, articleText);
-                        await _unitOfWork.Commit();
-                    }
-                }
-                else
-                {
-                    Log.Warning($"The logic in {nameof(AddArticleTextToArticleFromOnlinerAsync)} method wasn't implemented, " +
-                        $"because {nameof(articleId)} parametr equals null");
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new ArgumentException(ex.Message);
-            }
-        }
-
-        private async Task AddArticleTextToArticleFromShazooAsync(Guid articleId)
-        {
-            try
-            {
-                var article = await _unitOfWork.Articles.GetByIdAsync(articleId);
-
-                if (article != null)
-                {
-                    var articleSourceUrl = article.SourceUrl;
-                    var web = new HtmlWeb();
-                    var htmlDoc = web.Load(articleSourceUrl);
-
-                    var htmlNodes = htmlDoc.DocumentNode.Descendants(0).Where(node => node.HasClass("Entry__content"));
-
-                    if (htmlNodes.Any())
-                    {
-                        var articleText = htmlNodes.FirstOrDefault()?
-                            .ChildNodes
-                            .Where(node => node.Name.Equals("p")
-                                            && !node.Name.Equals("span")
-                                            && node.Attributes["style"] == null)
-                            .Select(node => node.InnerText)
-                            .Aggregate((i, j) => i + Environment.NewLine + j);
-
-
-                        var patchList = new List<PatchModel>()
-                        {
-                            new PatchModel()
-                            {
-                                PropertyName = nameof(article.ShortDescription),
-                                PropertyValue = articleText
-                            }
-                        };
-
-                        await _unitOfWork.Articles.UpdateArticleTextAsync(articleId, articleText);
-                        await _unitOfWork.Articles.PatchArticleAsync(articleId, patchList);
-                        await _unitOfWork.Commit();
-                    }
-                }
-                else
-                {
-                    Log.Warning($"The logic in {nameof(AddArticleTextToArticleFromOnlinerAsync)} method wasn't implemented, " +
-                        $"because {nameof(articleId)} parametr equals null");
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new ArgumentException(ex.Message);
-            }
-        }
-
-        private async Task RateArticleAsync(Guid articleId)
+        public async Task RateArticleAsync(Guid articleId)
         {
             try
             {
@@ -490,6 +215,203 @@ namespace NewsAggregator.Business.ServicesImplementations
                 throw new ArgumentException(ex.Message);
             }
         }
+
+        private async Task AddArticleTextToArticlesForAllAvailableSourcesAsync()
+        {
+            try
+            {
+                var articlesWithEmptyTextIdsAndSpecifySource = _unitOfWork.Articles
+                    .Get()
+                    .Where(article => string.IsNullOrEmpty(article.ArticleText))
+                    .Select(article => article.Id)
+                    .ToList();
+
+                foreach (var articleId in articlesWithEmptyTextIdsAndSpecifySource)
+                {
+                    await AddArticleTextToArticleBySourceIdAsync(articleId);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException(ex.Message);
+            }
+        }
+
+        private async Task AddArticleTextToArticlesForSpecifiedSourceByIdAsync(Guid sourceId)
+        {
+            try
+            {
+                var articlesWithEmptyTextIdsAndSpecifySource = _unitOfWork.Articles
+                    .Get()
+                    .Where(article => string.IsNullOrEmpty(article.ArticleText) && article.SourceId == sourceId)
+                    .Select(article => article.Id)
+                    .ToList();
+
+                foreach (var articleId in articlesWithEmptyTextIdsAndSpecifySource)
+                {
+                    await AddArticleTextToArticleBySourceIdAsync(articleId);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException(ex.Message);
+            }
+        }
+
+        private async Task AddRateToArticlesAsync()
+        {
+            try
+            {
+                var articlesWithEmptyRateIds = _unitOfWork.Articles.Get()
+                    .Where(article => article.Rate == null && !string.IsNullOrEmpty(article.ArticleText))
+                    .Select(article => article.Id)
+                    .ToList();
+
+                foreach (var articleId in articlesWithEmptyRateIds)
+                {
+                    await RateArticleAsync(articleId);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException(ex.Message);
+            }
+        }
+
+        private async Task AddArticleTextToArticleBySourceIdAsync(Guid articleId)
+        {
+            try
+            {
+                var articleEntity = await _unitOfWork.Articles.GetByIdAsync(articleId);
+
+                if (articleEntity != null)
+                {
+                    var articleSourceUrl = articleEntity.SourceUrl;
+                    var web = new HtmlWeb();
+                    var htmlDoc = web.Load(articleSourceUrl);
+                    var articleText = String.Empty;
+
+                    
+
+                    if (articleEntity.SourceId == new Guid(_configuration["AvailableRssSources:Onliner"]))
+                    {
+                        articleText = GetArticleTextFromOnliner(htmlDoc.DocumentNode
+                            .Descendants(0).Where(n => n.HasClass("news-text")));
+                    }
+                    else if (articleEntity.SourceId == new Guid(_configuration["AvailableRssSources:Devby"]))
+                    {
+                        articleText = GetArticleTextFromDevby(htmlDoc.DocumentNode
+                            .Descendants(0).Where(n => n.HasClass("article__body")));
+                    }
+                    else if (articleEntity.SourceId == new Guid(_configuration["AvailableRssSources:Shazoo"]))
+                    {
+                        articleText = GetArticleTextFromOnliner(htmlDoc.DocumentNode
+                            .Descendants(0).Where(n => n.HasClass("Entry__content")));
+
+                        var patchList = new List<PatchModel>()
+                        {
+                            new PatchModel()
+                            {
+                                PropertyName = nameof(articleEntity.ShortDescription),
+                                PropertyValue = articleText
+                            }
+                        };
+
+                        await _unitOfWork.Articles.PatchArticleAsync(articleId, patchList);
+                    }
+
+                    if (!string.IsNullOrEmpty(articleText))
+                    {
+                        await _unitOfWork.Articles.UpdateArticleTextAsync(articleId, articleText);
+                        await _unitOfWork.Commit();
+                    }
+                }
+                else
+                {
+                    Log.Warning($"The logic in {nameof(AddArticleTextToArticleBySourceIdAsync)} method wasn't implemented, " +
+                        $"because {nameof(articleId)} parametr equals null");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException(ex.Message);
+            }
+        }
+
+        private string? GetArticleTextFromOnliner(IEnumerable<HtmlNode> htmlNodes)
+        {
+            if (htmlNodes.Any())
+            {
+                return htmlNodes.FirstOrDefault()?
+                    .ChildNodes
+                    .Where(node => (node.Name.Equals("p")
+                                    || node.Name.Equals("div")
+                                    || node.Name.Equals("h2"))
+                                    && !node.HasClass("news-reference")
+                                    && !node.HasClass("news-banner")
+                                    && !node.HasClass("news-widget")
+                                    && !node.HasClass("news-vote")
+                                    && !node.HasClass("news-incut")
+                                    && !node.HasClass("button-style")
+                                    && !node.HasClass("news-entry__speech")
+                                    && !node.HasClass("news-entry")            
+                                    && !node.HasClass("news-header")
+                                    && !node.HasClass("news-media")
+                                    && !node.HasClass("news-media__viewport")
+                                    && !node.HasClass("news-media__preview")
+                                    && !node.HasClass("news-media__inside")
+                                    && !node.HasClass("alignnone")
+                                    && node.Attributes["style"] == null)
+                    .Select(node => node.InnerText)                            
+                    .Aggregate((i, j) => i + Environment.NewLine + j);
+            }
+
+            return String.Empty;
+        }
+
+        private string? GetArticleTextFromDevby(IEnumerable<HtmlNode> htmlNodes)
+        {
+            if (htmlNodes.Any())
+            {
+                return htmlNodes.FirstOrDefault()?
+                    .ChildNodes
+                    .Where(node => (node.Name.Equals("p")
+                                    || node.Name.Equals("div")
+                                    || node.Name.Equals("li"))
+                                    && !node.Name.Equals("a")
+                                    && !node.Name.Equals("h2")
+                                    && !node.Name.Equals("span")
+                                    && !node.Name.Equals("figure")
+                                    && !Regex.IsMatch(node.GetAttributeValue("class", ""), @"\s*global-incut\s*")
+                                    && !Regex.IsMatch(node.GetAttributeValue("class", ""), @"\s*incut\s*")
+                                    && !Regex.IsMatch(node.GetAttributeValue("class", ""), @"\s*article-widget__content\s*")
+                                    && !Regex.IsMatch(node.GetAttributeValue("class", ""), @"\s*noopener\s*")
+                                    && node.Attributes["style"] == null)
+                    .Select(node => node.InnerText)
+                    .Aggregate((i, j) => i + Environment.NewLine + j)
+                    .Replace("&nbsp;", " ");
+            }
+
+            return String.Empty;
+        }
+
+        private string? GetArticleTextFromShazoo(IEnumerable<HtmlNode> htmlNodes)
+        {
+            if (htmlNodes.Any())
+            {
+               return htmlNodes.FirstOrDefault()?
+                    .ChildNodes
+                    .Where(node => node.Name.Equals("p")
+                                    && !node.Name.Equals("span")
+                                    && node.Attributes["style"] == null)
+                    .Select(node => node.InnerText)
+                    .Aggregate((i, j) => i + Environment.NewLine + j)
+                    .Replace("&quot;", " ");
+            }
+
+            return String.Empty;
+        }
+
 
         private double? CompareArticleWithAfinnDictionary(List<Lemma> listLemmas)
         {
