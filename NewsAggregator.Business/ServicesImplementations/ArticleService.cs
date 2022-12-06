@@ -49,29 +49,32 @@ namespace NewsAggregator.Business.ServicesImplementations
             if (articleEntity != null)
             {
                 await _unitOfWork.Articles.AddAsync(articleEntity);
-                var addingResult = await _unitOfWork.Commit();
-
-                return addingResult;
+                return await _unitOfWork.Commit();
             }
 
             return -1;
         }
 
+        public async Task<IEnumerable<ArticleDto>> GetArticles()
+        {
+            var articleEntities = await _unitOfWork.Articles.GetAllAsync();
+
+            return articleEntities != null
+                ? _mapper.Map<List<ArticleDto>>(articleEntities)
+                : Enumerable.Empty<ArticleDto>();
+        }
+
         public async Task<ArticleDto?> GetArticleByIdAsync(Guid articleId)
         {
             var articleEntity = await _unitOfWork.Articles.GetByIdAsync(articleId);
+            //return _mapper.Map<ArticleDto>(await _mediator.Send(new GetArticleByIdQuery() { Id = id }));
 
-            if (articleEntity != null)
-            {
-                //return _mapper.Map<ArticleDto>(await _mediator.Send(new GetArticleByIdQuery() { Id = id }));
-
-                return _mapper.Map<ArticleDto>(articleEntity);
-            }
-
-            return null;
+            return articleEntity != null
+                ? _mapper.Map<ArticleDto>(articleEntity) 
+                : null;
         }
 
-        public async Task<List<ArticleDto>> GetArticlesByPageNumberAsync(int pageNumber)
+        public async Task<IEnumerable<ArticleDto>> GetArticlesByPageNumberAsync(int pageNumber)
         {
             var listArticlesDto = await _unitOfWork.Articles
                 .Get()
@@ -79,23 +82,28 @@ namespace NewsAggregator.Business.ServicesImplementations
                 .Select(article => _mapper.Map<ArticleDto>(article))
                 .ToListAsync();
 
-            return listArticlesDto;
+            return listArticlesDto != null
+                ? _mapper.Map<List<ArticleDto>>(listArticlesDto)
+                : Enumerable.Empty<ArticleDto>();
         }
 
-        public async Task<List<ArticleDto>> GetArticlesByRateAsync()
+        public async Task<IEnumerable<ArticleDto>> GetArticlesByRateAsync(double? rate)
         {
-            var rate = Convert.ToDouble(_configuration["Rating:AcceptableRating"]);
+            if (rate.HasValue)
+            {
+                var listArticlesDto = await _unitOfWork.Articles
+                    .Get()
+                    .Where(article => article.Rate != null && article.Rate > rate)
+                    .Select(article => _mapper.Map<ArticleDto>(article))
+                    .ToListAsync();
 
-            var listArticlesDto = await _unitOfWork.Articles
-                .Get()
-                .Where(article => article.Rate != null && article.Rate > rate)
-                .Select(article => _mapper.Map<ArticleDto>(article))
-                .ToListAsync();
+                return listArticlesDto;
+            }
 
-            return listArticlesDto;
+            return Enumerable.Empty<ArticleDto>();
         }
 
-        public async Task<List<ArticleDto>?> GetArticlesBySourceIdAsync(Guid sourceId)
+        public async Task<IEnumerable<ArticleDto>> GetArticlesBySourceIdAsync(Guid? sourceId)
         {
             var articleEntities = _unitOfWork.Articles.Get();
 
@@ -108,7 +116,7 @@ namespace NewsAggregator.Business.ServicesImplementations
                     .ToList();
             }
 
-            return null;
+            return Enumerable.Empty<ArticleDto>();
         }
 
         public async Task<int> UpdateArticleAsync(ArticleDto articleDto)
@@ -128,14 +136,18 @@ namespace NewsAggregator.Business.ServicesImplementations
         {
             try
             {
-                var sourceEntities = await _unitOfWork.Sources.GetAllAsync();
+                await _rssService.GetArticlesDataFromAllAvailableRssSourcesAsync();
+                await AddArticleTextToArticlesForAllAvailableSourcesAsync();
+                await AddRateToArticlesAsync();
 
-                foreach (var sourceEntity in sourceEntities)
-                {
-                    await _rssService.GetArticlesDataFromAllAvailableRssSourcesAsync();
-                    await AddArticleTextToArticlesForAllAvailableSourcesAsync();
-                    await AddRateToArticlesAsync();
-                }
+                //var sourceEntities = await _unitOfWork.Sources.GetAllAsync();
+
+                //foreach (var sourceEntity in sourceEntities)
+                //{
+                //    await _rssService.GetArticlesDataFromAllAvailableRssSourcesAsync();
+                //    await AddArticleTextToArticlesForAllAvailableSourcesAsync();
+                //    await AddRateToArticlesAsync();
+                //}
             }
             catch (Exception ex)
             {
@@ -160,61 +172,69 @@ namespace NewsAggregator.Business.ServicesImplementations
             }
         }
 
-        public async Task RateArticleAsync(Guid articleId)
+        public async Task RateArticleByIdAsync(Guid articleId)
         {
             try
             {
                 var article = await _unitOfWork.Articles.GetByIdAsync(articleId);
 
-                if (article != null)
+                if (article != null && !string.IsNullOrEmpty(article.ArticleText))
                 {
-                    using (var client = new HttpClient())
+                    var rateResult = await GetArticleRateByArticleTextAsync(article.ArticleText);
+
+                    var patchList = new List<PatchModel>()
                     {
-                        var httpRequest = new HttpRequestMessage(HttpMethod.Post,
-                            new Uri(@"http://api.ispras.ru/texterra/v1/nlp?targetType=lemma&apikey=1e03d79d9f01859fefbc04abe0a9c3f3660e117f"));
-
-                        httpRequest.Headers.Add("Accept", "application/json");
-                        httpRequest.Content = JsonContent.Create(
-                            new[] { new TextRequestModel() { Text = article.ArticleText } });
-
-                        var httpResponse = await client.SendAsync(httpRequest);
-                        var responseStream = await httpResponse.Content.ReadAsStreamAsync();
-
-                        using (var stream = new StreamReader(responseStream))
+                        new PatchModel()
                         {
-                            var responseData = await stream.ReadToEndAsync();
-                            var responseObject = JsonConvert.DeserializeObject<IsprassResponseObject[]>(responseData);
-
-                            if (responseObject != null)
-                            {
-                                double? rateResult = CompareArticleWithAfinnDictionary(responseObject[0].Annotations.Lemma);
-
-                                var patchList = new List<PatchModel>()
-                                {
-                                    new PatchModel()
-                                    {
-                                        PropertyName = nameof(article.Rate),
-                                        PropertyValue = rateResult
-                                    }
-                                };
-
-                                await _unitOfWork.Articles.PatchArticleAsync(articleId, patchList);
-                                await _unitOfWork.Commit();
-                            }
+                            PropertyName = nameof(article.Rate),
+                            PropertyValue = rateResult
                         }
-                    }
-                }
-                else
-                {
-                    Log.Warning($"The logic in {nameof(RateArticleAsync)} method wasn't implemented, " +
-                        $"because {nameof(articleId)} parametr equals null");
+                    };
+
+                    await _unitOfWork.Articles.PatchArticleAsync(articleId, patchList);
+                    await _unitOfWork.Commit();
                 }
             }
             catch (Exception ex)
             {
-                throw new ArgumentException(ex.Message);
+                throw new ArgumentException(ex.Message, nameof(articleId));
             }
         }
+
+        public async Task<double?> GetArticleRateByArticleTextAsync(string articleText)
+        {
+            if (!string.IsNullOrEmpty(articleText))
+            {
+                using (var client = new HttpClient())
+                {
+                    var httpRequest = new HttpRequestMessage(HttpMethod.Post,
+                        new Uri(@"http://api.ispras.ru/texterra/v1/nlp?targetType=lemma&apikey=1e03d79d9f01859fefbc04abe0a9c3f3660e117f"));
+
+                    httpRequest.Headers.Add("Accept", "application/json");
+                    httpRequest.Content = JsonContent.Create(
+                        new[] { new TextRequestModel() { Text = articleText } });
+
+                    var httpResponse = await client.SendAsync(httpRequest);
+                    var responseStream = await httpResponse.Content.ReadAsStreamAsync();
+
+                    using (var stream = new StreamReader(responseStream))
+                    {
+                        var responseData = await stream.ReadToEndAsync();
+                        var responseObject = JsonConvert.DeserializeObject<IsprassResponseObject[]>(responseData);
+
+                        return responseObject != null
+                            ? CompareArticleWithAfinnDictionary(responseObject[0].Annotations.Lemma)
+                            : null;
+                    }
+                }
+            }
+            else
+            {
+                Log.Warning($"{nameof(articleText)} parametr equals null");
+                return null;
+            }
+        }
+
 
         private async Task AddArticleTextToArticlesForAllAvailableSourcesAsync()
         {
@@ -269,7 +289,7 @@ namespace NewsAggregator.Business.ServicesImplementations
 
                 foreach (var articleId in articlesWithEmptyRateIds)
                 {
-                    await RateArticleAsync(articleId);
+                    await RateArticleByIdAsync(articleId);
                 }
             }
             catch (Exception ex)
@@ -291,19 +311,17 @@ namespace NewsAggregator.Business.ServicesImplementations
                     var htmlDoc = web.Load(articleSourceUrl);
                     var articleText = String.Empty;
 
-                    
-
-                    if (articleEntity.SourceId == new Guid(_configuration["AvailableRssSources:Onliner"]))
+                    if (articleEntity.SourceId == new Guid(_configuration["AvailableRssSources:OnlinerId"]))
                     {
                         articleText = GetArticleTextFromOnliner(htmlDoc.DocumentNode
                             .Descendants(0).Where(n => n.HasClass("news-text")));
                     }
-                    else if (articleEntity.SourceId == new Guid(_configuration["AvailableRssSources:Devby"]))
+                    else if (articleEntity.SourceId == new Guid(_configuration["AvailableRssSources:DevbyId"]))
                     {
                         articleText = GetArticleTextFromDevby(htmlDoc.DocumentNode
                             .Descendants(0).Where(n => n.HasClass("article__body")));
                     }
-                    else if (articleEntity.SourceId == new Guid(_configuration["AvailableRssSources:Shazoo"]))
+                    else if (articleEntity.SourceId == new Guid(_configuration["AvailableRssSources:ShazooId"]))
                     {
                         articleText = GetArticleTextFromOnliner(htmlDoc.DocumentNode
                             .Descendants(0).Where(n => n.HasClass("Entry__content")));
@@ -354,7 +372,7 @@ namespace NewsAggregator.Business.ServicesImplementations
                                     && !node.HasClass("news-incut")
                                     && !node.HasClass("button-style")
                                     && !node.HasClass("news-entry__speech")
-                                    && !node.HasClass("news-entry")            
+                                    && !node.HasClass("news-entry")
                                     && !node.HasClass("news-header")
                                     && !node.HasClass("news-media")
                                     && !node.HasClass("news-media__viewport")
@@ -362,7 +380,7 @@ namespace NewsAggregator.Business.ServicesImplementations
                                     && !node.HasClass("news-media__inside")
                                     && !node.HasClass("alignnone")
                                     && node.Attributes["style"] == null)
-                    .Select(node => node.InnerText)                            
+                    .Select(node => node.InnerText)
                     .Aggregate((i, j) => i + Environment.NewLine + j);
             }
 
@@ -399,21 +417,21 @@ namespace NewsAggregator.Business.ServicesImplementations
         {
             if (htmlNodes.Any())
             {
-               return htmlNodes.FirstOrDefault()?
-                    .ChildNodes
-                    .Where(node => node.Name.Equals("p")
-                                    && !node.Name.Equals("span")
-                                    && node.Attributes["style"] == null)
-                    .Select(node => node.InnerText)
-                    .Aggregate((i, j) => i + Environment.NewLine + j)
-                    .Replace("&quot;", " ");
+                return htmlNodes.FirstOrDefault()?
+                     .ChildNodes
+                     .Where(node => node.Name.Equals("p")
+                                     && !node.Name.Equals("span")
+                                     && node.Attributes["style"] == null)
+                     .Select(node => node.InnerText)
+                     .Aggregate((i, j) => i + Environment.NewLine + j)
+                     .Replace("&quot;", " ");
             }
 
             return String.Empty;
         }
 
 
-        private double? CompareArticleWithAfinnDictionary(List<Lemma> listLemmas)
+        private double CompareArticleWithAfinnDictionary(List<Lemma> listLemmas)
         {
             using (var stream = new StreamReader(@"D:\IT\GitHub_Projects\NewsAggregator\NewsAggregator.Business\ServicesImplementations\AFINN-ru.json"))
             {
@@ -439,12 +457,9 @@ namespace NewsAggregator.Business.ServicesImplementations
                     }
                 }
 
-                if (amountOfEvaluatedWords != 0)
-                {
-                    return Math.Round((totalTextScore / amountOfEvaluatedWords), 2);
-                }
-
-                return 0;
+                return amountOfEvaluatedWords != 0 
+                    ? Math.Round((totalTextScore / amountOfEvaluatedWords), 2)
+                    : Convert.ToDouble(_configuration["Rating:DefaultValue"]);
             }
         }
     }

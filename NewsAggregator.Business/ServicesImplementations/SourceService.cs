@@ -21,16 +21,13 @@ public class SourceService : ISourceService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<SourceDto?> GetSourceByIdAsync(Guid sourceId)
+    public async Task<SourceDto?> GetSourceByIdAsync(Guid? sourceId)
     {
         var sourceEntity = await _unitOfWork.Sources.GetByIdAsync(sourceId);
 
-        if (sourceEntity != null)
-        {
-            return _mapper.Map<SourceDto>(sourceEntity);
-        }
-
-        return null;
+        return sourceEntity != null
+            ? _mapper.Map<SourceDto>(sourceEntity)
+            : null;
     }
 
     public SourceDto? GetSourceByName(string sourceName)
@@ -39,24 +36,18 @@ public class SourceService : ISourceService
             .FindBy(source => source.Name.Equals(sourceName))
             .FirstOrDefault();
 
-        if (sourceEntity != null)
-        {
-            return _mapper.Map<SourceDto>(sourceEntity);
-        }
-
-        return null;
+        return sourceEntity != null
+            ? _mapper.Map<SourceDto>(sourceEntity)
+            : null;
     }
 
-    public async Task<IEnumerable<SourceDto>?> GetAllSourcesAsync()
+    public async Task<IEnumerable<SourceDto>> GetAllSourcesAsync()
     {
         var sourceEntities = await _unitOfWork.Sources.GetAllAsync();
 
-        if (sourceEntities != null)
-        {
-            return _mapper.Map<IEnumerable<SourceDto>>(sourceEntities).ToList();
-        }
-
-        return null;
+        return sourceEntities != null
+            ? _mapper.Map<List<SourceDto>>(sourceEntities)
+            : Enumerable.Empty<SourceDto>();
     }
 
     public async Task DeleteSourceByIdAsync(Guid sourceId)

@@ -6,75 +6,115 @@
     <members>
         <member name="T:NewsAggregator.WebAPI.Controllers.ArticlesController">
             <summary>
-            Controller for work with articles
+            Controller for work with articles.
             </summary>
         </member>
-        <member name="M:NewsAggregator.WebAPI.Controllers.ArticlesController.#ctor(NewsAggregator.Core.Abstractions.IArticleService,NewsAggregator.Core.Abstractions.ISourceService,NewsAggregator.Core.Abstractions.IRssService,AutoMapper.IMapper)">
+        <member name="M:NewsAggregator.WebAPI.Controllers.ArticlesController.#ctor(AutoMapper.IMapper,Microsoft.Extensions.Configuration.IConfiguration,NewsAggregator.Core.Abstractions.IArticleService,NewsAggregator.Core.Abstractions.ISourceService,NewsAggregator.Core.Abstractions.IRssService)">
             <summary>
-            Initializes a new instance of the <see cref="T:NewsAggregator.WebAPI.Controllers.ArticlesController"/> class
+            Initializes a new instance of the <see cref="T:NewsAggregator.WebAPI.Controllers.ArticlesController"/> class.
             </summary>
+            <param name="mapper"></param>
+            <param name="configuration"></param>
             <param name="articleService"></param>
             <param name="sourceService"></param>
             <param name="rssService"></param>
-            <param name="mapper"></param>
         </member>
         <member name="M:NewsAggregator.WebAPI.Controllers.ArticlesController.GetArticleById(System.Guid)">
             <summary>
-            Get article from storage with specified id
+            Get article from the storage by id.
             </summary>
-            <param name="id">Id of article</param>
+            <param name="id">An article unique identifier as a <see cref="T:System.Guid"/>.</param>
             <returns></returns>
         </member>
         <member name="M:NewsAggregator.WebAPI.Controllers.ArticlesController.GetArticles(NewsAggregator.WebAPI.Models.Requests.GetArticlesRequestModel)">
             <summary>
-            Get articles by article name substring and source id
+            Get all articles or get articles by rate or source id.
             </summary>
-            <param name="model">Contains article name substring and source id</param>
+            <param name="model">Contains article rating and id of the link to the article in source.</param>
             <returns></returns>
         </member>
-        <member name="M:NewsAggregator.WebAPI.Controllers.ArticlesController.UpdateArticles(System.Guid,NewsAggregator.WebAPI.Models.Requests.AddOrUpdateArticleRequestModel)">
+        <member name="M:NewsAggregator.WebAPI.Controllers.ArticlesController.UpdateArticle(System.Guid,NewsAggregator.WebAPI.Models.Requests.AddOrUpdateArticleRequestModel)">
             <summary>
-            Update all fields in article from storage with specified id
+            Update all fields in article with specified id.
             </summary>
-            <param name="id">Id of article</param>
-            <param name="model">Contains article name substring and source id</param>
+            <param name="id">Contains article id.</param>
+            <param name="model">Contains article name, category, short description and article text.</param>
             <returns></returns>
         </member>
-        <member name="M:NewsAggregator.WebAPI.Controllers.ArticlesController.UpdateArticles(System.Guid,NewsAggregator.WebAPI.Models.Requests.PatchRequestModel)">
+        <member name="M:NewsAggregator.WebAPI.Controllers.ArticlesController.UpdateArticle(System.Guid,NewsAggregator.WebAPI.Models.Requests.PatchRequestModel)">
             <summary>
-            Update only some of the fields in the article from storage with specified id
+            Update only one field in article with specified id.
             </summary>
-            <param name="id">Id of article</param>
-            <param name="model">Contains article name substring and source id</param>
+            <param name="id">Contains article id.</param>
+            <param name="model">Contains article name substring and source id.</param>
             <returns></returns>
         </member>
-        <member name="T:NewsAggregator.WebAPI.Controllers.ArticlesDownloadController">
+        <member name="T:NewsAggregator.WebAPI.Controllers.DownloadArticlesController">
             <summary>
-            Controller for getting articles from resources
+            Controller for getting articles from resources.
             </summary>
         </member>
-        <member name="M:NewsAggregator.WebAPI.Controllers.ArticlesDownloadController.AddArticles(NewsAggregator.WebAPI.Models.Requests.AddOrUpdateArticleRequestModel)">
+        <member name="M:NewsAggregator.WebAPI.Controllers.DownloadArticlesController.#ctor(AutoMapper.IMapper,Microsoft.Extensions.Configuration.IConfiguration,NewsAggregator.Core.Abstractions.IArticleService,NewsAggregator.Core.Abstractions.ISourceService,NewsAggregator.Core.Abstractions.IRssService)">
             <summary>
-            Add texts of articles from sources to the storage
+            Initializes a new instance of the <see cref="T:NewsAggregator.WebAPI.Controllers.DownloadArticlesController"/> class.
             </summary>
-            <param name="model">Contains article title, category, short summary and text</param>
+            <param name="mapper"></param>
+            <param name="configuration"></param>
+            <param name="articleService"></param>
+            <param name="sourceService"></param>
+            <param name="rssService"></param>
+        </member>
+        <member name="M:NewsAggregator.WebAPI.Controllers.DownloadArticlesController.AddCustomArticle(System.Guid,NewsAggregator.WebAPI.Models.Requests.AddOrUpdateArticleRequestModel)">
+            <summary>
+            Add a new custom article to the storage.
+            </summary>
+            <param name="id">An article unique identifier as a <see cref="T:System.Guid"/></param>
+            <param name="model">Contains article name, category, short description and article text.</param>
             <returns></returns>
         </member>
-        <member name="M:NewsAggregator.WebAPI.Controllers.ArticlesDownloadController.RateArticles">
+        <member name="M:NewsAggregator.WebAPI.Controllers.DownloadArticlesController.AddArticlesFromAvailableSources">
             <summary>
-            Add rate of articles to the storage
+            Add articles from available sources to the storage.
             </summary>
             <returns></returns>
         </member>
-        <member name="T:NewsAggregator.WebAPI.Controllers.CommentsController">
+        <member name="M:NewsAggregator.WebAPI.Controllers.DownloadArticlesController.AddRateToArticles">
             <summary>
-            Controller for working with comments to articles
+            Add rating articles to the storage.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:NewsAggregator.WebAPI.Controllers.SourcesController">
+            <summary>
+            Controller for work with sources.
             </summary>
         </member>
-        <member name="T:NewsAggregator.WebAPI.Controllers.SoursesController">
+        <member name="M:NewsAggregator.WebAPI.Controllers.SourcesController.#ctor(AutoMapper.IMapper,NewsAggregator.Core.Abstractions.ISourceService)">
             <summary>
-            Controller for work with sources
+            Initializes a new instance of the <see cref="T:NewsAggregator.WebAPI.Controllers.SourcesController"/> class.
             </summary>
+            <param name="mapper"></param>
+            <param name="sourceService"></param>
+        </member>
+        <member name="M:NewsAggregator.WebAPI.Controllers.SourcesController.GetSourceById(System.Guid)">
+            <summary>
+            Get source from the storage by source id.
+            </summary>
+            <param name="id">A source unique identifier as a <see cref="T:System.Guid"/></param>
+            <returns></returns>
+        </member>
+        <member name="M:NewsAggregator.WebAPI.Controllers.SourcesController.GetSources(NewsAggregator.WebAPI.Models.Requests.GetSourceRequestModel)">
+            <summary>
+            Get all sources or get source by name.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:NewsAggregator.WebAPI.Controllers.SourcesController.DeleteSource(System.Guid)">
+            <summary>
+            Delete source from storage by id.
+            </summary>
+            <param name="id">Contains source id.</param>
+            <returns></returns>
         </member>
         <member name="T:NewsAggregator.WebAPI.Controllers.TokenController">
             <summary>
@@ -140,25 +180,90 @@
         </member>
         <member name="T:NewsAggregator.WebAPI.Models.Requests.AddOrUpdateArticleRequestModel">
             <summary>
-            
+            This class contains fields for "add or update article request model".
             </summary>
         </member>
         <member name="P:NewsAggregator.WebAPI.Models.Requests.AddOrUpdateArticleRequestModel.Title">
             <summary>
-            
+            Article title.
             </summary>
         </member>
         <member name="P:NewsAggregator.WebAPI.Models.Requests.AddOrUpdateArticleRequestModel.Category">
             <summary>
-            
+            Article category.
             </summary>
         </member>
-        <member name="P:NewsAggregator.WebAPI.Models.Requests.AddOrUpdateArticleRequestModel.ShortSummary">
+        <member name="P:NewsAggregator.WebAPI.Models.Requests.AddOrUpdateArticleRequestModel.ShortDescrtiption">
+            <summary>
+            Article sthort descrtiption.
+            </summary>
+        </member>
+        <member name="P:NewsAggregator.WebAPI.Models.Requests.AddOrUpdateArticleRequestModel.Text">
+            <summary>
+            Article text.
+            </summary>
+        </member>
+        <member name="T:NewsAggregator.WebAPI.Models.Requests.GetArticlesRequestModel">
+            <summary>
+            This class contains fields for "get article request model".
+            </summary>
+        </member>
+        <member name="P:NewsAggregator.WebAPI.Models.Requests.GetArticlesRequestModel.SourceId">
+            <summary>
+            Source id.
+            </summary>
+        </member>
+        <member name="P:NewsAggregator.WebAPI.Models.Requests.GetArticlesRequestModel.Rate">
+            <summary>
+            Available rating for showing articles.
+            </summary>
+        </member>
+        <member name="T:NewsAggregator.WebAPI.Models.Requests.GetSourceRequestModel">
+            <summary>
+            This class contains fields for "get source request model".
+            </summary>
+        </member>
+        <member name="P:NewsAggregator.WebAPI.Models.Requests.GetSourceRequestModel.Name">
+            <summary>
+            Source name.
+            </summary>
+        </member>
+        <member name="T:NewsAggregator.WebAPI.Models.Requests.PatchFieldModel">
             <summary>
             
             </summary>
         </member>
-        <member name="P:NewsAggregator.WebAPI.Models.Requests.AddOrUpdateArticleRequestModel.Text">
+        <member name="T:NewsAggregator.WebAPI.Models.Requests.PatchRequestModel">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:NewsAggregator.WebAPI.Models.Responses.ArticleResponseModel">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:NewsAggregator.WebAPI.Models.Responses.ArticleResponseModel.Title">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:NewsAggregator.WebAPI.Models.Responses.ArticleResponseModel.Category">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:NewsAggregator.WebAPI.Models.Responses.ArticleResponseModel.ShortDescrtiption">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:NewsAggregator.WebAPI.Models.Responses.ArticleResponseModel.Text">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:NewsAggregator.WebAPI.Models.Responses.ArticleResponseModel.PublicationDate">
             <summary>
             
             </summary>

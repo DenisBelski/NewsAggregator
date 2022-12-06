@@ -12,6 +12,7 @@ using NewsAggregator.Data.Repositories;
 using NewsAggregator.Data.Repositories.Implementations;
 using NewsAggregator.DataBase;
 using NewsAggregator.DataBase.Entities;
+using NewsAggregatorAspNetCore.Filters;
 using Serilog;
 using Serilog.Events;
 
@@ -27,12 +28,8 @@ namespace NewsAggregatorAspNetCore
                 lc.WriteTo.File(@"D:\IT\GitHub_Projects\NewsAggregator\dataMvc.log",
                 LogEventLevel.Information));
 
-            // Add services to the container.
             builder.Services.AddControllersWithViews();
 
-
-
-            // !!! change pathString
             builder.Services
                 .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options =>
@@ -47,9 +44,6 @@ namespace NewsAggregatorAspNetCore
             builder.Services.AddDbContext<NewsAggregatorContext>(
                 optionsBuilder => optionsBuilder.UseSqlServer(connectionString));
 
-
-
-            //!!! Read documentation. Adding Dashboard UI. Dashboard authorization must be configured in order to allow remote access.
             builder.Services.AddHangfire(configuration => configuration
                 .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
                 .UseSimpleAssemblyNameTypeSerializer()
@@ -64,17 +58,6 @@ namespace NewsAggregatorAspNetCore
                         DisableGlobalLocks = true,
                     }));
 
-
-
-
-            //builder.Services
-            //    .AddIdentity<ApplicationUser, IdentityRole<Guid>>()
-            //    .AddEntityFrameworkStores<AppDbContext>()
-            //    .AddDefaultTokenProviders();
-
-
-
-
             builder.Services.AddHangfire(configuration => configuration
                 .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
                 .UseSimpleAssemblyNameTypeSerializer()
@@ -89,7 +72,6 @@ namespace NewsAggregatorAspNetCore
                         DisableGlobalLocks = true,
                     }));
 
-            // Add the processing server as IHostedService
             builder.Services.AddHangfireServer();
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -103,10 +85,9 @@ namespace NewsAggregatorAspNetCore
             builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
             builder.Services.AddScoped<ISourceRepository, SourceRepository>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
-
+            builder.Services.AddScoped<InternetExplorerBlockerFilter>();
 
             builder.Services.AddMediatR(AppDomain.CurrentDomain.GetAssemblies());
-            //builder.Services.AddScoped<ArticleCheckerActionFilter>();
 
             var app = builder.Build();
 
@@ -120,21 +101,14 @@ namespace NewsAggregatorAspNetCore
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-
             app.UseHangfireDashboard();
 
             app.UseRouting();
 
+            app.UseAuthentication();
+            app.UseAuthorization();
 
-
-            // check the place to connect this middleware, as an option: plase before app.Run()
-            app.MapHangfireDashboard(); 
-
-
-
-            app.UseAuthentication(); // Set HttpContext.User, add to context automatically 
-            app.UseAuthorization(); // check access to resource for user
-
+            app.MapHangfireDashboard();
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");

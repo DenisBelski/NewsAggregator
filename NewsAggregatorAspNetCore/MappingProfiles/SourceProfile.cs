@@ -9,11 +9,8 @@ namespace NewsAggregatorAspNetCore.MappingProfiles
     {
         public SourceProfile()
         {
-            CreateMap<Source, SourceDto>();
-            CreateMap<SourceDto, Source>();
-
-            CreateMap<SourceModel, SourceDto>();
-            CreateMap<SourceDto, SourceModel>();
+            CreateMap<Source, SourceDto>().ReverseMap();
+            CreateMap<SourceModel, SourceDto>().ReverseMap();
         }
     }
 }

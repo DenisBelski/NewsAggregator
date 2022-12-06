@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using NewsAggregator.Core.DataTransferObjects;
 using NewsAggregator.DataBase.Entities;
+using NewsAggregator.WebAPI.Models.Responses;
 
 namespace NewsAggregator.WebAPI.MappingProfiles
 {
@@ -8,8 +9,8 @@ namespace NewsAggregator.WebAPI.MappingProfiles
     {
         public SourceProfile()
         {
-            CreateMap<Source, SourceDto>();
-            CreateMap<SourceDto, Source>();
+            CreateMap<Source, SourceDto>().ReverseMap();
+            CreateMap<SourceDto, SourceResponseModel>();
         }
     }
 }

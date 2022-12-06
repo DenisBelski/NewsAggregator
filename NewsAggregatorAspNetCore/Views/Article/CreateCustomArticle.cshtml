@@ -1,11 +1,10 @@
-﻿@model ArticleModel
+﻿@model ArticleCreationModel
 
 <div>
     <h5>Create custom article</h5>
     
     @using (Html.BeginForm("CreateCustomArticle", "Article", FormMethod.Post))
     {
-        <div asp-validation-summary="All" class="text-danger"></div>
         <div>
             @Html.TextBoxFor(model => model.Title,new {@class="form-control", placeholder = "Title"})
             <span asp-validation-for="Title" class="text-danger"></span>

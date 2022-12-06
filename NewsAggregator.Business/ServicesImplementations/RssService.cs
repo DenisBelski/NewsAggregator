@@ -59,17 +59,17 @@ namespace NewsAggregator.Business.ServicesImplementations
 
                 if (sourceEntity != null && sourceEntity.RssUrl != null)
                 {
-                    if (sourceEntity.Id == new Guid(_configuration["AvailableRssSources:Onliner"]))
+                    if (sourceEntity.Id == new Guid(_configuration["AvailableRssSources:OnlinerId"]))
                     {
                         listArticleDto = GetArticlesDataFromOnliner(sourceEntity.Id, 
                             sourceEntity.RssUrl, listArticleDto);
                     }
-                    else if (sourceEntity.Id == new Guid(_configuration["AvailableRssSources:Devby"]))
+                    else if (sourceEntity.Id == new Guid(_configuration["AvailableRssSources:DevbyId"]))
                     {
                         listArticleDto = GetArticlesDataFromDevby(sourceEntity.Id, 
                             sourceEntity.RssUrl, listArticleDto);
                     }
-                    else if (sourceEntity.Id == new Guid(_configuration["AvailableRssSources:Shazoo"]))
+                    else if (sourceEntity.Id == new Guid(_configuration["AvailableRssSources:ShazooId"]))
                     {
                         listArticleDto = GetArticlesDataFromShazoo(sourceEntity.Id, 
                             sourceEntity.RssUrl, listArticleDto);

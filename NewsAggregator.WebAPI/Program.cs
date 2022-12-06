@@ -31,21 +31,11 @@ namespace NewsAggregator.WebAPI
                 LogEventLevel.Information)
                 .WriteTo.Console(LogEventLevel.Verbose));
 
-
-
-
-            // Add services to the container.
             builder.Services.AddControllers();
-
-
-
-
 
             var connectionString = builder.Configuration.GetConnectionString("Default");
             builder.Services.AddDbContext<NewsAggregatorContext>(
                 optionsBuilder => optionsBuilder.UseSqlServer(connectionString));
-
-
 
             //!!! Read documentation. Adding Dashboard UI. Dashboard authorization must be configured in order to allow remote access.
             builder.Services.AddHangfire(configuration => configuration
@@ -62,7 +52,6 @@ namespace NewsAggregator.WebAPI
                         DisableGlobalLocks = true,
                     }));
 
-            // Add the processing server as IHostedService
             builder.Services.AddHangfireServer();
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -113,17 +102,17 @@ namespace NewsAggregator.WebAPI
 
             app.UseStaticFiles();
             app.UseHangfireDashboard();
-            app.UseRouting();
 
+            app.UseRouting();
             app.UseHttpsRedirection();
 
             app.UseSwagger();
             app.UseSwaggerUI();
-            app.MapHangfireDashboard();
 
             app.UseAuthentication();
             app.UseAuthorization();
 
+            app.MapHangfireDashboard();
             app.MapControllers();
 
             app.Run();

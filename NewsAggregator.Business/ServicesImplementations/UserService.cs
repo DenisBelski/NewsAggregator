@@ -50,24 +50,22 @@ namespace NewsAggregator.Business.ServicesImplementations
                 .FindBy(user => user.Email.Equals(email), user => user.Role)
                 .FirstOrDefaultAsync();
 
-            if (userWithRoleEntity != null)
-            {
-                return _mapper.Map<UserDto>(userWithRoleEntity);
-            }
-
-            return null;
+            return userWithRoleEntity != null
+                ? _mapper.Map<UserDto>(userWithRoleEntity)
+                : null;
         }
 
-        public async Task<IEnumerable<UserDto>?> GetAllUsersAsync()
+        public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
         {
             var userEntities = await _unitOfWork.Users.GetAllAsync();
+            
+            return userEntities != null
+                ? _mapper.Map<List<UserDto>>(userEntities)
+                : Enumerable.Empty<UserDto>();
 
-            if (userEntities != null)
-            {
-                return _mapper.Map<IEnumerable<UserDto>>(userEntities).ToList();
-            }
-
-            return null;
+            //return userEntities != null
+            //    ? _mapper.Map<IEnumerable<UserDto>>(userEntities).ToList()
+            //    : Enumerable.Empty<UserDto>();
         }
 
         public async Task<int> UpdateUserAsync(UserDto userDto)
@@ -132,33 +130,21 @@ namespace NewsAggregator.Business.ServicesImplementations
 
         public async Task<bool> CheckUserPassword(Guid userId, string password)
         {
-            var dbPasswordHash = (await _unitOfWork.Users.GetByIdAsync(userId))
-                ?.PasswordHash;
+            var dbPasswordHash = (await _unitOfWork.Users.GetByIdAsync(userId))?.PasswordHash;
 
-            if (dbPasswordHash != null
-                && CreateMd5($"{password}.{_configuration["Secret:PasswordSalt"]}")
-                .Equals(dbPasswordHash))
-            {
-                return true;
-            }
-
-            return false;
+            return
+                dbPasswordHash != null
+                && CreateMd5($"{password}.{_configuration["Secret:PasswordSalt"]}").Equals(dbPasswordHash);
         }
 
         public async Task<bool> CheckUserPassword(string email, string password)
         {
-            var dbPasswordHash = (await _unitOfWork.Users.Get()
-                .FirstOrDefaultAsync(user => user.Email.Equals(email)))
-                ?.PasswordHash;
+            var dbPasswordHash = (await _unitOfWork.Users.Get().FirstOrDefaultAsync(
+                user => user.Email.Equals(email)))?.PasswordHash;
 
-            if (dbPasswordHash != null 
-                && CreateMd5($"{password}.{_configuration["Secret:PasswordSalt"]}")
-                .Equals(dbPasswordHash))
-            {
-                return true;
-            }
-
-            return false;
+            return
+                dbPasswordHash != null
+                && CreateMd5($"{password}.{_configuration["Secret:PasswordSalt"]}").Equals(dbPasswordHash);
         }
 
         private string CreateMd5(string password)

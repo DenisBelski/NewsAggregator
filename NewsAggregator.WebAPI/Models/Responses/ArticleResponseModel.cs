@@ -1,28 +1,33 @@
-﻿namespace NewsAggregator.WebAPI.Models.Requests
+﻿namespace NewsAggregator.WebAPI.Models.Responses
 {
     /// <summary>
-    /// This class contains fields for "add or update article request model".
+    /// 
     /// </summary>
-    public class AddOrUpdateArticleRequestModel
+    public class ArticleResponseModel
     {
         /// <summary>
-        /// Article title.
+        /// 
         /// </summary>
         public string? Title { get; set; }
 
         /// <summary>
-        /// Article category.
+        /// 
         /// </summary>
         public string? Category { get; set; }
 
         /// <summary>
-        /// Article sthort descrtiption.
+        /// 
         /// </summary>
         public string? ShortDescrtiption { get; set; }
 
         /// <summary>
-        /// Article text.
+        /// 
         /// </summary>
         public string? Text { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public DateTime PublicationDate { get; set; }
     }
 }

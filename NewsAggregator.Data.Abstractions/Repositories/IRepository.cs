@@ -6,7 +6,7 @@ namespace NewsAggregator.Data.Abstractions.Repositories
 {
     public interface IRepository<T> where T : IBaseEntity
     {
-        Task<T?> GetByIdAsync(Guid id);
+        Task<T?> GetByIdAsync(Guid? id);
         Task<IEnumerable<T>> GetAllAsync();
         IQueryable<T> Get();
         IQueryable<T> FindBy(Expression<Func<T, bool>> searchExpression,

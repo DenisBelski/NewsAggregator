@@ -8,7 +8,7 @@
         public string? ArticleText { get; set; }
         public string? Category { get; set; }
         public DateTime PublicationDate { get; set; }
-        public Guid SourceId { get; set; }
+        public Guid? SourceId { get; set; }
         public string? SourceUrl { get; set; }
     }
 }

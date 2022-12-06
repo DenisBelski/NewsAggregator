@@ -9,21 +9,23 @@
     <h6>Already have an account? 
         <a href="~/account/login">Log in.</a>    
     </h6>
-    <form asp-controller="Account" asp-action="Register" method="post">
-        <div asp-validation-summary="All" class="text-danger"></div>
+    <form>
         <div class="create_email">
             <label for="email" class="form-label">Email address</label>
             <input asp-for="Email" type="email" class="form-control" id="email" style="width:auto" placeholder="name@email.com">
+            <span asp-validation-for="Email" class="text-danger"></span>
         </div>
         <br />
         <div class="create_password">
             <label for="password" class="form-label">Password</label>
             <input type="password" asp-for="Password" class="form-control" id="password" style="width:auto" placeholder="Password">
+            <span asp-validation-for="Password" class="text-danger"></span>
         </div>
         <br />
         <div class="create_password-confirmation">
             <label for="password-confirmation" class="form-label">Password confirmation</label>
             <input type="password" asp-for="PasswordConfirmation" class="form-control" id="password-confirmation" style="width:auto" placeholder="Password confirmation">
+            <span asp-validation-for="PasswordConfirmation" class="text-danger"></span>
         </div>
         <br />
         <input type="submit" class="btn btn-primary" value="Sign up">

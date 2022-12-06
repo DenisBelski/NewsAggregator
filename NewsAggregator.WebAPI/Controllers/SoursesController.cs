@@ -1,136 +1,106 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
+using NewsAggregator.Core.Abstractions;
 using NewsAggregator.Core.DataTransferObjects;
 using NewsAggregator.WebAPI.Models.Requests;
+using NewsAggregator.WebAPI.Models.Responses;
 
 namespace NewsAggregator.WebAPI.Controllers
 {
     /// <summary>
-    /// Controller for work with sources
+    /// Controller for work with sources.
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
-    public class SoursesController : ControllerBase
+    public class SourcesController : ControllerBase
     {
-        private static List<ArticleDto> Articles = new List<ArticleDto>()
+        private readonly IMapper _mapper;
+        private readonly ISourceService _sourceService;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SourcesController"/> class.
+        /// </summary>
+        /// <param name="mapper"></param>
+        /// <param name="sourceService"></param>
+        public SourcesController(IMapper mapper,
+            ISourceService sourceService)
         {
-            new ArticleDto()
-            {
-                Id = Guid.NewGuid(),
-                ArticleText = "Some text 1",
-                Title = "Article #1",
-                Category = "Some category 1"
-            },
-            new ArticleDto()
-            {
-                Id = Guid.NewGuid(),
-                ArticleText = "Some text 2",
-                Title = "Article #2",
-                Category = "Some category 2"
-            }
-        };
+            _mapper = mapper;
+            _sourceService = sourceService;
+        }
 
-
+        /// <summary>
+        /// Get source from the storage by source id.
+        /// </summary>
+        /// <param name="id">A source unique identifier as a <see cref="Guid"/></param>
+        /// <returns></returns>
         [HttpGet("{id}")]
-        public IActionResult GetArticleById(Guid id)
+        [ProducesResponseType(typeof(SourceResponseModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Nullable), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetSourceById(Guid id)
         {
+            var sourceDto = await _sourceService.GetSourceByIdAsync(id);
 
-            var article = Articles.FirstOrDefault(dto => dto.Id.Equals(id));
-            if (article == null)
-            {
-                return NotFound();
-            }
-            return Ok(article);
+            return sourceDto != null
+                ? Ok(_mapper.Map<SourceResponseModel>(sourceDto))
+                : NotFound($"No articles found with the specified {nameof(id)}");
         }
 
-        [HttpPost("{id}")]
-        public IActionResult AddArticles([FromBody] AddOrUpdateArticleRequestModel? model)
+        /// <summary>
+        /// Get all sources or get source by name.
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [ProducesResponseType(typeof(List<SourceResponseModel>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(Nullable), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetSources([FromQuery] GetSourceRequestModel? model)
         {
+            var listSources = await _sourceService.GetAllSourcesAsync();
 
-            if (model != null)
+            if (!listSources.Any())
             {
-                var dto = new ArticleDto()
-                {
-                    Id = Guid.NewGuid(),
-                    ArticleText = "Some text added manually",
-                    Category = "Some manually category",
-                    ShortDescription = "",
-                    Title = "New Article ",
-                    PublicationDate = DateTime.Now
-                };
-
-                Articles.Add(dto);
-
-                return CreatedAtAction(nameof(GetArticleById), new { id = dto.Id }, dto);
+                return NoContent();
             }
 
-            return BadRequest();
-        }
-
-        [HttpPut("{id}")]
-        public IActionResult UpdateArticles(Guid id, [FromBody] AddOrUpdateArticleRequestModel? model)
-        {
-            if (model != null)
+            if (model != null && !string.IsNullOrEmpty(model.Name))
             {
-                var oldValue = Articles.FirstOrDefault(dto => dto.Id.Equals(id));
+                var sourceWithSpecifiedName = _sourceService.GetSourceByName(model.Name);
 
-                if (oldValue == null)
-                {
-                    return NotFound();
-                }
-
-                var newValue = new ArticleDto()
-                {
-                    Id = oldValue.Id,
-                    PublicationDate = DateTime.Now,
-                    Title = model.Title,
-                    ArticleText = model.Text,
-                    Category = model.Category,
-                    ShortDescription = model.ShortSummary
-                };
-
-                Articles.Remove(oldValue);
-                Articles.Add(newValue);
-
-                return Ok();
+                return sourceWithSpecifiedName != null
+                    ? Ok(_mapper.Map<SourceResponseModel>(sourceWithSpecifiedName))
+                    : NotFound($"No articles found with the specified {nameof(model.Name)}");
             }
 
-            return BadRequest();
+            return Ok(_mapper.Map<List<SourceResponseModel>>(listSources));
         }
 
-        [HttpPatch("{id}")]
-        public IActionResult UpdateArticles(Guid id, [FromBody] PatchRequestModel? model)
-        {
-            if (model != null)
-            {
-                var oldValue = Articles.FirstOrDefault(dto => dto.Id.Equals(id));
-
-                if (oldValue == null)
-                {
-                    return NotFound();
-                }
-
-                //todo add patch implementation(change only fields from request
-
-                return Ok();
-            }
-
-            return BadRequest();
-        }
-
-
+        /// <summary>
+        /// Delete source from storage by id.
+        /// </summary>
+        /// <param name="id">Contains source id.</param>
+        /// <returns></returns>
         [HttpDelete("{id}")]
-        public IActionResult UpdateArticles(Guid id)
+        [ProducesDefaultResponseType ]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Guid), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(Nullable), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> DeleteSource(Guid id)
         {
-            var oldValue = Articles.FirstOrDefault(dto => dto.Id.Equals(id));
-
-            if (oldValue == null)
+            if (!Guid.Empty.Equals(id))
             {
-                return NotFound();
+                var sourceForRemove = await _sourceService.GetSourceByIdAsync(id);
+
+                if (sourceForRemove == null)
+                {
+                    return NotFound($"No articles found with the specified {nameof(id)}");
+                }
+
+                await _sourceService.DeleteSourceByIdAsync(sourceForRemove.Id);
+                return Ok();
             }
 
-            Articles.Remove(oldValue);
-
-            return Ok();
+            return BadRequest();
         }
     }
 }

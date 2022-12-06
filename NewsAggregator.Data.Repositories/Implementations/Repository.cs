@@ -19,7 +19,7 @@ namespace NewsAggregator.Data.Repositories.Implementations
             DbSet = database.Set<T>();
         }
 
-        public virtual async Task<T?> GetByIdAsync(Guid id)
+        public virtual async Task<T?> GetByIdAsync(Guid? id)
         {
             return await DbSet
                 .AsNoTracking()

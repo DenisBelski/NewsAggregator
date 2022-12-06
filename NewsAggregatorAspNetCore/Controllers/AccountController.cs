@@ -55,10 +55,8 @@ namespace NewsAggregatorAspNetCore.Controllers
                     await AuthenticateAsync(model.Email);
                     return RedirectToAction("Index", "Home");
                 }
-                else
-                {
-                    return View();
-                }
+
+                return View();
             }
             catch (Exception ex)
             {
@@ -121,7 +119,6 @@ namespace NewsAggregatorAspNetCore.Controllers
             try
             {
                 await HttpContext.SignOutAsync();
-
                 return RedirectToAction("Index", "Home");
             }
             catch (Exception ex)
@@ -150,14 +147,9 @@ namespace NewsAggregatorAspNetCore.Controllers
         {
             try
             {
-                if (model.Email != null)
-                {
-                    return Ok("Oops, this part of the application hasn't been created yet. Just create a new account.");
-                }
-                else
-                {
-                    return View(model);
-                }
+                return !string.IsNullOrEmpty(model.Email) 
+                    ? Ok("Oops, this part of the application hasn't been created yet. Just create a new account.")
+                    : View(model);
             }
             catch (Exception ex)
             {
@@ -187,12 +179,9 @@ namespace NewsAggregatorAspNetCore.Controllers
             {
                 var isEmailExist = await _userService.IsUserExists(email);
 
-                if (isEmailExist)
-                {
-                    return Ok(false);
-                }
-
-                return Ok(true);
+                return isEmailExist
+                    ? Ok(false)
+                    : Ok(true);
             }
             catch (Exception ex)
             {
@@ -203,20 +192,15 @@ namespace NewsAggregatorAspNetCore.Controllers
 
         [HttpGet]
         [Authorize]
-        public IActionResult GetUserData()
+        public async Task<IActionResult> GetUserData()
         {
             try
             {
                 var userEmail = User.Identity?.Name;
 
-                if (string.IsNullOrEmpty(userEmail))
-                {
-                    return BadRequest();
-                }
-
-                var user = _mapper.Map<UserDataModel>(_userService.GetUserWithRoleByEmailAsync(userEmail));
-
-                return Ok(user);
+                return !string.IsNullOrEmpty(userEmail)
+                    ? Ok(_mapper.Map<UserDataModel>(await _userService.GetUserWithRoleByEmailAsync(userEmail)))
+                    : BadRequest();
             }
             catch (Exception ex)
             {
@@ -231,12 +215,9 @@ namespace NewsAggregatorAspNetCore.Controllers
         {
             try
             {
-                if (User.Identities.Any(identity => identity.IsAuthenticated))
-                {
-                    return Ok(true);
-                }
-
-                return Ok(false);
+                return User.Identities.Any(identity => identity.IsAuthenticated)
+                    ? Ok(true)
+                    : Ok(false);
             }
             catch (Exception ex)
             {
@@ -279,27 +260,29 @@ namespace NewsAggregatorAspNetCore.Controllers
             return View(_mapper.Map<UserDataModel>(userDto));
         }
 
-
         private async Task AuthenticateAsync(string email)
         {
             try
             {
                 var userDto = await _userService.GetUserWithRoleByEmailAsync(email);
 
-                var claims = new List<Claim>()
+                if (userDto != null)
                 {
+                    var claims = new List<Claim>()
+                    {
                     new Claim(ClaimsIdentity.DefaultNameClaimType, userDto.Email),
                     new Claim(ClaimsIdentity.DefaultRoleClaimType, userDto.RoleName)
-                };
+                    };
 
-                var identity = new ClaimsIdentity(claims,
-                    "ApplicationCookie",
-                    ClaimsIdentity.DefaultNameClaimType,
-                    ClaimsIdentity.DefaultRoleClaimType);
+                    var identity = new ClaimsIdentity(claims,
+                        "ApplicationCookie",
+                        ClaimsIdentity.DefaultNameClaimType,
+                        ClaimsIdentity.DefaultRoleClaimType);
 
-                await HttpContext.SignInAsync(CookieAuthenticationDefaults
-                    .AuthenticationScheme,
-                    new ClaimsPrincipal(identity));
+                    await HttpContext.SignInAsync(CookieAuthenticationDefaults
+                        .AuthenticationScheme,
+                        new ClaimsPrincipal(identity));
+                }
             }
             catch (Exception ex)
             {
