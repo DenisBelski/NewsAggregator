@@ -9,7 +9,7 @@
     <h6>Don't have an account? 
         <a href="~/account/register">Sign up.</a>    
     </h6>
-    <form>
+    <form asp-controller="Account" asp-action="Login" method="post">
         <div class="login_email">
             <label class="form-label" for="email" style="text-align:left">Email address</label>
             <input asp-for="Email" type="email" class="form-control" id="email" style="width:auto" placeholder="name@email.com">

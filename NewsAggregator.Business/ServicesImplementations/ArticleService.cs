@@ -13,6 +13,7 @@ using NewsAggregator.Data.CQS.Queries;
 using NewsAggregator.DataBase;
 using NewsAggregator.DataBase.Entities;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Serilog;
 using System.Net.Http.Json;
 using System.ServiceModel.Syndication;
@@ -139,15 +140,6 @@ namespace NewsAggregator.Business.ServicesImplementations
                 await _rssService.GetArticlesDataFromAllAvailableRssSourcesAsync();
                 await AddArticleTextToArticlesForAllAvailableSourcesAsync();
                 await AddRateToArticlesAsync();
-
-                //var sourceEntities = await _unitOfWork.Sources.GetAllAsync();
-
-                //foreach (var sourceEntity in sourceEntities)
-                //{
-                //    await _rssService.GetArticlesDataFromAllAvailableRssSourcesAsync();
-                //    await AddArticleTextToArticlesForAllAvailableSourcesAsync();
-                //    await AddRateToArticlesAsync();
-                //}
             }
             catch (Exception ex)
             {
@@ -172,7 +164,7 @@ namespace NewsAggregator.Business.ServicesImplementations
             }
         }
 
-        public async Task RateArticleByIdAsync(Guid articleId)
+        public async Task RateArticleByIdAsync(Guid articleId, IReadOnlyDictionary<string, int> afinnDictionary)
         {
             try
             {
@@ -180,7 +172,7 @@ namespace NewsAggregator.Business.ServicesImplementations
 
                 if (article != null && !string.IsNullOrEmpty(article.ArticleText))
                 {
-                    var rateResult = await GetArticleRateByArticleTextAsync(article.ArticleText);
+                    var rateResult = await GetArticleRateByArticleTextAsync(article.ArticleText, afinnDictionary);
 
                     var patchList = new List<PatchModel>()
                     {
@@ -201,14 +193,66 @@ namespace NewsAggregator.Business.ServicesImplementations
             }
         }
 
+        public async Task AddRateToArticlesAsync()
+        {
+            try
+            {
+                var articlesWithEmptyRateIds = _unitOfWork.Articles.Get()
+                    .Where(article => article.Rate == null && !string.IsNullOrEmpty(article.ArticleText))
+                    .Select(article => article.Id)
+                    .ToList();
+
+                using (var stream = new StreamReader(_configuration["AfinnJson:JsonPath"]))
+                {
+                    var afinnData = stream.ReadToEnd();
+                    var afinnDictionary = JsonConvert.DeserializeObject<IReadOnlyDictionary<string, int>>(afinnData);
+
+                    if (afinnDictionary != null)
+                    {
+                        foreach (var articleId in articlesWithEmptyRateIds)
+                        {
+                            await RateArticleByIdAsync(articleId, afinnDictionary);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException(ex.Message);
+            }
+        }
+
         public async Task<double?> GetArticleRateByArticleTextAsync(string articleText)
+        {
+            try
+            {
+                using (var stream = new StreamReader(_configuration["AfinnJson:JsonPath"]))
+                {
+                    var afinnData = stream.ReadToEnd();
+                    var afinnDictionary = JsonConvert.DeserializeObject<IReadOnlyDictionary<string, int>>(afinnData);
+
+                    if (string.IsNullOrEmpty(articleText) && afinnDictionary != null)
+                    {
+                        return await GetArticleRateByArticleTextAsync(articleText, afinnDictionary);
+                    }
+
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException(ex.Message);
+            }
+        }
+
+        public async Task<double?> GetArticleRateByArticleTextAsync(string articleText, IReadOnlyDictionary<string, int> afinnDictionary)
         {
             if (!string.IsNullOrEmpty(articleText))
             {
                 using (var client = new HttpClient())
                 {
                     var httpRequest = new HttpRequestMessage(HttpMethod.Post,
-                        new Uri(@"http://api.ispras.ru/texterra/v1/nlp?targetType=lemma&apikey=1e03d79d9f01859fefbc04abe0a9c3f3660e117f"));
+                        new Uri(_configuration["Ispras:Url"]));
 
                     httpRequest.Headers.Add("Accept", "application/json");
                     httpRequest.Content = JsonContent.Create(
@@ -223,7 +267,7 @@ namespace NewsAggregator.Business.ServicesImplementations
                         var responseObject = JsonConvert.DeserializeObject<IsprassResponseObject[]>(responseData);
 
                         return responseObject != null
-                            ? CompareArticleWithAfinnDictionary(responseObject[0].Annotations.Lemma)
+                            ? CompareArticleWithAfinnDictionary(responseObject[0].Annotations.Lemma, afinnDictionary)
                             : null;
                     }
                 }
@@ -234,7 +278,6 @@ namespace NewsAggregator.Business.ServicesImplementations
                 return null;
             }
         }
-
 
         private async Task AddArticleTextToArticlesForAllAvailableSourcesAsync()
         {
@@ -270,26 +313,6 @@ namespace NewsAggregator.Business.ServicesImplementations
                 foreach (var articleId in articlesWithEmptyTextIdsAndSpecifySource)
                 {
                     await AddArticleTextToArticleBySourceIdAsync(articleId);
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new ArgumentException(ex.Message);
-            }
-        }
-
-        private async Task AddRateToArticlesAsync()
-        {
-            try
-            {
-                var articlesWithEmptyRateIds = _unitOfWork.Articles.Get()
-                    .Where(article => article.Rate == null && !string.IsNullOrEmpty(article.ArticleText))
-                    .Select(article => article.Id)
-                    .ToList();
-
-                foreach (var articleId in articlesWithEmptyRateIds)
-                {
-                    await RateArticleByIdAsync(articleId);
                 }
             }
             catch (Exception ex)
@@ -430,37 +453,30 @@ namespace NewsAggregator.Business.ServicesImplementations
             return String.Empty;
         }
 
-
-        private double CompareArticleWithAfinnDictionary(List<Lemma> listLemmas)
+        private double CompareArticleWithAfinnDictionary(List<Lemma> listLemmas, IReadOnlyDictionary<string, int> afinnDictionary)
         {
-            using (var stream = new StreamReader(@"D:\IT\GitHub_Projects\NewsAggregator\NewsAggregator.Business\ServicesImplementations\AFINN-ru.json"))
+            int amountOfEvaluatedWords = 0;
+            double totalTextScore = 0;
+
+
+            for (int i = 0; i < listLemmas.Count - 1; i++)
             {
-                var afinnData = stream.ReadToEnd();
-                var afinnDictionary = JsonConvert.DeserializeObject<Dictionary<string, int>>(afinnData);
-
-                int amountOfEvaluatedWords = 0;
-                double totalTextScore = 0;
-
-                if (afinnDictionary != null)
+                foreach (var afinnItem in afinnDictionary)
                 {
-                    foreach (var afinnItem in afinnDictionary)
+                    if (!string.IsNullOrEmpty(listLemmas[i].Value)
+                        && afinnItem.Key == listLemmas[i].Value)
                     {
-                        for (int i = 0; i < listLemmas.Count - 1; i++)
-                        {
-                            if (!string.IsNullOrEmpty(listLemmas[i].Value)
-                                && afinnItem.Key == listLemmas[i].Value)
-                            {
-                                amountOfEvaluatedWords++;
-                                totalTextScore += afinnItem.Value;
-                            }
-                        }
+                        amountOfEvaluatedWords++;
+                        totalTextScore += afinnItem.Value;
+
+                        break;
                     }
                 }
-
-                return amountOfEvaluatedWords != 0 
-                    ? Math.Round((totalTextScore / amountOfEvaluatedWords), 2)
-                    : Convert.ToDouble(_configuration["Rating:DefaultValue"]);
             }
+
+            return amountOfEvaluatedWords != 0 
+                ? Math.Round((totalTextScore / amountOfEvaluatedWords), 2)
+                : Convert.ToDouble(_configuration["Rating:DefaultValue"]);
         }
     }
 }

@@ -13,7 +13,7 @@ namespace NewsAggregator.Core.Abstractions
         Task<int> UpdateArticleAsync(ArticleDto articleDto);
         Task AggregateArticlesFromAllAvailableSourcesAsync();
         Task AggregateArticlesFromSourceWithSpecifiedIdAsync(Guid sourceId);
-        Task RateArticleByIdAsync(Guid articleId);
+        Task AddRateToArticlesAsync();
         Task<double?> GetArticleRateByArticleTextAsync(string articleText);
     }
 }
