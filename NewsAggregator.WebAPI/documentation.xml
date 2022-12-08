@@ -33,6 +33,14 @@
             <param name="model">Contains article rating and id of the link to the article in source.</param>
             <returns></returns>
         </member>
+        <member name="M:NewsAggregator.WebAPI.Controllers.ArticlesController.AddCustomArticle(System.Guid,NewsAggregator.WebAPI.Models.Requests.AddOrUpdateArticleRequestModel)">
+            <summary>
+            Create a new custom article and add it to the storage.
+            </summary>
+            <param name="id">Assign a unique article identifier as a <see cref="T:System.Guid"/></param>
+            <param name="model">Assign article name, category, short description and article text.</param>
+            <returns></returns>
+        </member>
         <member name="M:NewsAggregator.WebAPI.Controllers.ArticlesController.UpdateArticle(System.Guid,NewsAggregator.WebAPI.Models.Requests.AddOrUpdateArticleRequestModel)">
             <summary>
             Update all fields in article with specified id.
@@ -64,17 +72,9 @@
             <param name="sourceService"></param>
             <param name="rssService"></param>
         </member>
-        <member name="M:NewsAggregator.WebAPI.Controllers.DownloadArticlesController.AddCustomArticle(System.Guid,NewsAggregator.WebAPI.Models.Requests.AddOrUpdateArticleRequestModel)">
-            <summary>
-            Add a new custom article to the storage.
-            </summary>
-            <param name="id">An article unique identifier as a <see cref="T:System.Guid"/></param>
-            <param name="model">Contains article name, category, short description and article text.</param>
-            <returns></returns>
-        </member>
         <member name="M:NewsAggregator.WebAPI.Controllers.DownloadArticlesController.AddArticlesFromAvailableSources">
             <summary>
-            Add articles from available sources to the storage.
+            Create recurring jobs to add articles from all available sources to the storage.
             </summary>
             <returns></returns>
         </member>
@@ -193,12 +193,12 @@
             Article category.
             </summary>
         </member>
-        <member name="P:NewsAggregator.WebAPI.Models.Requests.AddOrUpdateArticleRequestModel.ShortDescrtiption">
+        <member name="P:NewsAggregator.WebAPI.Models.Requests.AddOrUpdateArticleRequestModel.ShortDescription">
             <summary>
             Article sthort descrtiption.
             </summary>
         </member>
-        <member name="P:NewsAggregator.WebAPI.Models.Requests.AddOrUpdateArticleRequestModel.Text">
+        <member name="P:NewsAggregator.WebAPI.Models.Requests.AddOrUpdateArticleRequestModel.ArticleText">
             <summary>
             Article text.
             </summary>
@@ -240,32 +240,32 @@
         </member>
         <member name="T:NewsAggregator.WebAPI.Models.Responses.ArticleResponseModel">
             <summary>
-            
+            This class contains fields for "article response model".
             </summary>
         </member>
         <member name="P:NewsAggregator.WebAPI.Models.Responses.ArticleResponseModel.Title">
             <summary>
-            
+            Article title.
             </summary>
         </member>
         <member name="P:NewsAggregator.WebAPI.Models.Responses.ArticleResponseModel.Category">
             <summary>
-            
+            Article category.
             </summary>
         </member>
-        <member name="P:NewsAggregator.WebAPI.Models.Responses.ArticleResponseModel.ShortDescrtiption">
+        <member name="P:NewsAggregator.WebAPI.Models.Responses.ArticleResponseModel.ShortDescription">
             <summary>
-            
+            Article short description.
             </summary>
         </member>
-        <member name="P:NewsAggregator.WebAPI.Models.Responses.ArticleResponseModel.Text">
+        <member name="P:NewsAggregator.WebAPI.Models.Responses.ArticleResponseModel.ArticleText">
             <summary>
-            
+            Article text.
             </summary>
         </member>
         <member name="P:NewsAggregator.WebAPI.Models.Responses.ArticleResponseModel.PublicationDate">
             <summary>
-            
+            Article publication date.
             </summary>
         </member>
         <member name="T:NewsAggregator.WebAPI.Models.Responses.ErrorModel">
@@ -273,9 +273,34 @@
             Model for returning errors from api
             </summary>
         </member>
-        <member name="P:NewsAggregator.WebAPI.Models.Responses.ErrorModel.Message">
+        <member name="P:NewsAggregator.WebAPI.Models.Responses.ErrorModel.ErrorMessage">
             <summary>
             Error message
+            </summary>
+        </member>
+        <member name="T:NewsAggregator.WebAPI.Models.Responses.SourceResponseModel">
+            <summary>
+            This class contains fields for "source response model".
+            </summary>
+        </member>
+        <member name="P:NewsAggregator.WebAPI.Models.Responses.SourceResponseModel.Name">
+            <summary>
+            Source name.
+            </summary>
+        </member>
+        <member name="P:NewsAggregator.WebAPI.Models.Responses.SourceResponseModel.Url">
+            <summary>
+            Source url.
+            </summary>
+        </member>
+        <member name="T:NewsAggregator.WebAPI.Models.Responses.SuccessModel">
+            <summary>
+            Model for returning success messages from api
+            </summary>
+        </member>
+        <member name="P:NewsAggregator.WebAPI.Models.Responses.SuccessModel.DetailMessage">
+            <summary>
+            Success detail message
             </summary>
         </member>
     </members>

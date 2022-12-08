@@ -20,7 +20,7 @@ namespace NewsAggregator.Business.ServicesImplementations
         private readonly IUnitOfWork _unitOfWork;
         private readonly IConfiguration _configuration;
         private readonly IMediator _mediator;
-        private readonly int _limitForUploadArticlesAtOneTime = 10;
+        private readonly int _limitForUploadArticlesAtOneTime = 5;
 
         public RssService(IMapper mapper,
             IUnitOfWork unitOfWork,

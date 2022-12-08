@@ -18,11 +18,11 @@
         /// <summary>
         /// Article sthort descrtiption.
         /// </summary>
-        public string? ShortDescrtiption { get; set; }
+        public string? ShortDescription { get; set; }
 
         /// <summary>
         /// Article text.
         /// </summary>
-        public string? Text { get; set; }
+        public string? ArticleText { get; set; }
     }
 }

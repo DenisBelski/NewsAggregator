@@ -15,6 +15,7 @@ using NewsAggregator.DataBase.Entities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Serilog;
+using System.Diagnostics;
 using System.Net.Http.Json;
 using System.ServiceModel.Syndication;
 using System.Text.RegularExpressions;
@@ -202,17 +203,16 @@ namespace NewsAggregator.Business.ServicesImplementations
                     .Select(article => article.Id)
                     .ToList();
 
-                using (var stream = new StreamReader(_configuration["AfinnJson:JsonPath"]))
-                {
-                    var afinnData = stream.ReadToEnd();
-                    var afinnDictionary = JsonConvert.DeserializeObject<IReadOnlyDictionary<string, int>>(afinnData);
+                using var stream = new StreamReader(_configuration["AfinnJson:JsonPath"]);
+                var afinnData = stream.ReadToEnd();
 
-                    if (afinnDictionary != null)
+                var afinnDictionary = JsonConvert.DeserializeObject<IReadOnlyDictionary<string, int>>(afinnData);
+
+                if (afinnDictionary != null)
+                {
+                    foreach (var articleId in articlesWithEmptyRateIds)
                     {
-                        foreach (var articleId in articlesWithEmptyRateIds)
-                        {
-                            await RateArticleByIdAsync(articleId, afinnDictionary);
-                        }
+                        await RateArticleByIdAsync(articleId, afinnDictionary);
                     }
                 }
             }
@@ -222,22 +222,21 @@ namespace NewsAggregator.Business.ServicesImplementations
             }
         }
 
-        public async Task<double?> GetArticleRateByArticleTextAsync(string articleText)
+        public async Task<double> GetArticleRateByArticleTextAsync(string articleText)
         {
             try
             {
-                using (var stream = new StreamReader(_configuration["AfinnJson:JsonPath"]))
+                using var stream = new StreamReader(_configuration["AfinnJson:JsonPath"]);
+                var afinnData = stream.ReadToEnd();
+
+                var afinnDictionary = JsonConvert.DeserializeObject<IReadOnlyDictionary<string, int>>(afinnData);
+
+                if (afinnDictionary != null && !string.IsNullOrEmpty(articleText))
                 {
-                    var afinnData = stream.ReadToEnd();
-                    var afinnDictionary = JsonConvert.DeserializeObject<IReadOnlyDictionary<string, int>>(afinnData);
-
-                    if (string.IsNullOrEmpty(articleText) && afinnDictionary != null)
-                    {
-                        return await GetArticleRateByArticleTextAsync(articleText, afinnDictionary);
-                    }
-
-                    return null;
+                    return await GetArticleRateByArticleTextAsync(articleText, afinnDictionary);
                 }
+
+                throw new ArgumentException(nameof(articleText));
             }
             catch (Exception ex)
             {
@@ -245,7 +244,7 @@ namespace NewsAggregator.Business.ServicesImplementations
             }
         }
 
-        public async Task<double?> GetArticleRateByArticleTextAsync(string articleText, IReadOnlyDictionary<string, int> afinnDictionary)
+        public async Task<double> GetArticleRateByArticleTextAsync(string articleText, IReadOnlyDictionary<string, int> afinnDictionary)
         {
             if (!string.IsNullOrEmpty(articleText))
             {
@@ -268,18 +267,18 @@ namespace NewsAggregator.Business.ServicesImplementations
 
                         return responseObject != null
                             ? CompareArticleWithAfinnDictionary(responseObject[0].Annotations.Lemma, afinnDictionary)
-                            : null;
+                            : Convert.ToDouble(_configuration["Rating:DefaultValue"]);
                     }
                 }
             }
             else
             {
                 Log.Warning($"{nameof(articleText)} parametr equals null");
-                return null;
+                throw new ArgumentException(nameof(articleText));
             }
         }
 
-        private async Task AddArticleTextToArticlesForAllAvailableSourcesAsync()
+        public async Task AddArticleTextToArticlesForAllAvailableSourcesAsync()
         {
             try
             {
@@ -385,8 +384,8 @@ namespace NewsAggregator.Business.ServicesImplementations
             {
                 return htmlNodes.FirstOrDefault()?
                     .ChildNodes
-                    .Where(node => (node.Name.Equals("p")
-                                    || node.Name.Equals("div")
+                    .Where(node => (node.Name.Equals("p") 
+                                    || node.Name.Equals("div") 
                                     || node.Name.Equals("h2"))
                                     && !node.HasClass("news-reference")
                                     && !node.HasClass("news-banner")
@@ -457,7 +456,6 @@ namespace NewsAggregator.Business.ServicesImplementations
         {
             int amountOfEvaluatedWords = 0;
             double totalTextScore = 0;
-
 
             for (int i = 0; i < listLemmas.Count - 1; i++)
             {

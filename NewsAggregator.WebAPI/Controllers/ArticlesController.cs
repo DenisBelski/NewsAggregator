@@ -49,14 +49,14 @@ namespace NewsAggregator.WebAPI.Controllers
         /// <returns></returns>
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(ArticleResponseModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(Nullable), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetArticleById(Guid id)
         {
             var articleDto = await _articleService.GetArticleByIdAsync(id);
 
             return articleDto != null 
                 ? Ok(_mapper.Map<ArticleResponseModel>(articleDto)) 
-                : NotFound($"No articles found with the specified {nameof(id)}");
+                : NotFound( new ErrorModel { ErrorMessage = $"No articles found with the specified {nameof(id)}" });
         }
 
         /// <summary>
@@ -66,15 +66,14 @@ namespace NewsAggregator.WebAPI.Controllers
         /// <returns></returns>
         [HttpGet]
         [ProducesResponseType(typeof(List<ArticleResponseModel>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(Nullable), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetArticles([FromQuery] GetArticlesRequestModel? model)
         {
             var listArticles = await _articleService.GetArticles();
 
             if (!listArticles.Any())
             {
-                return NoContent();
+                return NotFound();
             }
 
             if (model != null && model.Rate.HasValue)
@@ -84,7 +83,7 @@ namespace NewsAggregator.WebAPI.Controllers
 
                 return listArticlesWithSpecifiedRate != null 
                     ? Ok(_mapper.Map<List<ArticleResponseModel>>(listArticlesWithSpecifiedRate))
-                    : NotFound($"No articles found with the specified {nameof(model.Rate)}");
+                    : NotFound(new ErrorModel { ErrorMessage = $"No articles found with the specified {nameof(model.Rate)}" });
             }
             else if (model != null && !Guid.Empty.Equals(model.SourceId))
             {
@@ -93,10 +92,50 @@ namespace NewsAggregator.WebAPI.Controllers
 
                 return listArticlesWithSpecifiedSource != null
                     ? Ok(_mapper.Map<List<ArticleResponseModel>>(listArticlesWithSpecifiedSource))
-                    : NotFound($"No articles found with the specified {nameof(model.SourceId)}");
+                    : NotFound(new ErrorModel { ErrorMessage = $"No articles found with the specified {nameof(model.SourceId)}" });
             }
 
             return Ok(_mapper.Map<List<ArticleResponseModel>>(listArticles));
+        }
+
+        /// <summary>
+        /// Create a new custom article and add it to the storage.
+        /// </summary>
+        /// <param name="id">Assign a unique article identifier as a <see cref="Guid"/></param>
+        /// <param name="model">Assign article name, category, short description and article text.</param>
+        /// <returns></returns>
+        [HttpPost("{id}")]
+        [ProducesResponseType(typeof(ArticleResponseModel), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> AddCustomArticle(Guid id, [FromBody] AddOrUpdateArticleRequestModel? model)
+        {
+            if (model != null
+                && model.Title != null
+                && model.ArticleText != null
+                && model.Category != null
+                && model.ShortDescription != null)
+            {
+                var customArticle = new ArticleDto()
+                {
+                    Id = id,
+                    PublicationDate = DateTime.Now,
+                    SourceId = new Guid(_configuration["CustomSource:SourceId"]),
+                    SourceUrl = _configuration["CustomSource:SourceUrl"],
+                    Rate = await _articleService.GetArticleRateByArticleTextAsync(model.ArticleText),
+                    Title = model.Title,
+                    ArticleText = model.ArticleText,
+                    Category = model.Category,
+                    ShortDescription = model.ShortDescription
+                };
+
+                await _articleService.CreateArticleAsync(customArticle);
+
+                return CreatedAtAction(nameof(AddCustomArticle),
+                    new { id = customArticle.Id },
+                    _mapper.Map<ArticleResponseModel>(customArticle));
+            }
+
+            return BadRequest();
         }
 
         /// <summary>
@@ -121,9 +160,9 @@ namespace NewsAggregator.WebAPI.Controllers
 
                 if (model != null
                     && model.Title != null
-                    && model.Text != null
+                    && model.ArticleText != null
                     && model.Category != null
-                    && model.ShortDescrtiption != null)
+                    && model.ShortDescription != null)
                 {
                     articleForChanges = new ArticleDto()
                     {
@@ -131,11 +170,11 @@ namespace NewsAggregator.WebAPI.Controllers
                         PublicationDate = DateTime.Now,
                         SourceId = new Guid(_configuration["CustomSource:SourceId"]),
                         SourceUrl = _configuration["CustomSource:SourceUrl"],
-                        Rate = await _articleService.GetArticleRateByArticleTextAsync(model.Text),
+                        Rate = await _articleService.GetArticleRateByArticleTextAsync(model.ArticleText),
                         Title = model.Title,
-                        ArticleText = model.Text,
+                        ArticleText = model.ArticleText,
                         Category = model.Category,
-                        ShortDescription = model.ShortDescrtiption
+                        ShortDescription = model.ShortDescription
                     };
                 }
                 else

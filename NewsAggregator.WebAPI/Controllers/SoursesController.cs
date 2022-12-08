@@ -52,7 +52,6 @@ namespace NewsAggregator.WebAPI.Controllers
         /// <returns></returns>
         [HttpGet]
         [ProducesResponseType(typeof(List<SourceResponseModel>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(Nullable), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetSources([FromQuery] GetSourceRequestModel? model)
         {
@@ -60,7 +59,7 @@ namespace NewsAggregator.WebAPI.Controllers
 
             if (!listSources.Any())
             {
-                return NoContent();
+                return NotFound();
             }
 
             if (model != null && !string.IsNullOrEmpty(model.Name))

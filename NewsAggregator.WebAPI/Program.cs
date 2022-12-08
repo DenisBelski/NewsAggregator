@@ -27,7 +27,7 @@ namespace NewsAggregator.WebAPI
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Host.UseSerilog((ctx, lc) =>
-                lc.WriteTo.File(@"D:\IT\GitHub_Projects\NewsAggregator\dataWebApi.log",
+                lc.WriteTo.File(builder.Configuration["Serilog:LogFilePath"],
                 LogEventLevel.Information)
                 .WriteTo.Console(LogEventLevel.Verbose));
 

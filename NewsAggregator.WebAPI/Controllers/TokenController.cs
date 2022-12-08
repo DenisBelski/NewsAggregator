@@ -49,14 +49,14 @@ namespace NewsAggregator.WebAPI.Controllers
 
                 if (user == null)
                 {
-                    return BadRequest(new ErrorModel() {Message = "User does't exist"});
+                    return BadRequest(new ErrorModel() {ErrorMessage = "User does't exist"});
                 }
 
                 var isPassCorrect = await _userService.CheckUserPassword(request.Email, request.Password);
 
                 if (!isPassCorrect)
                 {
-                    return BadRequest(new ErrorModel() {Message = "Password is incorrect"});
+                    return BadRequest(new ErrorModel() {ErrorMessage = "Password is incorrect"});
                 }
 
                 var response = await _jwtUtil.GenerateTokenAsync(user);

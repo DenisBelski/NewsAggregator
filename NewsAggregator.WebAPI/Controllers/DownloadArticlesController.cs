@@ -43,77 +43,25 @@ namespace NewsAggregator.WebAPI.Controllers
         }
 
         /// <summary>
-        /// Add a new custom article to the storage.
-        /// </summary>
-        /// <param name="id">An article unique identifier as a <see cref="Guid"/></param>
-        /// <param name="model">Contains article name, category, short description and article text.</param>
-        /// <returns></returns>
-        [HttpPost("{id}")]
-        public async Task<IActionResult> AddCustomArticle(Guid id, [FromBody] AddOrUpdateArticleRequestModel? model)
-        {
-            if (model != null
-                && model.Title != null
-                && model.Text != null
-                && model.Category != null
-                && model.ShortDescrtiption != null)
-            {
-                var customArticle = new ArticleDto()
-                {
-                    Id = Guid.NewGuid(),
-                    PublicationDate = DateTime.Now,
-                    SourceId = new Guid(_configuration["CustomSource:SourceId"]),
-                    SourceUrl = _configuration["CustomSource:SourceUrl"],
-                    Rate = await _articleService.GetArticleRateByArticleTextAsync(model.Text),
-                    Title = model.Title,
-                    ArticleText = model.Text,
-                    Category = model.Category,
-                    ShortDescription = model.ShortDescrtiption
-                };
-
-                await _articleService.CreateArticleAsync(customArticle);
-
-
-                return CreatedAtAction(nameof(AddCustomArticle), 
-                    new { id = customArticle.Id }, 
-                    _mapper.Map<ArticleResponseModel>(customArticle));
-            }
-
-            return BadRequest();
-        }
-
-        /// <summary>
-        /// Add articles from available sources to the storage.
+        /// Create recurring jobs to add articles from all available sources to the storage.
         /// </summary>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> AddArticlesFromAvailableSources()
+        [ProducesResponseType(typeof(SuccessModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status500InternalServerError)]
+        public IActionResult AddArticlesFromAvailableSources()
         {
             try
             {
-                //var sources = await _sourceService.GetSourcesAsync();
+                RecurringJob.AddOrUpdate(() => _rssService.GetArticlesDataFromAllAvailableRssSourcesAsync(), "30 */1 * * *");
+                RecurringJob.AddOrUpdate(() => _articleService.AddArticleTextToArticlesForAllAvailableSourcesAsync(), "35,05 */1 * * *");
+                RecurringJob.AddOrUpdate(() => _articleService.AddRateToArticlesAsync(), "40,10 */1 * * *");
 
-                //foreach (var source in sources)
-                //{
-                //    await _rssService.GetAllArticleDataFromRssAsync();
-                //    await _articleService.AddArticleTextToArticlesFromOnlinerAsync();
-                //}
-
-
-                //RecurringJob.AddOrUpdate(() => _articleService.AggregateArticlesFromExternalSourcesAsync(), "5,10,35 10-18 * * Mon-Fri");
-
-                //Remove created jobs
-                //RecurringJob.RemoveIfExists(nameof(_articleService.AggregateArticlesFromExternalSourcesAsync));
-
-                RecurringJob.RemoveIfExists(nameof(_articleService.AggregateArticlesFromAllAvailableSourcesAsync));
-                RecurringJob.AddOrUpdate(() => _rssService.GetArticlesDataFromAllAvailableRssSourcesAsync(), "15 */12 * * *");
-
-
-                return Ok();
+                return Ok(new SuccessModel { DetailMessage = "Recurring jobs added successfully to Hangfire dashboard" });
             }
             catch (Exception ex)
             {
-
-                return StatusCode(500, new ErrorModel { Message = ex.Message });
+                return StatusCode(500, new ErrorModel { ErrorMessage = ex.Message });
             }
         }
 
@@ -134,7 +82,7 @@ namespace NewsAggregator.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new ErrorModel() { Message = ex.Message });
+                return StatusCode(500, new ErrorModel() { ErrorMessage = ex.Message });
             }
         }
     }

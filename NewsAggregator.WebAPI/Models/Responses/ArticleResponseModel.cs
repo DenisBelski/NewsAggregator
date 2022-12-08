@@ -1,32 +1,32 @@
 ﻿namespace NewsAggregator.WebAPI.Models.Responses
 {
     /// <summary>
-    /// 
+    /// This class contains fields for "article response model".
     /// </summary>
     public class ArticleResponseModel
     {
         /// <summary>
-        /// 
+        /// Article title.
         /// </summary>
         public string? Title { get; set; }
 
         /// <summary>
-        /// 
+        /// Article category.
         /// </summary>
         public string? Category { get; set; }
 
         /// <summary>
-        /// 
+        /// Article short description.
         /// </summary>
-        public string? ShortDescrtiption { get; set; }
+        public string? ShortDescription { get; set; }
 
         /// <summary>
-        /// 
+        /// Article text.
         /// </summary>
-        public string? Text { get; set; }
+        public string? ArticleText { get; set; }
 
         /// <summary>
-        /// 
+        /// Article publication date.
         /// </summary>
         public DateTime PublicationDate { get; set; }
     }
