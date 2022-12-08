@@ -43,7 +43,7 @@ namespace NewsAggregator.WebAPI.Controllers
 
             return sourceDto != null
                 ? Ok(_mapper.Map<SourceResponseModel>(sourceDto))
-                : NotFound($"No articles found with the specified {nameof(id)}");
+                : NotFound(new ErrorModel { ErrorMessage = $"No sources found with the specified {nameof(id)}" });
         }
 
         /// <summary>
@@ -52,23 +52,23 @@ namespace NewsAggregator.WebAPI.Controllers
         /// <returns></returns>
         [HttpGet]
         [ProducesResponseType(typeof(List<SourceResponseModel>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(Nullable), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetSources([FromQuery] GetSourceRequestModel? model)
+        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetSources([FromQuery] GetSourceRequestModel? sourceModel)
         {
             var listSources = await _sourceService.GetAllSourcesAsync();
 
             if (!listSources.Any())
             {
-                return NotFound();
+                return NotFound(new ErrorModel { ErrorMessage = "Sources not found" });
             }
 
-            if (model != null && !string.IsNullOrEmpty(model.Name))
+            if (sourceModel != null && !string.IsNullOrEmpty(sourceModel.Name))
             {
-                var sourceWithSpecifiedName = _sourceService.GetSourceByName(model.Name);
+                var sourceWithSpecifiedName = _sourceService.GetSourceByName(sourceModel.Name);
 
                 return sourceWithSpecifiedName != null
                     ? Ok(_mapper.Map<SourceResponseModel>(sourceWithSpecifiedName))
-                    : NotFound($"No articles found with the specified {nameof(model.Name)}");
+                    : NotFound(new ErrorModel { ErrorMessage = $"No sources found with the specified {nameof(sourceModel.Name)}" });
             }
 
             return Ok(_mapper.Map<List<SourceResponseModel>>(listSources));
@@ -82,8 +82,8 @@ namespace NewsAggregator.WebAPI.Controllers
         [HttpDelete("{id}")]
         [ProducesDefaultResponseType ]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(Guid), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(Nullable), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(Nullable), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> DeleteSource(Guid id)
         {
             if (!Guid.Empty.Equals(id))
@@ -92,14 +92,14 @@ namespace NewsAggregator.WebAPI.Controllers
 
                 if (sourceForRemove == null)
                 {
-                    return NotFound($"No articles found with the specified {nameof(id)}");
+                    return NotFound(new ErrorModel { ErrorMessage = $"No sources found with the specified {nameof(id)}" });
                 }
 
                 await _sourceService.DeleteSourceByIdAsync(sourceForRemove.Id);
                 return Ok();
             }
 
-            return BadRequest();
+            return StatusCode(500);
         }
     }
 }

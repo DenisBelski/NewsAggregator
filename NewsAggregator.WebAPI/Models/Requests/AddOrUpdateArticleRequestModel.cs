@@ -1,7 +1,7 @@
 ﻿namespace NewsAggregator.WebAPI.Models.Requests
 {
     /// <summary>
-    /// This class contains fields for "add or update article request model".
+    /// Request model for adding or updating an article.
     /// </summary>
     public class AddOrUpdateArticleRequestModel
     {

@@ -62,12 +62,12 @@ namespace NewsAggregator.WebAPI.Controllers
         /// <summary>
         /// Get all articles or get articles by rate or source id.
         /// </summary>
-        /// <param name="model">Contains article rating and id of the link to the article in source.</param>
+        /// <param name="articleModel">Contains article rating and id of the link to the article in source.</param>
         /// <returns></returns>
         [HttpGet]
         [ProducesResponseType(typeof(List<ArticleResponseModel>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetArticles([FromQuery] GetArticlesRequestModel? model)
+        public async Task<IActionResult> GetArticles([FromQuery] GetArticlesRequestModel? articleModel)
         {
             var listArticles = await _articleService.GetArticles();
 
@@ -76,23 +76,23 @@ namespace NewsAggregator.WebAPI.Controllers
                 return NotFound();
             }
 
-            if (model != null && model.Rate.HasValue)
+            if (articleModel != null && articleModel.Rate.HasValue)
             {
                 var listArticlesWithSpecifiedRate = 
-                    await _articleService.GetArticlesByRateAsync(model.Rate);
+                    await _articleService.GetArticlesByRateAsync(articleModel.Rate);
 
                 return listArticlesWithSpecifiedRate != null 
                     ? Ok(_mapper.Map<List<ArticleResponseModel>>(listArticlesWithSpecifiedRate))
-                    : NotFound(new ErrorModel { ErrorMessage = $"No articles found with the specified {nameof(model.Rate)}" });
+                    : NotFound(new ErrorModel { ErrorMessage = $"No articles found with the specified {nameof(articleModel.Rate)}" });
             }
-            else if (model != null && !Guid.Empty.Equals(model.SourceId))
+            else if (articleModel != null && !Guid.Empty.Equals(articleModel.SourceId))
             {
                 var listArticlesWithSpecifiedSource = 
-                    await _articleService.GetArticlesBySourceIdAsync(model.SourceId);
+                    await _articleService.GetArticlesBySourceIdAsync(articleModel.SourceId);
 
                 return listArticlesWithSpecifiedSource != null
                     ? Ok(_mapper.Map<List<ArticleResponseModel>>(listArticlesWithSpecifiedSource))
-                    : NotFound(new ErrorModel { ErrorMessage = $"No articles found with the specified {nameof(model.SourceId)}" });
+                    : NotFound(new ErrorModel { ErrorMessage = $"No articles found with the specified {nameof(articleModel.SourceId)}" });
             }
 
             return Ok(_mapper.Map<List<ArticleResponseModel>>(listArticles));
@@ -102,18 +102,18 @@ namespace NewsAggregator.WebAPI.Controllers
         /// Create a new custom article and add it to the storage.
         /// </summary>
         /// <param name="id">Assign a unique article identifier as a <see cref="Guid"/></param>
-        /// <param name="model">Assign article name, category, short description and article text.</param>
+        /// <param name="articleModel">Assign article name, category, short description and article text.</param>
         /// <returns></returns>
         [HttpPost("{id}")]
         [ProducesResponseType(typeof(ArticleResponseModel), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> AddCustomArticle(Guid id, [FromBody] AddOrUpdateArticleRequestModel? model)
+        public async Task<IActionResult> AddCustomArticle(Guid id, [FromBody] AddOrUpdateArticleRequestModel? articleModel)
         {
-            if (model != null
-                && model.Title != null
-                && model.ArticleText != null
-                && model.Category != null
-                && model.ShortDescription != null)
+            if (articleModel != null
+                && articleModel.Title != null
+                && articleModel.ArticleText != null
+                && articleModel.Category != null
+                && articleModel.ShortDescription != null)
             {
                 var customArticle = new ArticleDto()
                 {
@@ -121,11 +121,11 @@ namespace NewsAggregator.WebAPI.Controllers
                     PublicationDate = DateTime.Now,
                     SourceId = new Guid(_configuration["CustomSource:SourceId"]),
                     SourceUrl = _configuration["CustomSource:SourceUrl"],
-                    Rate = await _articleService.GetArticleRateByArticleTextAsync(model.ArticleText),
-                    Title = model.Title,
-                    ArticleText = model.ArticleText,
-                    Category = model.Category,
-                    ShortDescription = model.ShortDescription
+                    Rate = await _articleService.GetArticleRateByArticleTextAsync(articleModel.ArticleText),
+                    Title = articleModel.Title,
+                    ArticleText = articleModel.ArticleText,
+                    Category = articleModel.Category,
+                    ShortDescription = articleModel.ShortDescription
                 };
 
                 await _articleService.CreateArticleAsync(customArticle);
@@ -142,12 +142,12 @@ namespace NewsAggregator.WebAPI.Controllers
         /// Update all fields in article with specified id.
         /// </summary>
         /// <param name="id">Contains article id.</param>
-        /// <param name="model">Contains article name, category, short description and article text.</param>
+        /// <param name="articleModel">Contains article name, category, short description and article text.</param>
         /// <returns></returns>
         [HttpPut("{id}")]
         [ProducesResponseType(typeof(ArticleResponseModel), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(Nullable), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> UpdateArticle(Guid id, [FromQuery] AddOrUpdateArticleRequestModel? model)
+        public async Task<IActionResult> UpdateArticle(Guid id, [FromQuery] AddOrUpdateArticleRequestModel? articleModel)
         {
             if (!Guid.Empty.Equals(id))
             {
@@ -158,11 +158,11 @@ namespace NewsAggregator.WebAPI.Controllers
                     return NotFound();
                 }
 
-                if (model != null
-                    && model.Title != null
-                    && model.ArticleText != null
-                    && model.Category != null
-                    && model.ShortDescription != null)
+                if (articleModel != null
+                    && articleModel.Title != null
+                    && articleModel.ArticleText != null
+                    && articleModel.Category != null
+                    && articleModel.ShortDescription != null)
                 {
                     articleForChanges = new ArticleDto()
                     {
@@ -170,11 +170,11 @@ namespace NewsAggregator.WebAPI.Controllers
                         PublicationDate = DateTime.Now,
                         SourceId = new Guid(_configuration["CustomSource:SourceId"]),
                         SourceUrl = _configuration["CustomSource:SourceUrl"],
-                        Rate = await _articleService.GetArticleRateByArticleTextAsync(model.ArticleText),
-                        Title = model.Title,
-                        ArticleText = model.ArticleText,
-                        Category = model.Category,
-                        ShortDescription = model.ShortDescription
+                        Rate = await _articleService.GetArticleRateByArticleTextAsync(articleModel.ArticleText),
+                        Title = articleModel.Title,
+                        ArticleText = articleModel.ArticleText,
+                        Category = articleModel.Category,
+                        ShortDescription = articleModel.ShortDescription
                     };
                 }
                 else
@@ -204,12 +204,12 @@ namespace NewsAggregator.WebAPI.Controllers
         /// Update only one field in article with specified id.
         /// </summary>
         /// <param name="id">Contains article id.</param>
-        /// <param name="model">Contains article name substring and source id.</param>
+        /// <param name="articleModel">Contains article name substring and source id.</param>
         /// <returns></returns>
         [HttpPatch("{id}")]
         [ProducesResponseType(typeof(ArticleResponseModel), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(Nullable), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> UpdateArticle(Guid id, [FromBody] PatchRequestModel? model)
+        public async Task<IActionResult> UpdateArticle(Guid id, [FromBody] PatchRequestModel? articleModel)
         {
             if (!Guid.Empty.Equals(id))
             {
@@ -220,9 +220,9 @@ namespace NewsAggregator.WebAPI.Controllers
                     return NotFound();
                 }
 
-                if (model != null && model.Fields[0] != null && model.Fields[1] != null)
+                if (articleModel != null && articleModel.Fields[0] != null && articleModel.Fields[1] != null)
                 {
-                    var a = model.Fields;
+                    var a = articleModel.Fields;
 
                     //CQS?
                     //articleForChanges = await _articleService.UpdateArticleAsync(articleForChanges.Id, model.Fields);

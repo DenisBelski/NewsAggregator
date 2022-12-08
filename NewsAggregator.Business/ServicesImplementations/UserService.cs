@@ -62,10 +62,6 @@ namespace NewsAggregator.Business.ServicesImplementations
             return userEntities != null
                 ? _mapper.Map<List<UserDto>>(userEntities)
                 : Enumerable.Empty<UserDto>();
-
-            //return userEntities != null
-            //    ? _mapper.Map<IEnumerable<UserDto>>(userEntities).ToList()
-            //    : Enumerable.Empty<UserDto>();
         }
 
         public async Task<int> UpdateUserAsync(UserDto userDto)

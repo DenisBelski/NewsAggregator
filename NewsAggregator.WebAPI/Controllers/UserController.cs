@@ -10,32 +10,32 @@ using Serilog;
 namespace NewsAggregator.WebAPI.Controllers
 {
     /// <summary>
-    /// 
+    /// Controller for work with users.
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class UserController : ControllerBase
     {
+        private readonly IMapper _mapper;
         private readonly IUserService _userService;
         private readonly IRoleService _roleService;
         private readonly IJwtUtil _jwtUtil;
-        private readonly IMapper _mapper;
 
         /// <summary>
-        /// 
+        /// Initializes a new instance of the <see cref="UserController"/> class.
         /// </summary>
+        /// <param name="mapper"></param>
         /// <param name="userService"></param>
         /// <param name="roleService"></param>
-        /// <param name="mapper"></param>
         /// <param name="jwtUtil"></param>
-        public UserController(IUserService userService,
+        public UserController(IMapper mapper, 
+            IUserService userService,
             IRoleService roleService,
-            IMapper mapper,
             IJwtUtil jwtUtil)
         {
+            _mapper = mapper;
             _userService = userService;
             _roleService = roleService;
-            _mapper = mapper;
             _jwtUtil = jwtUtil;
         }
 
@@ -54,24 +54,24 @@ namespace NewsAggregator.WebAPI.Controllers
         /// <summary>
         /// Register user.
         /// </summary>
-        /// <param name="request">Contains user email, password and password confirmation.</param>
+        /// <param name="requestModel">Contains user email, password and password confirmation.</param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] RegisterUserRequestModel request)
+        public async Task<IActionResult> Create([FromBody] RegisterUserRequestModel requestModel)
         {
             try
             {
                 var userRoleId = await _roleService.GetRoleIdByNameAsync("User");
-                var userDto = _mapper.Map<UserDto>(request);
-                var userWIthSameEmailExists = await _userService.IsUserExists(request.Email);
+                var userDto = _mapper.Map<UserDto>(requestModel);
+                var userWIthSameEmailExists = await _userService.IsUserExists(requestModel.Email);
 
                 if (userDto != null 
                     && userRoleId != null
                     && !userWIthSameEmailExists
-                    && request.Password.Equals(request.PasswordConfirmation))
+                    && requestModel.Password.Equals(requestModel.PasswordConfirmation))
                 {
                     userDto.RoleId = userRoleId.Value;
-                    var result = await _userService.RegisterUser(userDto, request.Password);
+                    var result = await _userService.RegisterUser(userDto, requestModel.Password);
 
                     if (result > 0)
                     {

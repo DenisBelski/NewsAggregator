@@ -1,7 +1,7 @@
 ﻿namespace NewsAggregator.WebAPI.Models.Responses
 {
     /// <summary>
-    /// This class contains fields for "article response model".
+    /// Response model for displaying article data.
     /// </summary>
     public class ArticleResponseModel
     {

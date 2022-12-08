@@ -1,7 +1,7 @@
 ﻿namespace NewsAggregator.WebAPI.Models.Requests
 {
     /// <summary>
-    /// This class contains fields for "get article request model".
+    /// Request model for getting an article.
     /// </summary>
     public class GetArticlesRequestModel
     {

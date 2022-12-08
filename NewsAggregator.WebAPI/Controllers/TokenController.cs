@@ -38,29 +38,36 @@ namespace NewsAggregator.WebAPI.Controllers
         /// <summary>
         /// Register user
         /// </summary>
-        /// <param name="request"></param>
+        /// <param name="requestModel"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> CreateJwtToken([FromBody] LoginUserRequestModel request)
+        public async Task<IActionResult> CreateJwtToken([FromBody] LoginUserRequestModel requestModel)
         {
             try
             {
-                var user = await _userService.GetUserWithRoleByEmailAsync(request.Email);
-
-                if (user == null)
+                if (requestModel != null 
+                    && requestModel.Email != null
+                    && requestModel.Password != null)
                 {
-                    return BadRequest(new ErrorModel() {ErrorMessage = "User does't exist"});
+                    var userDto = await _userService.GetUserWithRoleByEmailAsync(requestModel.Email);
+
+                    if (userDto == null)
+                    {
+                        return BadRequest(new ErrorModel() { ErrorMessage = "User does't exist" });
+                    }
+
+                    var isPassCorrect = await _userService.CheckUserPassword(requestModel.Email, requestModel.Password);
+
+                    if (!isPassCorrect)
+                    {
+                        return BadRequest(new ErrorModel() { ErrorMessage = "Password is incorrect" });
+                    }
+
+                    var response = await _jwtUtil.GenerateTokenAsync(userDto);
+                    return Ok(response);
                 }
 
-                var isPassCorrect = await _userService.CheckUserPassword(request.Email, request.Password);
-
-                if (!isPassCorrect)
-                {
-                    return BadRequest(new ErrorModel() {ErrorMessage = "Password is incorrect"});
-                }
-
-                var response = await _jwtUtil.GenerateTokenAsync(user);
-                return Ok(response);
+                return BadRequest(new ErrorModel() { ErrorMessage = "Request model isn't valid" });
             }
             catch (Exception e)
             {
@@ -72,21 +79,25 @@ namespace NewsAggregator.WebAPI.Controllers
         /// <summary>
         /// Register user
         /// </summary>
-        /// <param name="request"></param>
+        /// <param name="requestModel"></param>
         /// <returns></returns>
         [Route("Refresh")]
         [HttpPost]
-        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestModel request)
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestModel requestModel)
         {
             try
             {
-                var user = await _userService.GetUserByRefreshTokenAsync(request.RefreshToken);
+                var userDto = await _userService.GetUserByRefreshTokenAsync(requestModel.RefreshToken);
 
-                var response = await _jwtUtil.GenerateTokenAsync(user);
+                if (userDto == null)
+                {
+                    return BadRequest(new ErrorModel() { ErrorMessage = "User does't exist" });
+                }
 
-                await _jwtUtil.RemoveRefreshTokenAsync(request.RefreshToken);
+                var tokenResponse = await _jwtUtil.GenerateTokenAsync(userDto);
+                await _jwtUtil.RemoveRefreshTokenAsync(requestModel.RefreshToken);
 
-                return Ok(response);
+                return Ok(tokenResponse);
             }
             catch (Exception e)
             {
@@ -96,17 +107,17 @@ namespace NewsAggregator.WebAPI.Controllers
         }
 
         /// <summary>
-        /// Register user
+        /// Method for revoke refresh token.
         /// </summary>
-        /// <param name="request"></param>
+        /// <param name="requestModel"></param>
         /// <returns></returns>
         [Route("Revoke")]
         [HttpPost]
-        public async Task<IActionResult> RevokeToken([FromBody] RefreshTokenRequestModel request)
+        public async Task<IActionResult> RevokeToken([FromBody] RefreshTokenRequestModel requestModel)
         {
             try
             {
-                await _jwtUtil.RemoveRefreshTokenAsync(request.RefreshToken);
+                await _jwtUtil.RemoveRefreshTokenAsync(requestModel.RefreshToken);
 
                 return Ok();
             }
