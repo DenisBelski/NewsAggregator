@@ -104,7 +104,7 @@
             <summary>
             Delete source from storage by id.
             </summary>
-            <param name="id">Contains source id.</param>
+            <param name="id">A source unique identifier as a <see cref="T:System.Guid"/>.</param>
             <returns></returns>
         </member>
         <member name="T:NewsAggregator.WebAPI.Controllers.TokenController">
@@ -121,23 +121,23 @@
         </member>
         <member name="M:NewsAggregator.WebAPI.Controllers.TokenController.CreateJwtToken(NewsAggregator.WebAPI.Models.Requests.LoginUserRequestModel)">
             <summary>
-            Login and create JWT token.
+            Login and generate JWT token.
             </summary>
             <param name="requestModel">Contains user email and user password.</param>
             <returns></returns>
         </member>
         <member name="M:NewsAggregator.WebAPI.Controllers.TokenController.RefreshToken(NewsAggregator.WebAPI.Models.Requests.RefreshTokenRequestModel)">
             <summary>
-            Register user.
+            Refresh token.
             </summary>
-            <param name="requestModel"></param>
+            <param name="requestModel">Contains refresh token as a <see cref="T:System.Guid"/>.</param>
             <returns></returns>
         </member>
         <member name="M:NewsAggregator.WebAPI.Controllers.TokenController.RevokeToken(NewsAggregator.WebAPI.Models.Requests.RefreshTokenRequestModel)">
             <summary>
-            Method for revoke refresh token.
+            Revoke token.
             </summary>
-            <param name="requestModel"></param>
+            <param name="requestModel">Contains refresh token as a <see cref="T:System.Guid"/>.</param>
             <returns></returns>
         </member>
         <member name="T:NewsAggregator.WebAPI.Controllers.UserController">
@@ -167,6 +167,16 @@
             </summary>
             <param name="userModel">Contains user email, password and password confirmation.</param>
             <returns></returns>
+        </member>
+        <member name="T:NewsAggregator.WebAPI.Models.Requests.AccessTokenRequestModel">
+            <summary>
+            Request model for access token.
+            </summary>
+        </member>
+        <member name="P:NewsAggregator.WebAPI.Models.Requests.AccessTokenRequestModel.AccessToken">
+            <summary>
+            Access token.
+            </summary>
         </member>
         <member name="T:NewsAggregator.WebAPI.Models.Requests.AddOrUpdateArticleRequestModel">
             <summary>
@@ -241,6 +251,16 @@
         <member name="T:NewsAggregator.WebAPI.Models.Requests.PatchRequestModel">
             <summary>
             
+            </summary>
+        </member>
+        <member name="T:NewsAggregator.WebAPI.Models.Requests.RefreshTokenRequestModel">
+            <summary>
+            Request model for refresh token.
+            </summary>
+        </member>
+        <member name="P:NewsAggregator.WebAPI.Models.Requests.RefreshTokenRequestModel.RefreshToken">
+            <summary>
+            Refresh token.
             </summary>
         </member>
         <member name="T:NewsAggregator.WebAPI.Models.Requests.RegisterUserRequestModel">

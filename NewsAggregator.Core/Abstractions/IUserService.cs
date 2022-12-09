@@ -13,5 +13,5 @@ public interface IUserService
     Task<bool> IsUserExists(string email);
     Task<bool> CheckUserPassword(Guid userId, string password);
     Task<bool> CheckUserPassword(string email, string password);
-    Task<UserDto?> GetUserByRefreshTokenAsync(Guid token);
+    Task<UserDto?> GetUserByRefreshTokenAsync(Guid refreshToken);
 }

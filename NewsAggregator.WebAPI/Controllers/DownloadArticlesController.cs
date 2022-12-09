@@ -5,6 +5,7 @@ using NewsAggregator.Core.Abstractions;
 using NewsAggregator.Core.DataTransferObjects;
 using NewsAggregator.WebAPI.Models.Requests;
 using NewsAggregator.WebAPI.Models.Responses;
+using Serilog;
 
 namespace NewsAggregator.WebAPI.Controllers
 {
@@ -41,15 +42,30 @@ namespace NewsAggregator.WebAPI.Controllers
         {
             try
             {
-                RecurringJob.AddOrUpdate(() => _rssService.GetArticlesDataFromAllAvailableRssSourcesAsync(), "30 */1 * * *");
-                RecurringJob.AddOrUpdate(() => _articleService.AddArticleTextToArticlesForAllAvailableSourcesAsync(), "35,05 */1 * * *");
-                RecurringJob.AddOrUpdate(() => _articleService.AddRateToArticlesAsync(), "40,10 */1 * * *");
+                RecurringJob.AddOrUpdate(()
+                    => _rssService.GetArticlesDataFromAllAvailableRssSourcesAsync(),
+                    "30 */1 * * *");
 
-                return Ok(new SuccessModel { DetailMessage = "Recurring jobs added successfully to Hangfire dashboard" });
+                RecurringJob.AddOrUpdate(()
+                    => _articleService.AddArticleTextToArticlesForAllAvailableSourcesAsync(),
+                    "35,05 */1 * * *");
+
+                RecurringJob.AddOrUpdate(()
+                    => _articleService.AddRateToArticlesAsync(),
+                    "40,10 */1 * * *");
+
+                return Ok(new SuccessModel
+                {
+                    DetailMessage = "Recurring jobs added successfully to Hangfire dashboard"
+                });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new ErrorModel { ErrorMessage = ex.Message });
+                Log.Error(ex.Message);
+                return StatusCode(500, new ErrorModel
+                {
+                    ErrorMessage = "The server encountered an unexpected situation."
+                });
             }
         }
     }

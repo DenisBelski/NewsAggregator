@@ -52,21 +52,33 @@ namespace NewsAggregator.WebAPI.Controllers
         [Authorize]
         [ProducesResponseType(typeof(UserResponseModel), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Get()
         {
-            var listUsers = await _userService.GetAllUsersAsync();
-
-            if (listUsers.Any())
+            try
             {
-                foreach (var user in listUsers)
+                var listUsers = await _userService.GetAllUsersAsync();
+
+                if (listUsers.Any())
                 {
-                    user.RoleName = await _roleService.GetRoleNameByIdAsync(user.RoleId);
+                    foreach (var user in listUsers)
+                    {
+                        user.RoleName = await _roleService.GetRoleNameByIdAsync(user.RoleId);
+                    }
+
+                    return Ok(_mapper.Map<List<UserResponseModel>>(listUsers));
                 }
 
-                return Ok(_mapper.Map<List<UserResponseModel>>(listUsers));
+                return NotFound(new ErrorModel { ErrorMessage = "No users found in the storage" });
             }
-
-            return NotFound(new ErrorModel { ErrorMessage = "No users found in the storage" });
+            catch (Exception ex)
+            {
+                Log.Error(ex.Message);
+                return StatusCode(500, new ErrorModel
+                {
+                    ErrorMessage = "The server encountered an unexpected situation."
+                });
+            }
         }
 
         /// <summary>
@@ -75,45 +87,62 @@ namespace NewsAggregator.WebAPI.Controllers
         /// <param name="userModel">Contains user email, password and password confirmation.</param>
         /// <returns></returns>
         [HttpPost]
-        [ProducesResponseType(typeof(UserResponseModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(TokenResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status409Conflict)]
         [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Create([FromBody] RegisterUserRequestModel userModel)
         {
-            if (!string.IsNullOrEmpty(userModel.Email)
-                && !string.IsNullOrEmpty(userModel.Password)
-                && !string.IsNullOrEmpty(userModel.PasswordConfirmation))
+            try
             {
-                var userRoleId = await _roleService.GetRoleIdByNameAsync(_configuration["UserRoles:Default"]);
-                var userDto = _mapper.Map<UserDto>(userModel);
-                var userWithSameEmailExists = await _userService.IsUserExists(userModel.Email);
-
-                if (userRoleId != null
-                    && userDto != null
-                    && !userWithSameEmailExists
-                    && userModel.Password.Equals(userModel.PasswordConfirmation))
+                if (!string.IsNullOrEmpty(userModel.Email)
+                    && !string.IsNullOrEmpty(userModel.Password)
+                    && !string.IsNullOrEmpty(userModel.PasswordConfirmation))
                 {
-                    userDto.RoleId = userRoleId.Value;
-                    var result = await _userService.RegisterUser(userDto, userModel.Password);
+                    var userRoleId = await _roleService.GetRoleIdByNameAsync(_configuration["UserRoles:Default"]);
+                    var userDto = _mapper.Map<UserDto>(userModel);
+                    var userWithSameEmailExists = await _userService.IsUserExists(userModel.Email);
 
-                    if (result <= 0)
+                    if (userRoleId != null
+                        && userDto != null
+                        && !userWithSameEmailExists
+                        && userModel.Password.Equals(userModel.PasswordConfirmation))
                     {
-                        return Conflict(new ErrorModel { ErrorMessage = $"User with specify {nameof(userModel.Email)} already exists" });
+                        userDto.RoleId = userRoleId.Value;
+                        var result = await _userService.RegisterUser(userDto, userModel.Password);
+
+                        if (result <= 0)
+                        {
+                            return Conflict(new ErrorModel
+                            {
+                                ErrorMessage = $"User with specify {nameof(userModel.Email)} already exists"
+                            });
+                        }
+
+                        var userInDbDto = await _userService.GetUserWithRoleByEmailAsync(userDto.Email);
+
+                        return userInDbDto != null
+                            ? Ok(await _jwtUtil.GenerateTokenAsync(userInDbDto))
+                            : StatusCode(503, new ErrorModel
+                            {
+                                ErrorMessage = "The server is not ready to handle the request."
+                            });
                     }
-
-                    var userInDbDto = await _userService.GetUserWithRoleByEmailAsync(userDto.Email);
-
-                    var tokenResponse = await _jwtUtil.GenerateTokenAsync(userInDbDto);
-
-                    return userInDbDto != null
-                        ? Ok(await _jwtUtil.GenerateTokenAsync(userInDbDto))
-                        : StatusCode(500, 
-                        new ErrorModel { ErrorMessage = "The server encountered an unexpected condition that prevented it from fulfilling the request." });
                 }
-            }
 
-            return BadRequest(new ErrorModel { ErrorMessage = "Failed to register a user, please check your input" });
+                return BadRequest(new ErrorModel
+                {
+                    ErrorMessage = "Failed to register a user, please check your input"
+                });
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex.Message);
+                return StatusCode(500, new ErrorModel
+                {
+                    ErrorMessage = "The server encountered an unexpected situation."
+                });
+            }
         }
     }
 }

@@ -58,14 +58,13 @@ namespace NewsAggregator.WebAPI.Utils
                 signingCredentials: credentials);
 
             var accessToken = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
-            
-            //var refreshTokenValue = Guid.NewGuid();
+            var refreshTokenValue = Guid.NewGuid();
 
-            //await _mediator.Send(new AddRefreshTokenCommand()
-            //{
-            //    UserId = userDto.Id,
-            //    TokenValue = refreshTokenValue
-            //});
+            await _mediator.Send(new AddRefreshTokenCommand()
+            {
+                UserId = userDto.Id,
+                TokenValue = refreshTokenValue
+            });
 
             return new TokenResponse()
             {
@@ -73,7 +72,7 @@ namespace NewsAggregator.WebAPI.Utils
                 Role = userDto.RoleName,
                 TokenExpiration = jwtSecurityToken.ValidTo,
                 UserId = userDto.Id,
-                //RefreshToken = refreshTokenValue
+                RefreshToken = refreshTokenValue
             };
         }
 

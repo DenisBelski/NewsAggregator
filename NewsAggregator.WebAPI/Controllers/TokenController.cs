@@ -25,101 +25,127 @@ namespace NewsAggregator.WebAPI.Controllers
         /// <param name="jwtUtil"></param>
         public TokenController(IUserService userService,
             IJwtUtil jwtUtil)
-        { 
+        {
             _userService = userService;
             _jwtUtil = jwtUtil;
         }
 
         /// <summary>
-        /// Login and create JWT token.
+        /// Login and generate JWT token.
         /// </summary>
         /// <param name="requestModel">Contains user email and user password.</param>
         /// <returns></returns>
+        [Route("Create")]
         [HttpPost]
+        [ProducesResponseType(typeof(TokenResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> CreateJwtToken([FromBody] LoginUserRequestModel requestModel)
         {
             try
             {
-                if (requestModel != null 
-                    && requestModel.Email != null
-                    && requestModel.Password != null)
+                if (!string.IsNullOrEmpty(requestModel.Email)
+                    && !string.IsNullOrEmpty(requestModel.Password))
                 {
                     var userDto = await _userService.GetUserWithRoleByEmailAsync(requestModel.Email);
 
                     if (userDto == null)
                     {
-                        return BadRequest(new ErrorModel() { ErrorMessage = "User does't exist" });
+                        return NotFound(new ErrorModel() { ErrorMessage = "User does't exist." });
                     }
 
-                    var isPassCorrect = await _userService.CheckUserPassword(requestModel.Email, requestModel.Password);
+                    var isPassCorrect = await _userService
+                        .CheckUserPassword(requestModel.Email, requestModel.Password);
 
-                    if (!isPassCorrect)
-                    {
-                        return BadRequest(new ErrorModel() { ErrorMessage = "Password is incorrect" });
-                    }
-
-                    var response = await _jwtUtil.GenerateTokenAsync(userDto);
-                    return Ok(response);
+                    return isPassCorrect
+                        ? Ok(await _jwtUtil.GenerateTokenAsync(userDto))
+                        : BadRequest(new ErrorModel() { ErrorMessage = "Password is incorrect." });
                 }
 
-                return BadRequest(new ErrorModel() { ErrorMessage = "Request model isn't valid" });
+                return BadRequest(new ErrorModel() { ErrorMessage = "Request model isn't valid." });
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Log.Error(e.Message);
-                return StatusCode(500);
+                Log.Error(ex.Message);
+                return StatusCode(500, new ErrorModel
+                {
+                    ErrorMessage = "The server encountered an unexpected situation."
+                });
             }
         }
 
         /// <summary>
-        /// Register user.
+        /// Refresh token.
         /// </summary>
-        /// <param name="requestModel"></param>
+        /// <param name="requestModel">Contains refresh token as a <see cref="Guid"/>.</param>
         /// <returns></returns>
         [Route("Refresh")]
         [HttpPost]
+        [ProducesResponseType(typeof(TokenResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestModel requestModel)
         {
             try
             {
-                var userDto = await _userService.GetUserByRefreshTokenAsync(requestModel.RefreshToken);
-
-                if (userDto == null)
+                if (!Guid.Empty.Equals(requestModel.RefreshToken))
                 {
-                    return BadRequest(new ErrorModel() { ErrorMessage = "User does't exist" });
+                    var userDto = await _userService.GetUserByRefreshTokenAsync(requestModel.RefreshToken);
+
+                    if (userDto == null)
+                    {
+                        return NotFound(new ErrorModel() { ErrorMessage = "User does't exist." });
+                    }
+
+                    var tokenResponse = await _jwtUtil.GenerateTokenAsync(userDto);
+                    await _jwtUtil.RemoveRefreshTokenAsync(requestModel.RefreshToken);
+
+                    return Ok(tokenResponse);
                 }
 
-                var tokenResponse = await _jwtUtil.GenerateTokenAsync(userDto);
-                await _jwtUtil.RemoveRefreshTokenAsync(requestModel.RefreshToken);
-
-                return Ok(tokenResponse);
+                return BadRequest(new ErrorModel { ErrorMessage = "Failed, please check your input." });
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Log.Error(e.Message);
-                return StatusCode(500);
+                Log.Error(ex.Message);
+                return StatusCode(500, new ErrorModel
+                {
+                    ErrorMessage = "The server encountered an unexpected situation."
+                });
             }
         }
 
         /// <summary>
-        /// Method for revoke refresh token.
+        /// Revoke token.
         /// </summary>
-        /// <param name="requestModel"></param>
+        /// <param name="requestModel">Contains refresh token as a <see cref="Guid"/>.</param>
         /// <returns></returns>
         [Route("Revoke")]
         [HttpPost]
+        [ProducesResponseType(typeof(SuccessModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> RevokeToken([FromBody] RefreshTokenRequestModel requestModel)
         {
             try
             {
-                await _jwtUtil.RemoveRefreshTokenAsync(requestModel.RefreshToken);
+                if (!Guid.Empty.Equals(requestModel.RefreshToken))
+                {
+                    await _jwtUtil.RemoveRefreshTokenAsync(requestModel.RefreshToken);
+                    return Ok(new SuccessModel { DetailMessage = "Token revoked successfully." });
+                }
 
-                return Ok();
+                return BadRequest(new ErrorModel { ErrorMessage = "Failed, please check your input." });
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Log.Error(e.Message);
-                return StatusCode(500);
+                Log.Error(ex.Message);
+                return StatusCode(500, new ErrorModel
+                {
+                    ErrorMessage = "The server encountered an unexpected situation."
+                });
             }
         }
     }

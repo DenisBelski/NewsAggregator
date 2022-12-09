@@ -154,11 +154,11 @@ namespace NewsAggregator.Business.ServicesImplementations
             }
         }
 
-        public async Task<UserDto?> GetUserByRefreshTokenAsync(Guid token)
+        public async Task<UserDto?> GetUserByRefreshTokenAsync(Guid refreshToken)
         {
-            var user = await _mediator.Send(new GetUserByRefreshTokenQuery() { RefreshToken = token });
+            var userDto = await _mediator.Send(new GetUserByRefreshTokenQuery() { RefreshToken = refreshToken });
 
-            return user;
+            return userDto;
         }
     }
 }
