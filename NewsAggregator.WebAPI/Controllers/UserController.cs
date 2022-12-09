@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using NewsAggregator.Core.Abstractions;
 using NewsAggregator.Core.DataTransferObjects;
 using NewsAggregator.WebAPI.Models.Requests;
+using NewsAggregator.WebAPI.Models.Responses;
 using NewsAggregator.WebAPI.Utils;
 using Serilog;
 
@@ -17,6 +18,7 @@ namespace NewsAggregator.WebAPI.Controllers
     public class UserController : ControllerBase
     {
         private readonly IMapper _mapper;
+        private readonly IConfiguration _configuration;
         private readonly IUserService _userService;
         private readonly IRoleService _roleService;
         private readonly IJwtUtil _jwtUtil;
@@ -25,70 +27,93 @@ namespace NewsAggregator.WebAPI.Controllers
         /// Initializes a new instance of the <see cref="UserController"/> class.
         /// </summary>
         /// <param name="mapper"></param>
+        /// <param name="configuration"></param>
         /// <param name="userService"></param>
         /// <param name="roleService"></param>
         /// <param name="jwtUtil"></param>
-        public UserController(IMapper mapper, 
+        public UserController(IMapper mapper,
+            IConfiguration configuration,
             IUserService userService,
             IRoleService roleService,
             IJwtUtil jwtUtil)
         {
             _mapper = mapper;
+            _configuration = configuration;
             _userService = userService;
             _roleService = roleService;
             _jwtUtil = jwtUtil;
         }
 
         /// <summary>
-        /// Get all register users
+        /// Get all register users.
         /// </summary>
         /// <returns></returns>
         [HttpGet]
         [Authorize]
+        [ProducesResponseType(typeof(UserResponseModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Get()
         {
-            var users = await _userService.GetAllUsersAsync();
-            return Ok(users);
+            var listUsers = await _userService.GetAllUsersAsync();
+
+            if (listUsers.Any())
+            {
+                foreach (var user in listUsers)
+                {
+                    user.RoleName = await _roleService.GetRoleNameByIdAsync(user.RoleId);
+                }
+
+                return Ok(_mapper.Map<List<UserResponseModel>>(listUsers));
+            }
+
+            return NotFound(new ErrorModel { ErrorMessage = "No users found in the storage" });
         }
 
         /// <summary>
-        /// Register user.
+        /// Register new user.
         /// </summary>
-        /// <param name="requestModel">Contains user email, password and password confirmation.</param>
+        /// <param name="userModel">Contains user email, password and password confirmation.</param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] RegisterUserRequestModel requestModel)
+        [ProducesResponseType(typeof(UserResponseModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status409Conflict)]
+        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> Create([FromBody] RegisterUserRequestModel userModel)
         {
-            try
+            if (!string.IsNullOrEmpty(userModel.Email)
+                && !string.IsNullOrEmpty(userModel.Password)
+                && !string.IsNullOrEmpty(userModel.PasswordConfirmation))
             {
-                var userRoleId = await _roleService.GetRoleIdByNameAsync("User");
-                var userDto = _mapper.Map<UserDto>(requestModel);
-                var userWIthSameEmailExists = await _userService.IsUserExists(requestModel.Email);
+                var userRoleId = await _roleService.GetRoleIdByNameAsync(_configuration["UserRoles:Default"]);
+                var userDto = _mapper.Map<UserDto>(userModel);
+                var userWithSameEmailExists = await _userService.IsUserExists(userModel.Email);
 
-                if (userDto != null 
-                    && userRoleId != null
-                    && !userWIthSameEmailExists
-                    && requestModel.Password.Equals(requestModel.PasswordConfirmation))
+                if (userRoleId != null
+                    && userDto != null
+                    && !userWithSameEmailExists
+                    && userModel.Password.Equals(userModel.PasswordConfirmation))
                 {
                     userDto.RoleId = userRoleId.Value;
-                    var result = await _userService.RegisterUser(userDto, requestModel.Password);
+                    var result = await _userService.RegisterUser(userDto, userModel.Password);
 
-                    if (result > 0)
+                    if (result <= 0)
                     {
-                        var userInDbDto = await _userService.GetUserWithRoleByEmailAsync(userDto.Email);
-
-                        var response = await _jwtUtil.GenerateTokenAsync(userInDbDto);
-                        return Ok(response);
+                        return Conflict(new ErrorModel { ErrorMessage = $"User with specify {nameof(userModel.Email)} already exists" });
                     }
-                }
 
-                return BadRequest();
+                    var userInDbDto = await _userService.GetUserWithRoleByEmailAsync(userDto.Email);
+
+                    var tokenResponse = await _jwtUtil.GenerateTokenAsync(userInDbDto);
+
+                    return userInDbDto != null
+                        ? Ok(await _jwtUtil.GenerateTokenAsync(userInDbDto))
+                        : StatusCode(500, 
+                        new ErrorModel { ErrorMessage = "The server encountered an unexpected condition that prevented it from fulfilling the request." });
+                }
             }
-            catch (Exception e)
-            {
-                Log.Error(e.Message);
-                return StatusCode(500);
-            }
+
+            return BadRequest(new ErrorModel { ErrorMessage = "Failed to register a user, please check your input" });
         }
     }
 }

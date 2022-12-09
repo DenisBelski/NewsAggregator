@@ -55,13 +55,11 @@ namespace NewsAggregator.Business.ServicesImplementations
                 : null;
         }
 
-        public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
+        public async Task<List<UserDto>> GetAllUsersAsync()
         {
             var userEntities = await _unitOfWork.Users.GetAllAsync();
-            
-            return userEntities != null
-                ? _mapper.Map<List<UserDto>>(userEntities)
-                : Enumerable.Empty<UserDto>();
+
+            return _mapper.Map<List<UserDto>>(userEntities);
         }
 
         public async Task<int> UpdateUserAsync(UserDto userDto)

@@ -6,7 +6,7 @@ public interface IUserService
 {
     Task<int> RegisterUser(UserDto userDto, string password);
     Task<UserDto?> GetUserWithRoleByEmailAsync(string email);
-    Task<IEnumerable<UserDto>> GetAllUsersAsync();
+    Task<List<UserDto>> GetAllUsersAsync();
     Task<int> UpdateUserAsync(UserDto userDto);
     Task DeleteUserByIdAsync(Guid userId);
     Task<bool> IsUserExists(Guid userId);

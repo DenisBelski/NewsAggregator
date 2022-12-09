@@ -10,7 +10,7 @@ namespace NewsAggregatorAspNetCore.MappingProfiles
         public UserProfile()
         {
             CreateMap<User, UserDto>()
-                .ForMember(dto => dto.RoleName, 
+                .ForMember(dto => dto.RoleName,
                     opt => opt.MapFrom(entity => entity.Role.Name));
 
             CreateMap<UserDto, User>()

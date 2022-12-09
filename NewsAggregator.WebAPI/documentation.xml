@@ -30,57 +30,48 @@
             <summary>
             Get all articles or get articles by rate or source id.
             </summary>
-            <param name="model">Contains article rating and id of the link to the article in source.</param>
+            <param name="articleModel">Assign articles a minimum rating to display or specify source id.</param>
             <returns></returns>
         </member>
-        <member name="M:NewsAggregator.WebAPI.Controllers.ArticlesController.AddCustomArticle(System.Guid,NewsAggregator.WebAPI.Models.Requests.AddOrUpdateArticleRequestModel)">
+        <member name="M:NewsAggregator.WebAPI.Controllers.ArticlesController.CreateCustomArticle(System.Guid,NewsAggregator.WebAPI.Models.Requests.AddOrUpdateArticleRequestModel)">
             <summary>
             Create a new custom article and add it to the storage.
             </summary>
             <param name="id">Assign a unique article identifier as a <see cref="T:System.Guid"/></param>
-            <param name="model">Assign article name, category, short description and article text.</param>
+            <param name="articleModel">Assign article name, category, short description and article text.</param>
             <returns></returns>
         </member>
         <member name="M:NewsAggregator.WebAPI.Controllers.ArticlesController.UpdateArticle(System.Guid,NewsAggregator.WebAPI.Models.Requests.AddOrUpdateArticleRequestModel)">
             <summary>
             Update all fields in article with specified id.
             </summary>
-            <param name="id">Contains article id.</param>
-            <param name="model">Contains article name, category, short description and article text.</param>
+            <param name="id">Assign a unique article identifier as a <see cref="T:System.Guid"/>.</param>
+            <param name="articleModel">Contains article name, category, short description and article text.</param>
             <returns></returns>
         </member>
         <member name="M:NewsAggregator.WebAPI.Controllers.ArticlesController.UpdateArticle(System.Guid,NewsAggregator.WebAPI.Models.Requests.PatchRequestModel)">
             <summary>
-            Update only one field in article with specified id.
+            Update only necessary field in article with specified id.
             </summary>
-            <param name="id">Contains article id.</param>
-            <param name="model">Contains article name substring and source id.</param>
+            <param name="id">Assign a unique article identifier as a <see cref="T:System.Guid"/>.</param>
+            <param name="articleModel">Contains article name substring and source id.</param>
             <returns></returns>
         </member>
         <member name="T:NewsAggregator.WebAPI.Controllers.DownloadArticlesController">
             <summary>
-            Controller for getting articles from resources.
+            Controller for getting articles from available sources.
             </summary>
         </member>
-        <member name="M:NewsAggregator.WebAPI.Controllers.DownloadArticlesController.#ctor(AutoMapper.IMapper,Microsoft.Extensions.Configuration.IConfiguration,NewsAggregator.Core.Abstractions.IArticleService,NewsAggregator.Core.Abstractions.ISourceService,NewsAggregator.Core.Abstractions.IRssService)">
+        <member name="M:NewsAggregator.WebAPI.Controllers.DownloadArticlesController.#ctor(NewsAggregator.Core.Abstractions.IArticleService,NewsAggregator.Core.Abstractions.IRssService)">
             <summary>
             Initializes a new instance of the <see cref="T:NewsAggregator.WebAPI.Controllers.DownloadArticlesController"/> class.
             </summary>
-            <param name="mapper"></param>
-            <param name="configuration"></param>
             <param name="articleService"></param>
-            <param name="sourceService"></param>
             <param name="rssService"></param>
         </member>
-        <member name="M:NewsAggregator.WebAPI.Controllers.DownloadArticlesController.AddArticlesFromAvailableSources">
+        <member name="M:NewsAggregator.WebAPI.Controllers.DownloadArticlesController.AddArticlesFromAllAvailableSourcesToTheStorage">
             <summary>
             Create recurring jobs to add articles from all available sources to the storage.
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:NewsAggregator.WebAPI.Controllers.DownloadArticlesController.AddRateToArticles">
-            <summary>
-            Add rating articles to the storage.
             </summary>
             <returns></returns>
         </member>
@@ -121,66 +112,65 @@
             
             </summary>
         </member>
-        <member name="M:NewsAggregator.WebAPI.Controllers.TokenController.#ctor(NewsAggregator.Core.Abstractions.IUserService,NewsAggregator.Core.Abstractions.IRoleService,AutoMapper.IMapper,NewsAggregator.WebAPI.Utils.IJwtUtil)">
+        <member name="M:NewsAggregator.WebAPI.Controllers.TokenController.#ctor(NewsAggregator.Core.Abstractions.IUserService,NewsAggregator.WebAPI.Utils.IJwtUtil)">
             <summary>
             
             </summary>
             <param name="userService"></param>
-            <param name="roleService"></param>
-            <param name="mapper"></param>
             <param name="jwtUtil"></param>
         </member>
         <member name="M:NewsAggregator.WebAPI.Controllers.TokenController.CreateJwtToken(NewsAggregator.WebAPI.Models.Requests.LoginUserRequestModel)">
             <summary>
-            Register user
+            Login and create JWT token.
             </summary>
-            <param name="request"></param>
+            <param name="requestModel">Contains user email and user password.</param>
             <returns></returns>
         </member>
         <member name="M:NewsAggregator.WebAPI.Controllers.TokenController.RefreshToken(NewsAggregator.WebAPI.Models.Requests.RefreshTokenRequestModel)">
             <summary>
-            Register user
+            Register user.
             </summary>
-            <param name="request"></param>
+            <param name="requestModel"></param>
             <returns></returns>
         </member>
         <member name="M:NewsAggregator.WebAPI.Controllers.TokenController.RevokeToken(NewsAggregator.WebAPI.Models.Requests.RefreshTokenRequestModel)">
             <summary>
-            Register user
+            Method for revoke refresh token.
             </summary>
-            <param name="request"></param>
+            <param name="requestModel"></param>
             <returns></returns>
         </member>
         <member name="T:NewsAggregator.WebAPI.Controllers.UserController">
             <summary>
-            
+            Controller for work with users.
             </summary>
         </member>
-        <member name="M:NewsAggregator.WebAPI.Controllers.UserController.#ctor(NewsAggregator.Core.Abstractions.IUserService,NewsAggregator.Core.Abstractions.IRoleService,AutoMapper.IMapper,NewsAggregator.WebAPI.Utils.IJwtUtil)">
+        <member name="M:NewsAggregator.WebAPI.Controllers.UserController.#ctor(AutoMapper.IMapper,Microsoft.Extensions.Configuration.IConfiguration,NewsAggregator.Core.Abstractions.IUserService,NewsAggregator.Core.Abstractions.IRoleService,NewsAggregator.WebAPI.Utils.IJwtUtil)">
             <summary>
-            
+            Initializes a new instance of the <see cref="T:NewsAggregator.WebAPI.Controllers.UserController"/> class.
             </summary>
+            <param name="mapper"></param>
+            <param name="configuration"></param>
             <param name="userService"></param>
             <param name="roleService"></param>
-            <param name="mapper"></param>
             <param name="jwtUtil"></param>
         </member>
         <member name="M:NewsAggregator.WebAPI.Controllers.UserController.Get">
             <summary>
-            Get all register users
+            Get all register users.
             </summary>
             <returns></returns>
         </member>
         <member name="M:NewsAggregator.WebAPI.Controllers.UserController.Create(NewsAggregator.WebAPI.Models.Requests.RegisterUserRequestModel)">
             <summary>
-            Register user.
+            Register new user.
             </summary>
-            <param name="request">Contains user email, password and password confirmation.</param>
+            <param name="userModel">Contains user email, password and password confirmation.</param>
             <returns></returns>
         </member>
         <member name="T:NewsAggregator.WebAPI.Models.Requests.AddOrUpdateArticleRequestModel">
             <summary>
-            This class contains fields for "add or update article request model".
+            Request model for adding or updating an article.
             </summary>
         </member>
         <member name="P:NewsAggregator.WebAPI.Models.Requests.AddOrUpdateArticleRequestModel.Title">
@@ -205,7 +195,7 @@
         </member>
         <member name="T:NewsAggregator.WebAPI.Models.Requests.GetArticlesRequestModel">
             <summary>
-            This class contains fields for "get article request model".
+            Request model for getting an article.
             </summary>
         </member>
         <member name="P:NewsAggregator.WebAPI.Models.Requests.GetArticlesRequestModel.SourceId">
@@ -220,12 +210,27 @@
         </member>
         <member name="T:NewsAggregator.WebAPI.Models.Requests.GetSourceRequestModel">
             <summary>
-            This class contains fields for "get source request model".
+            Request model for getting a source.
             </summary>
         </member>
         <member name="P:NewsAggregator.WebAPI.Models.Requests.GetSourceRequestModel.Name">
             <summary>
             Source name.
+            </summary>
+        </member>
+        <member name="T:NewsAggregator.WebAPI.Models.Requests.LoginUserRequestModel">
+            <summary>
+            Request model for user login.
+            </summary>
+        </member>
+        <member name="P:NewsAggregator.WebAPI.Models.Requests.LoginUserRequestModel.Email">
+            <summary>
+            User email.
+            </summary>
+        </member>
+        <member name="P:NewsAggregator.WebAPI.Models.Requests.LoginUserRequestModel.Password">
+            <summary>
+            User password.
             </summary>
         </member>
         <member name="T:NewsAggregator.WebAPI.Models.Requests.PatchFieldModel">
@@ -238,9 +243,29 @@
             
             </summary>
         </member>
+        <member name="T:NewsAggregator.WebAPI.Models.Requests.RegisterUserRequestModel">
+            <summary>
+            Request model for user registration.
+            </summary>
+        </member>
+        <member name="P:NewsAggregator.WebAPI.Models.Requests.RegisterUserRequestModel.Email">
+            <summary>
+            User email.
+            </summary>
+        </member>
+        <member name="P:NewsAggregator.WebAPI.Models.Requests.RegisterUserRequestModel.Password">
+            <summary>
+            User password.
+            </summary>
+        </member>
+        <member name="P:NewsAggregator.WebAPI.Models.Requests.RegisterUserRequestModel.PasswordConfirmation">
+            <summary>
+            User password confirmation.
+            </summary>
+        </member>
         <member name="T:NewsAggregator.WebAPI.Models.Responses.ArticleResponseModel">
             <summary>
-            This class contains fields for "article response model".
+            Response model for displaying article data.
             </summary>
         </member>
         <member name="P:NewsAggregator.WebAPI.Models.Responses.ArticleResponseModel.Title">
@@ -270,17 +295,17 @@
         </member>
         <member name="T:NewsAggregator.WebAPI.Models.Responses.ErrorModel">
             <summary>
-            Model for returning errors from api
+            Model for returning errors from api.
             </summary>
         </member>
         <member name="P:NewsAggregator.WebAPI.Models.Responses.ErrorModel.ErrorMessage">
             <summary>
-            Error message
+            Error message.
             </summary>
         </member>
         <member name="T:NewsAggregator.WebAPI.Models.Responses.SourceResponseModel">
             <summary>
-            This class contains fields for "source response model".
+            Response model for displaying source data.
             </summary>
         </member>
         <member name="P:NewsAggregator.WebAPI.Models.Responses.SourceResponseModel.Name">
@@ -293,15 +318,120 @@
             Source url.
             </summary>
         </member>
+        <member name="P:NewsAggregator.WebAPI.Models.Responses.SourceResponseModel.Id">
+            <summary>
+            Source id.
+            </summary>
+        </member>
+        <member name="P:NewsAggregator.WebAPI.Models.Responses.SourceResponseModel.RssUrl">
+            <summary>
+            Source Rss Url
+            </summary>
+        </member>
         <member name="T:NewsAggregator.WebAPI.Models.Responses.SuccessModel">
             <summary>
-            Model for returning success messages from api
+            Model for returning success messages from api.
             </summary>
         </member>
         <member name="P:NewsAggregator.WebAPI.Models.Responses.SuccessModel.DetailMessage">
             <summary>
-            Success detail message
+            Success detail message.
             </summary>
+        </member>
+        <member name="T:NewsAggregator.WebAPI.Models.Responses.TokenResponse">
+            <summary>
+            Response model for returning token data.
+            </summary>
+        </member>
+        <member name="P:NewsAggregator.WebAPI.Models.Responses.TokenResponse.AccessToken">
+            <summary>
+            Access token.
+            </summary>
+        </member>
+        <member name="P:NewsAggregator.WebAPI.Models.Responses.TokenResponse.Role">
+            <summary>
+            Role.
+            </summary>
+        </member>
+        <member name="P:NewsAggregator.WebAPI.Models.Responses.TokenResponse.UserId">
+            <summary>
+            User id.
+            </summary>
+        </member>
+        <member name="P:NewsAggregator.WebAPI.Models.Responses.TokenResponse.TokenExpiration">
+            <summary>
+            Token expiration.
+            </summary>
+        </member>
+        <member name="P:NewsAggregator.WebAPI.Models.Responses.TokenResponse.RefreshToken">
+            <summary>
+            Refresh token.
+            </summary>
+        </member>
+        <member name="T:NewsAggregator.WebAPI.Models.Responses.UserResponseModel">
+            <summary>
+            Response model for displaying user data.
+            </summary>
+        </member>
+        <member name="P:NewsAggregator.WebAPI.Models.Responses.UserResponseModel.Email">
+            <summary>
+            User email.
+            </summary>
+        </member>
+        <member name="P:NewsAggregator.WebAPI.Models.Responses.UserResponseModel.RoleName">
+            <summary>
+            User role name.
+            </summary>
+        </member>
+        <member name="P:NewsAggregator.WebAPI.Models.Responses.UserResponseModel.RoleId">
+            <summary>
+            User role id.
+            </summary>
+        </member>
+        <member name="T:NewsAggregator.WebAPI.Utils.IJwtUtil">
+            <summary>
+            Utility interface for working with JWT token.
+            </summary>
+        </member>
+        <member name="M:NewsAggregator.WebAPI.Utils.IJwtUtil.GenerateTokenAsync(NewsAggregator.Core.DataTransferObjects.UserDto)">
+            <summary>
+            Method for generating JWT token.
+            </summary>
+            <param name="userDto"></param>
+            <returns></returns>
+        </member>
+        <member name="M:NewsAggregator.WebAPI.Utils.IJwtUtil.RemoveRefreshTokenAsync(System.Guid)">
+            <summary>
+            Method for removing refresh token.
+            </summary>
+            <param name="requestRefreshToken"></param>
+            <returns></returns>
+        </member>
+        <member name="T:NewsAggregator.WebAPI.Utils.JwtUtilSha256">
+            <summary>
+            Utility for working with JWT token.
+            </summary>
+        </member>
+        <member name="M:NewsAggregator.WebAPI.Utils.JwtUtilSha256.#ctor(Microsoft.Extensions.Configuration.IConfiguration,MediatR.IMediator)">
+            <summary>
+            Initializes a new instance of the <see cref="T:NewsAggregator.WebAPI.Utils.JwtUtilSha256"/> class.
+            </summary>
+            <param name="configuration">Configuration file.</param>
+            <param name="mediator"></param>
+        </member>
+        <member name="M:NewsAggregator.WebAPI.Utils.JwtUtilSha256.GenerateTokenAsync(NewsAggregator.Core.DataTransferObjects.UserDto)">
+            <summary>
+            Method for generating JWT token.
+            </summary>
+            <param name="userDto">Contains user id, email, password hash, role id and role name.</param>
+            <returns></returns>
+        </member>
+        <member name="M:NewsAggregator.WebAPI.Utils.JwtUtilSha256.RemoveRefreshTokenAsync(System.Guid)">
+            <summary>
+            Method for removing refresh token.
+            </summary>
+            <param name="requestRefreshToken">Contains refresh token for removing.</param>
+            <returns></returns>
         </member>
     </members>
 </doc>

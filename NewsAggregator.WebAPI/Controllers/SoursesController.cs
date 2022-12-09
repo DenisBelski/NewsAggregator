@@ -36,7 +36,7 @@ namespace NewsAggregator.WebAPI.Controllers
         /// <returns></returns>
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(SourceResponseModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(Nullable), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetSourceById(Guid id)
         {
             var sourceDto = await _sourceService.GetSourceByIdAsync(id);
@@ -53,7 +53,7 @@ namespace NewsAggregator.WebAPI.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(List<SourceResponseModel>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetSources([FromQuery] GetSourceRequestModel? sourceModel)
+        public async Task<IActionResult> GetSources([FromQuery] GetSourceRequestModel sourceModel)
         {
             var listSources = await _sourceService.GetAllSourcesAsync();
 
@@ -62,7 +62,7 @@ namespace NewsAggregator.WebAPI.Controllers
                 return NotFound(new ErrorModel { ErrorMessage = "Sources not found" });
             }
 
-            if (sourceModel != null && !string.IsNullOrEmpty(sourceModel.Name))
+            if (!string.IsNullOrEmpty(sourceModel.Name))
             {
                 var sourceWithSpecifiedName = _sourceService.GetSourceByName(sourceModel.Name);
 

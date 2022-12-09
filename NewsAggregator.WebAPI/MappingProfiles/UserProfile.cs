@@ -2,6 +2,7 @@
 using NewsAggregator.Core.DataTransferObjects;
 using NewsAggregator.DataBase.Entities;
 using NewsAggregator.WebAPI.Models.Requests;
+using NewsAggregator.WebAPI.Models.Responses;
 
 namespace NewsAggregator.WebAPI.MappingProfiles
 {
@@ -14,12 +15,13 @@ namespace NewsAggregator.WebAPI.MappingProfiles
                     opt => opt.MapFrom(entity => entity.Role.Name));
 
             CreateMap<UserDto, User>()
-                .ForMember(ent => ent.Id,
+                .ForMember(entity => entity.Id,
                     opt => opt.MapFrom(dto => Guid.NewGuid()))
-                .ForMember(ent => ent.RegistrationDate,
+                .ForMember(entity => entity.RegistrationDate,
                     opt => opt.MapFrom(dto => DateTime.Now));
 
             CreateMap<RegisterUserRequestModel, UserDto>();
+            CreateMap<UserDto, UserResponseModel>();
         }
     }
 }

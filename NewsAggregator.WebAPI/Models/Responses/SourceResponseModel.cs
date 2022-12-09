@@ -14,5 +14,15 @@
         /// Source url.
         /// </summary>
         public string? Url { get; set; }
+
+        /// <summary>
+        /// Source id.
+        /// </summary>
+        public string? Id { get; set; }
+
+        /// <summary>
+        /// Source Rss Url
+        /// </summary>
+        public string? RssUrl { get; set; }
     }
 }

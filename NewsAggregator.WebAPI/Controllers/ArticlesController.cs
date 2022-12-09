@@ -62,21 +62,21 @@ namespace NewsAggregator.WebAPI.Controllers
         /// <summary>
         /// Get all articles or get articles by rate or source id.
         /// </summary>
-        /// <param name="articleModel">Contains article rating and id of the link to the article in source.</param>
+        /// <param name="articleModel">Assign articles a minimum rating to display or specify source id.</param>
         /// <returns></returns>
         [HttpGet]
         [ProducesResponseType(typeof(List<ArticleResponseModel>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetArticles([FromQuery] GetArticlesRequestModel? articleModel)
+        public async Task<IActionResult> GetArticles([FromQuery] GetArticlesRequestModel articleModel)
         {
             var listArticles = await _articleService.GetArticles();
 
             if (!listArticles.Any())
             {
-                return NotFound();
+                return NotFound(new ErrorModel { ErrorMessage = "No articles found in the storage" });
             }
 
-            if (articleModel != null && articleModel.Rate.HasValue)
+            if (articleModel.Rate.HasValue)
             {
                 var listArticlesWithSpecifiedRate = 
                     await _articleService.GetArticlesByRateAsync(articleModel.Rate);
@@ -85,7 +85,7 @@ namespace NewsAggregator.WebAPI.Controllers
                     ? Ok(_mapper.Map<List<ArticleResponseModel>>(listArticlesWithSpecifiedRate))
                     : NotFound(new ErrorModel { ErrorMessage = $"No articles found with the specified {nameof(articleModel.Rate)}" });
             }
-            else if (articleModel != null && !Guid.Empty.Equals(articleModel.SourceId))
+            else if (!Guid.Empty.Equals(articleModel.SourceId))
             {
                 var listArticlesWithSpecifiedSource = 
                     await _articleService.GetArticlesBySourceIdAsync(articleModel.SourceId);
@@ -107,13 +107,12 @@ namespace NewsAggregator.WebAPI.Controllers
         [HttpPost("{id}")]
         [ProducesResponseType(typeof(ArticleResponseModel), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> AddCustomArticle(Guid id, [FromBody] AddOrUpdateArticleRequestModel? articleModel)
+        public async Task<IActionResult> CreateCustomArticle(Guid id, [FromBody] AddOrUpdateArticleRequestModel articleModel)
         {
-            if (articleModel != null
-                && articleModel.Title != null
-                && articleModel.ArticleText != null
-                && articleModel.Category != null
-                && articleModel.ShortDescription != null)
+            if (!string.IsNullOrEmpty(articleModel.Title)
+                && !string.IsNullOrEmpty(articleModel.ArticleText)
+                && !string.IsNullOrEmpty(articleModel.Category)
+                && !string.IsNullOrEmpty(articleModel.ShortDescription))
             {
                 var customArticle = new ArticleDto()
                 {
@@ -130,107 +129,100 @@ namespace NewsAggregator.WebAPI.Controllers
 
                 await _articleService.CreateArticleAsync(customArticle);
 
-                return CreatedAtAction(nameof(AddCustomArticle),
+                return CreatedAtAction(nameof(CreateCustomArticle),
                     new { id = customArticle.Id },
                     _mapper.Map<ArticleResponseModel>(customArticle));
             }
 
-            return BadRequest();
+            return BadRequest(new ErrorModel { ErrorMessage = "Failed to create article, please check your input" });
         }
 
         /// <summary>
         /// Update all fields in article with specified id.
         /// </summary>
-        /// <param name="id">Contains article id.</param>
+        /// <param name="id">Assign a unique article identifier as a <see cref="Guid"/>.</param>
         /// <param name="articleModel">Contains article name, category, short description and article text.</param>
         /// <returns></returns>
         [HttpPut("{id}")]
         [ProducesResponseType(typeof(ArticleResponseModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(Nullable), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> UpdateArticle(Guid id, [FromQuery] AddOrUpdateArticleRequestModel? articleModel)
+        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> UpdateArticle(Guid id, [FromQuery] AddOrUpdateArticleRequestModel articleModel)
         {
-            if (!Guid.Empty.Equals(id))
+            var articleDto = await _articleService.GetArticleByIdAsync(id);
+
+            if (articleDto == null)
             {
-                var articleForChanges = await _articleService.GetArticleByIdAsync(id);
-
-                if (articleForChanges == null)
-                {
-                    return NotFound();
-                }
-
-                if (articleModel != null
-                    && articleModel.Title != null
-                    && articleModel.ArticleText != null
-                    && articleModel.Category != null
-                    && articleModel.ShortDescription != null)
-                {
-                    articleForChanges = new ArticleDto()
-                    {
-                        Id = articleForChanges.Id,
-                        PublicationDate = DateTime.Now,
-                        SourceId = new Guid(_configuration["CustomSource:SourceId"]),
-                        SourceUrl = _configuration["CustomSource:SourceUrl"],
-                        Rate = await _articleService.GetArticleRateByArticleTextAsync(articleModel.ArticleText),
-                        Title = articleModel.Title,
-                        ArticleText = articleModel.ArticleText,
-                        Category = articleModel.Category,
-                        ShortDescription = articleModel.ShortDescription
-                    };
-                }
-                else
-                {
-                    articleForChanges = new ArticleDto()
-                    {
-                        Id = articleForChanges.Id,
-                        PublicationDate = DateTime.Now,
-                        SourceId = new Guid(_configuration["CustomSource:SourceId"]),
-                        SourceUrl = _configuration["CustomSource:SourceUrl"],
-                        Rate = null,
-                        Title = null,
-                        ArticleText = null,
-                        Category = null,
-                        ShortDescription = null
-                    };
-                }
-
-                await _articleService.UpdateArticleAsync(articleForChanges);
-                return Ok(_mapper.Map<ArticleResponseModel>(articleForChanges));
+                return NotFound(new ErrorModel { ErrorMessage = $"No articles found with the specified {nameof(id)}" });
             }
 
-            return BadRequest();
+            if (!string.IsNullOrEmpty(articleModel.Title)
+                && !string.IsNullOrEmpty(articleModel.ArticleText)
+                && !string.IsNullOrEmpty(articleModel.Category)
+                && !string.IsNullOrEmpty(articleModel.ShortDescription))
+            {
+                articleDto = new ArticleDto()
+                {
+                    Id = articleDto.Id,
+                    PublicationDate = DateTime.Now,
+                    SourceId = new Guid(_configuration["CustomSource:SourceId"]),
+                    SourceUrl = _configuration["CustomSource:SourceUrl"],
+                    Rate = await _articleService.GetArticleRateByArticleTextAsync(articleModel.ArticleText),
+                    Title = articleModel.Title,
+                    ArticleText = articleModel.ArticleText,
+                    Category = articleModel.Category,
+                    ShortDescription = articleModel.ShortDescription
+                };
+            }
+            else
+            {
+                articleDto = new ArticleDto()
+                {
+                    Id = articleDto.Id,
+                    PublicationDate = DateTime.Now,
+                    SourceId = new Guid(_configuration["CustomSource:SourceId"]),
+                    SourceUrl = _configuration["CustomSource:SourceUrl"],
+                    Rate = null,
+                    Title = null,
+                    ArticleText = null,
+                    Category = null,
+                    ShortDescription = null
+                };
+            }
+
+            await _articleService.UpdateArticleAsync(articleDto);
+            return Ok(_mapper.Map<ArticleResponseModel>(articleDto));
         }
 
         /// <summary>
-        /// Update only one field in article with specified id.
+        /// Update only necessary field in article with specified id.
         /// </summary>
-        /// <param name="id">Contains article id.</param>
+        /// <param name="id">Assign a unique article identifier as a <see cref="Guid"/>.</param>
         /// <param name="articleModel">Contains article name substring and source id.</param>
         /// <returns></returns>
         [HttpPatch("{id}")]
         [ProducesResponseType(typeof(ArticleResponseModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(Nullable), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> UpdateArticle(Guid id, [FromBody] PatchRequestModel? articleModel)
+        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> UpdateArticle(Guid id, [FromBody] PatchRequestModel articleModel)
         {
-            if (!Guid.Empty.Equals(id))
+            var articleForChanges = await _articleService.GetArticleByIdAsync(id);
+
+            if (articleForChanges == null)
             {
-                var articleForChanges = await _articleService.GetArticleByIdAsync(id);
-
-                if (articleForChanges == null)
-                {
-                    return NotFound();
-                }
-
-                if (articleModel != null && articleModel.Fields[0] != null && articleModel.Fields[1] != null)
-                {
-                    var a = articleModel.Fields;
-
-                    //CQS?
-                    //articleForChanges = await _articleService.UpdateArticleAsync(articleForChanges.Id, model.Fields);
-                    return Ok(_mapper.Map<ArticleResponseModel>(articleForChanges));
-                }
+                return NotFound(new ErrorModel { ErrorMessage = $"No articles found with the specified {nameof(id)}" });
             }
 
-            return BadRequest();
+            if (articleModel.Fields[0] != null 
+                && articleModel.Fields[1] != null)
+            {
+                var a = articleModel.Fields;
+
+                //CQS?
+                //articleForChanges = await _articleService.UpdateArticleAsync(articleForChanges.Id, model.Fields);
+                return Ok(_mapper.Map<ArticleResponseModel>(articleForChanges));
+            }
+
+            return BadRequest(new ErrorModel { ErrorMessage = "Failed to update article, please check your input" });
         }
     }
 }

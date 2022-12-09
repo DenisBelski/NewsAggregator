@@ -87,7 +87,7 @@ namespace NewsAggregatorAspNetCore.Controllers
                 if (ModelState.IsValid)
                 {
                     var userRoleId = await _roleService
-                        .GetRoleIdByNameAsync(_configuration["UsersRole:DefaultUserRole"]);
+                        .GetRoleIdByNameAsync(_configuration["UserRoles:Default"]);
 
                     var userDto = _mapper.Map<UserDto>(model);
 

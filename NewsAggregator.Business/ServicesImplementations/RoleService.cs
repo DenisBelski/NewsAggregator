@@ -17,7 +17,6 @@ namespace NewsAggregator.Business.ServicesImplementations
         {
             var role = await _unitOfWork.Roles.GetByIdAsync(id);
 
-
             return role != null 
                 ? role.Name 
                 : string.Empty;

@@ -16,29 +16,24 @@ namespace NewsAggregator.WebAPI.Controllers
     public class TokenController : ControllerBase
     {
         private readonly IUserService _userService;
-        private readonly IMapper _mapper;
         private readonly IJwtUtil _jwtUtil;
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="userService"></param>
-        /// <param name="roleService"></param>
-        /// <param name="mapper"></param>
         /// <param name="jwtUtil"></param>
         public TokenController(IUserService userService,
-            IRoleService roleService, IMapper mapper,
             IJwtUtil jwtUtil)
-        {
+        { 
             _userService = userService;
-            _mapper = mapper;
             _jwtUtil = jwtUtil;
         }
 
         /// <summary>
-        /// Register user
+        /// Login and create JWT token.
         /// </summary>
-        /// <param name="requestModel"></param>
+        /// <param name="requestModel">Contains user email and user password.</param>
         /// <returns></returns>
         [HttpPost]
         public async Task<IActionResult> CreateJwtToken([FromBody] LoginUserRequestModel requestModel)
@@ -77,7 +72,7 @@ namespace NewsAggregator.WebAPI.Controllers
         }
 
         /// <summary>
-        /// Register user
+        /// Register user.
         /// </summary>
         /// <param name="requestModel"></param>
         /// <returns></returns>

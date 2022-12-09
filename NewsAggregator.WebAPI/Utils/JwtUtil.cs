@@ -32,7 +32,7 @@ namespace NewsAggregator.WebAPI.Utils
         /// <summary>
         /// Method for generating JWT token.
         /// </summary>
-        /// <param name="userDto"></param>
+        /// <param name="userDto">Contains user id, email, password hash, role id and role name.</param>
         /// <returns></returns>
         public async Task<TokenResponse> GenerateTokenAsync(UserDto userDto)
         {
@@ -59,13 +59,13 @@ namespace NewsAggregator.WebAPI.Utils
 
             var accessToken = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
             
-            var refreshTokenValue = Guid.NewGuid();
+            //var refreshTokenValue = Guid.NewGuid();
 
-            await _mediator.Send(new AddRefreshTokenCommand()
-            {
-                UserId = userDto.Id,
-                TokenValue = refreshTokenValue
-            });
+            //await _mediator.Send(new AddRefreshTokenCommand()
+            //{
+            //    UserId = userDto.Id,
+            //    TokenValue = refreshTokenValue
+            //});
 
             return new TokenResponse()
             {
@@ -73,14 +73,14 @@ namespace NewsAggregator.WebAPI.Utils
                 Role = userDto.RoleName,
                 TokenExpiration = jwtSecurityToken.ValidTo,
                 UserId = userDto.Id,
-                RefreshToken = refreshTokenValue
+                //RefreshToken = refreshTokenValue
             };
         }
 
         /// <summary>
         /// Method for removing refresh token.
         /// </summary>
-        /// <param name="requestRefreshToken"></param>
+        /// <param name="requestRefreshToken">Contains refresh token for removing.</param>
         /// <returns></returns>
         public async Task RemoveRefreshTokenAsync(Guid requestRefreshToken)
         {
