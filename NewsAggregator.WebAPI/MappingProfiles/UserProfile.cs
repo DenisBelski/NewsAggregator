@@ -6,8 +6,14 @@ using NewsAggregator.WebAPI.Models.Responses;
 
 namespace NewsAggregator.WebAPI.MappingProfiles
 {
+    /// <summary>
+    /// A profile for copying (mapping) property values of one user to a new user with other properties.
+    /// </summary>
     public class UserProfile : Profile
     {
+        /// <summary>
+        /// A method that includes mapping implementations.
+        /// </summary>
         public UserProfile()
         {
             CreateMap<User, UserDto>()

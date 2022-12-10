@@ -134,6 +134,15 @@ namespace NewsAggregator.Business.ServicesImplementations
             return -1;
         }
 
+        public async Task<int> UpdateOnlyOnleArticleFieldAsync(Guid articleId, List<PatchModel> patchData)
+        {
+            await _unitOfWork.Articles.PatchArticleAsync(articleId, patchData);
+
+            return await _unitOfWork.Commit();
+
+        }
+
+
         public async Task AggregateArticlesFromAllAvailableSourcesAsync()
         {
             try

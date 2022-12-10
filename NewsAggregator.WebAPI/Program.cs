@@ -20,8 +20,15 @@ using System.Text;
 
 namespace NewsAggregator.WebAPI
 {
+    /// <summary>
+    /// The class to start the application.
+    /// </summary>
     public class Program
     {
+        /// <summary>
+        /// The Main method is the entry point of an application. 
+        /// </summary>
+        /// <param name="args"></param>
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);

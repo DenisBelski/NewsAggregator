@@ -6,12 +6,12 @@
     public class GetArticlesRequestModel
     {
         /// <summary>
-        /// Source id.
+        /// Optional field, source id.
         /// </summary>
         public Guid? SourceId { get; set; }
 
         /// <summary>
-        /// Available rating for showing articles.
+        /// Optional field, available rating for showing articles.
         /// </summary>
         public double? Rate { get; set; }
     }

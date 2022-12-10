@@ -9,15 +9,13 @@
             Controller for work with articles.
             </summary>
         </member>
-        <member name="M:NewsAggregator.WebAPI.Controllers.ArticlesController.#ctor(AutoMapper.IMapper,Microsoft.Extensions.Configuration.IConfiguration,NewsAggregator.Core.Abstractions.IArticleService,NewsAggregator.Core.Abstractions.ISourceService,NewsAggregator.Core.Abstractions.IRssService)">
+        <member name="M:NewsAggregator.WebAPI.Controllers.ArticlesController.#ctor(AutoMapper.IMapper,Microsoft.Extensions.Configuration.IConfiguration,NewsAggregator.Core.Abstractions.IArticleService)">
             <summary>
             Initializes a new instance of the <see cref="T:NewsAggregator.WebAPI.Controllers.ArticlesController"/> class.
             </summary>
             <param name="mapper"></param>
             <param name="configuration"></param>
             <param name="articleService"></param>
-            <param name="sourceService"></param>
-            <param name="rssService"></param>
         </member>
         <member name="M:NewsAggregator.WebAPI.Controllers.ArticlesController.GetArticleById(System.Guid)">
             <summary>
@@ -45,16 +43,16 @@
             <summary>
             Update all fields in article with specified id.
             </summary>
-            <param name="id">Assign a unique article identifier as a <see cref="T:System.Guid"/>.</param>
-            <param name="articleModel">Contains article name, category, short description and article text.</param>
+            <param name="id">Specify a unique article identifier as a <see cref="T:System.Guid"/>.</param>
+            <param name="articleModel">Optionally, specify article name, category, short description and article text.</param>
             <returns></returns>
         </member>
         <member name="M:NewsAggregator.WebAPI.Controllers.ArticlesController.UpdateArticle(System.Guid,NewsAggregator.WebAPI.Models.Requests.PatchRequestModel)">
             <summary>
             Update only necessary field in article with specified id.
             </summary>
-            <param name="id">Assign a unique article identifier as a <see cref="T:System.Guid"/>.</param>
-            <param name="articleModel">Contains article name substring and source id.</param>
+            <param name="id">Specify a unique article identifier as a <see cref="T:System.Guid"/>.</param>
+            <param name="patchRequestModel">Specify the name of the field and its values to change the article.</param>
             <returns></returns>
         </member>
         <member name="T:NewsAggregator.WebAPI.Controllers.DownloadArticlesController">
@@ -210,12 +208,12 @@
         </member>
         <member name="P:NewsAggregator.WebAPI.Models.Requests.GetArticlesRequestModel.SourceId">
             <summary>
-            Source id.
+            Optional field, source id.
             </summary>
         </member>
         <member name="P:NewsAggregator.WebAPI.Models.Requests.GetArticlesRequestModel.Rate">
             <summary>
-            Available rating for showing articles.
+            Optional field, available rating for showing articles.
             </summary>
         </member>
         <member name="T:NewsAggregator.WebAPI.Models.Requests.GetSourceRequestModel">
@@ -243,14 +241,19 @@
             User password.
             </summary>
         </member>
-        <member name="T:NewsAggregator.WebAPI.Models.Requests.PatchFieldModel">
-            <summary>
-            
-            </summary>
-        </member>
         <member name="T:NewsAggregator.WebAPI.Models.Requests.PatchRequestModel">
             <summary>
-            
+            Request model for update only necessary data.
+            </summary>
+        </member>
+        <member name="P:NewsAggregator.WebAPI.Models.Requests.PatchRequestModel.FieldName">
+            <summary>
+            Field name.
+            </summary>
+        </member>
+        <member name="P:NewsAggregator.WebAPI.Models.Requests.PatchRequestModel.FieldValue">
+            <summary>
+            Field value.
             </summary>
         </member>
         <member name="T:NewsAggregator.WebAPI.Models.Requests.RefreshTokenRequestModel">

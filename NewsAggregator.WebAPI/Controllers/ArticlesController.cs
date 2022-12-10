@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Hangfire;
 using Microsoft.AspNetCore.Mvc;
+using NewsAggregator.Core;
 using NewsAggregator.Core.Abstractions;
 using NewsAggregator.Core.DataTransferObjects;
 using NewsAggregator.WebAPI.Models.Requests;
@@ -189,8 +190,8 @@ namespace NewsAggregator.WebAPI.Controllers
         /// <summary>
         /// Update all fields in article with specified id.
         /// </summary>
-        /// <param name="id">Assign a unique article identifier as a <see cref="Guid"/>.</param>
-        /// <param name="articleModel">Contains article name, category, short description and article text.</param>
+        /// <param name="id">Specify a unique article identifier as a <see cref="Guid"/>.</param>
+        /// <param name="articleModel">Optionally, specify article name, category, short description and article text.</param>
         /// <returns></returns>
         [HttpPut("{id}")]
         [ProducesResponseType(typeof(ArticleResponseModel), StatusCodes.Status200OK)]
@@ -260,15 +261,15 @@ namespace NewsAggregator.WebAPI.Controllers
         /// <summary>
         /// Update only necessary field in article with specified id.
         /// </summary>
-        /// <param name="id">Assign a unique article identifier as a <see cref="Guid"/>.</param>
-        /// <param name="articleModel">Contains article name substring and source id.</param>
+        /// <param name="id">Specify a unique article identifier as a <see cref="Guid"/>.</param>
+        /// <param name="patchRequestModel">Specify the name of the field and its values to change the article.</param>
         /// <returns></returns>
         [HttpPatch("{id}")]
         [ProducesResponseType(typeof(ArticleResponseModel), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateArticle(Guid id, [FromBody] PatchRequestModel articleModel)
+        public async Task<IActionResult> UpdateArticle(Guid id, [FromBody] PatchRequestModel patchRequestModel)
         {
             try
             {
@@ -282,14 +283,30 @@ namespace NewsAggregator.WebAPI.Controllers
                     });
                 }
 
-                if (articleModel.Fields[0] != null
-                    && articleModel.Fields[1] != null)
+                if (!string.IsNullOrEmpty(patchRequestModel.FieldName)
+                    && !string.IsNullOrEmpty(patchRequestModel.FieldValue))
                 {
-                    var a = articleModel.Fields;
+                    var patchList = new List<PatchModel>()
+                    {
+                        new PatchModel()
+                        {
+                            PropertyName = patchRequestModel.FieldName,
+                            PropertyValue = patchRequestModel.FieldValue
+                        }
+                    };
 
-                    //CQS?
-                    //articleForChanges = await _articleService.UpdateArticleAsync(articleForChanges.Id, model.Fields);
-                    return Ok(_mapper.Map<ArticleResponseModel>(articleForChanges));
+                    //rewrite to CQS
+                    var result = await _articleService.UpdateOnlyOnleArticleFieldAsync(articleForChanges.Id, patchList);
+
+                    return result > 0 
+                        ? Ok(new SuccessModel
+                        {
+                            DetailMessage = $"Article with specified {nameof(id)} successfully modified."
+                        }) 
+                        : StatusCode(405, new ErrorModel
+                        {
+                            ErrorMessage = "The request HTTP method cannot be used for that resource."
+                        });
                 }
 
                 return BadRequest(new ErrorModel
