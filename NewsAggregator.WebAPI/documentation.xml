@@ -166,14 +166,34 @@
             <param name="userModel">Contains user email, password and password confirmation.</param>
             <returns></returns>
         </member>
-        <member name="T:NewsAggregator.WebAPI.Models.Requests.AccessTokenRequestModel">
+        <member name="T:NewsAggregator.WebAPI.MappingProfiles.ArticleProfile">
             <summary>
-            Request model for access token.
+            A profile for copying (mapping) property values of one article to a new article with other properties.
             </summary>
         </member>
-        <member name="P:NewsAggregator.WebAPI.Models.Requests.AccessTokenRequestModel.AccessToken">
+        <member name="M:NewsAggregator.WebAPI.MappingProfiles.ArticleProfile.#ctor">
             <summary>
-            Access token.
+            A method that includes mapping implementations.
+            </summary>
+        </member>
+        <member name="T:NewsAggregator.WebAPI.MappingProfiles.SourceProfile">
+            <summary>
+            A profile for copying (mapping) property values of one source to a new source with other properties.
+            </summary>
+        </member>
+        <member name="M:NewsAggregator.WebAPI.MappingProfiles.SourceProfile.#ctor">
+            <summary>
+            A method that includes mapping implementations.
+            </summary>
+        </member>
+        <member name="T:NewsAggregator.WebAPI.MappingProfiles.UserProfile">
+            <summary>
+            A profile for copying (mapping) property values of one user to a new user with other properties.
+            </summary>
+        </member>
+        <member name="M:NewsAggregator.WebAPI.MappingProfiles.UserProfile.#ctor">
+            <summary>
+            A method that includes mapping implementations.
             </summary>
         </member>
         <member name="T:NewsAggregator.WebAPI.Models.Requests.AddOrUpdateArticleRequestModel">
@@ -410,6 +430,17 @@
             <summary>
             User role id.
             </summary>
+        </member>
+        <member name="T:NewsAggregator.WebAPI.Program">
+            <summary>
+            The class to start the application.
+            </summary>
+        </member>
+        <member name="M:NewsAggregator.WebAPI.Program.Main(System.String[])">
+            <summary>
+            The Main method is the entry point of an application. 
+            </summary>
+            <param name="args"></param>
         </member>
         <member name="T:NewsAggregator.WebAPI.Utils.IJwtUtil">
             <summary>

@@ -10,12 +10,10 @@ namespace NewsAggregator.Data.CQS.Handlers.CommandHandlers
         : IRequestHandler<RemoveRefreshTokenCommand, Unit>
     {
         private readonly NewsAggregatorContext _context;
-        private readonly IMapper _mapper;
 
-        public RemoveRefreshTokenCommandHandler(NewsAggregatorContext context, IMapper mapper)
+        public RemoveRefreshTokenCommandHandler(NewsAggregatorContext context)
         {
             _context = context;
-            _mapper = mapper;
         }
 
         public async Task<Unit> Handle(RemoveRefreshTokenCommand command, CancellationToken cancellationToken)

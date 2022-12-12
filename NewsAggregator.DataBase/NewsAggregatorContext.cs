@@ -6,7 +6,6 @@ namespace NewsAggregator.DataBase
     public class NewsAggregatorContext : DbContext
     {
         public DbSet<Article> Articles { get; set; }
-        public DbSet<Comment> Comments { get; set; }
         public DbSet<Source> Sources { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }

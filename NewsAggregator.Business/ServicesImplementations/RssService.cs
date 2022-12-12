@@ -19,18 +19,15 @@ namespace NewsAggregator.Business.ServicesImplementations
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IConfiguration _configuration;
-        private readonly IMediator _mediator;
         private readonly int _limitForUploadArticlesAtOneTime = 5;
 
         public RssService(IMapper mapper,
             IUnitOfWork unitOfWork,
-            IConfiguration configuration,
-            IMediator mediator)
+            IConfiguration configuration)
         {
             _mapper = mapper;
             _unitOfWork = unitOfWork;
             _configuration = configuration;
-            _mediator = mediator;
         }
 
         public async Task GetArticlesDataFromAllAvailableRssSourcesAsync()
@@ -98,93 +95,55 @@ namespace NewsAggregator.Business.ServicesImplementations
         private List<ArticleDto> GetArticlesDataFromOnliner(Guid sourceId, 
             string sourceRssUrl, List<ArticleDto> listArticleDto)
         {
-            using (var xmlReader = XmlReader.Create(sourceRssUrl))
+            using var xmlReader = XmlReader.Create(sourceRssUrl);
+            var feed = SyndicationFeed.Load(xmlReader);
+            var counter = 0;
+
+            foreach (SyndicationItem item in feed.Items)
             {
-                var feed = SyndicationFeed.Load(xmlReader);
-                var counter = 0;
+                var textSummary = Regex.Replace(item.Summary.Text, @"<[^>]*>", String.Empty);
 
-                foreach (SyndicationItem item in feed.Items)
+                var articleDto = new ArticleDto()
                 {
-                    var textSummary = Regex.Replace(item.Summary.Text, @"<[^>]*>", String.Empty);
+                    Id = Guid.NewGuid(),
+                    Title = Regex.Replace(item.Title.Text, "&nbsp", String.Empty),
+                    PublicationDate = item.PublishDate.UtcDateTime,
+                    ShortDescription = Regex.Replace(textSummary, "Читать далее…", String.Empty),
+                    Category = item.Categories.FirstOrDefault()?.Name,
+                    SourceId = sourceId,
+                    SourceUrl = item.Id
+                };
 
-                    var articleDto = new ArticleDto()
-                    {
-                        Id = Guid.NewGuid(),
-                        Title = Regex.Replace(item.Title.Text, "&nbsp", String.Empty),
-                        PublicationDate = item.PublishDate.UtcDateTime,
-                        ShortDescription = Regex.Replace(textSummary, "Читать далее…", String.Empty),
-                        Category = item.Categories.FirstOrDefault()?.Name,
-                        SourceId = sourceId,
-                        SourceUrl = item.Id
-                    };
+                listArticleDto.Add(articleDto);
+                counter++;
 
-                    listArticleDto.Add(articleDto);
-                    counter++;
-
-                    if (counter >= _limitForUploadArticlesAtOneTime)
-                    {
-                        break;
-                    }
+                if (counter >= _limitForUploadArticlesAtOneTime)
+                {
+                    break;
                 }
-
-                return listArticleDto;
             }
+
+            return listArticleDto;
         }
 
         private List<ArticleDto> GetArticlesDataFromDevby(Guid sourceId,
             string sourceRssUrl, List<ArticleDto> listArticleDto)
         {
-            using (var xmlReader = XmlReader.Create(sourceRssUrl))
+            using var xmlReader = XmlReader.Create(sourceRssUrl);
+            var feed = SyndicationFeed.Load(xmlReader);
+            var counter = 0;
+
+            foreach (SyndicationItem item in feed.Items)
             {
-                var feed = SyndicationFeed.Load(xmlReader);
-                var counter = 0;
-
-                foreach (SyndicationItem item in feed.Items)
-                {
-                    if (item.Summary != null)
-                    {
-                        var articleDto = new ArticleDto()
-                        {
-                            Id = Guid.NewGuid(),
-                            Title = item.Title.Text,
-                            PublicationDate = item.PublishDate.UtcDateTime,
-                            ShortDescription = item.Summary.Text,
-                            Category = _configuration["AvailableRssSources:AdditionalCategory"],
-                            SourceId = sourceId,
-                            SourceUrl = item.Id
-                        };
-
-                        listArticleDto.Add(articleDto);
-                        counter++;
-
-                        if (counter >= _limitForUploadArticlesAtOneTime)
-                        {
-                            break;
-                        }
-                    }
-                }
-
-                return listArticleDto;
-            }
-        }
-
-        private List<ArticleDto> GetArticlesDataFromShazoo(Guid sourceId,
-            string sourceRssUrl, List<ArticleDto> listArticleDto)
-        {
-            using (var xmlReader = XmlReader.Create(sourceRssUrl))
-            {
-                var feed = SyndicationFeed.Load(xmlReader);
-                var counter = 0;
-
-                foreach (SyndicationItem item in feed.Items)
+                if (item.Summary != null)
                 {
                     var articleDto = new ArticleDto()
                     {
                         Id = Guid.NewGuid(),
                         Title = item.Title.Text,
                         PublicationDate = item.PublishDate.UtcDateTime,
-                        ShortDescription = item.Title.Text,
-                        Category = _configuration["AvailableRssSources:DefaultCategory"],
+                        ShortDescription = item.Summary.Text,
+                        Category = _configuration["AvailableRssSources:AdditionalCategory"],
                         SourceId = sourceId,
                         SourceUrl = item.Id
                     };
@@ -197,9 +156,41 @@ namespace NewsAggregator.Business.ServicesImplementations
                         break;
                     }
                 }
-
-                return listArticleDto;
             }
+
+            return listArticleDto;
+        }
+
+        private List<ArticleDto> GetArticlesDataFromShazoo(Guid sourceId,
+            string sourceRssUrl, List<ArticleDto> listArticleDto)
+        {
+            using var xmlReader = XmlReader.Create(sourceRssUrl);
+            var feed = SyndicationFeed.Load(xmlReader);
+            var counter = 0;
+
+            foreach (SyndicationItem item in feed.Items)
+            {
+                var articleDto = new ArticleDto()
+                {
+                    Id = Guid.NewGuid(),
+                    Title = item.Title.Text,
+                    PublicationDate = item.PublishDate.UtcDateTime,
+                    ShortDescription = item.Title.Text,
+                    Category = _configuration["AvailableRssSources:DefaultCategory"],
+                    SourceId = sourceId,
+                    SourceUrl = item.Id
+                };
+
+                listArticleDto.Add(articleDto);
+                counter++;
+
+                if (counter >= _limitForUploadArticlesAtOneTime)
+                {
+                    break;
+                }
+            }
+
+            return listArticleDto;
         }
     }
 }

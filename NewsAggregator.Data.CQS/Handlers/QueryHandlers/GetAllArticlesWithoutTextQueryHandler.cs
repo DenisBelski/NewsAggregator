@@ -9,12 +9,10 @@ namespace NewsAggregator.Data.CQS.Handlers.QueryHandlers
     public class GetAllArticlesWithoutTextQueryHandler : IRequestHandler<GetAllArticlesWithoutTextIdsQuery, Guid[]?>
     {
         private readonly NewsAggregatorContext _context;
-        private readonly IMapper _mapper;
 
-        public GetAllArticlesWithoutTextQueryHandler(NewsAggregatorContext context, IMapper mapper)
+        public GetAllArticlesWithoutTextQueryHandler(NewsAggregatorContext context)
         {
             _context = context;
-            _mapper = mapper;
         }
 
         public async Task<Guid[]?> Handle(GetAllArticlesWithoutTextIdsQuery request,

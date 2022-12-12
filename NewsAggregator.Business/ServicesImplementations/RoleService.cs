@@ -28,9 +28,7 @@ namespace NewsAggregator.Business.ServicesImplementations
                 .FindBy(currentRole => currentRole.Name.Equals(name))
                 .FirstOrDefaultAsync();
 
-            return role != null
-                ? role.Id
-                : null;
+            return role?.Id;
         }
     }
 }

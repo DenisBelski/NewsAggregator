@@ -1,0 +1,44 @@
+﻿@model ChangeArticleRateModel
+
+
+
+<h5>Change the rating of articles to display in the news feed</h5>
+
+
+@using (Html.BeginForm("CreateCustomArticle", "Article", FormMethod.Post))
+{
+    <div>
+        @Html.LabelFor(model => model.Rate, new {@class="form-control", placeholder = "Rate"})
+    </div>
+    <br />
+    <div>
+        @Html.EditorFor(model => model.Rate,new {@class="form-control", placeholder = "Rate"} )
+    </div>
+    <br />
+    <input type="submit" class="btn btn-outline-success" style="border:double" value="Submit">
+    <a class="btn btn-outline-secondary" style="border:double" href="~/Account/PersonalCabinetForAdmin/">Back</a>
+}
+
+
+<br />
+
+
+<form asp-controller="Article" asp-action="ChangeRateOfArticlesToShow" method="post">
+    <select name="article_rate" asp-for="Rate">
+
+        <option asp-for="Rate" value="1">-2</option>
+        <option asp-for="Rate" value="2">-1</option>
+        <option asp-for="Rate" value="3">0</option>
+        <option asp-for="Rate" value="4">1</option>
+        <option asp-for="Rate" value="5">2</option>
+    </select>
+    <input class="btn btn-outline-success" type="submit" style="border:double" value="Change feed">
+    <a class="btn btn-outline-secondary" style="border:double" href="~/Account/PersonalCabinetForAdmin/">Back</a>
+</form>
+
+
+@section Scripts
+{
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+}

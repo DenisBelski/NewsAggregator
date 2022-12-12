@@ -76,6 +76,9 @@ namespace NewsAggregator.WebAPI
 
             builder.Services.AddMediatR(typeof(AddArticleDataFromRssFeedCommand).Assembly);
             builder.Services.AddMediatR(typeof(UpdateArticleTextCommand).Assembly);
+            //builder.Services.AddMediatR(Assembly.GetExecutingAssembly());
+            //builder.Services.AddMediatR(AppDomain.CurrentDomain.GetAssemblies());
+
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();

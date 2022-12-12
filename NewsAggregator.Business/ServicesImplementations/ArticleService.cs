@@ -233,57 +233,46 @@ namespace NewsAggregator.Business.ServicesImplementations
 
         public async Task<double> GetArticleRateByArticleTextAsync(string articleText)
         {
-            try
+            using var stream = new StreamReader(_configuration["AfinnJson:JsonPath"]);
+            var afinnData = stream.ReadToEnd();
+
+            var afinnDictionary = JsonConvert.DeserializeObject<IReadOnlyDictionary<string, int>>(afinnData);
+
+            if (afinnDictionary != null && !string.IsNullOrEmpty(articleText))
             {
-                using var stream = new StreamReader(_configuration["AfinnJson:JsonPath"]);
-                var afinnData = stream.ReadToEnd();
-
-                var afinnDictionary = JsonConvert.DeserializeObject<IReadOnlyDictionary<string, int>>(afinnData);
-
-                if (afinnDictionary != null && !string.IsNullOrEmpty(articleText))
-                {
-                    return await GetArticleRateByArticleTextAsync(articleText, afinnDictionary);
-                }
-
-                throw new ArgumentException(nameof(articleText));
+                return await GetArticleRateByArticleTextAsync(articleText, afinnDictionary);
             }
-            catch (Exception ex)
-            {
-                throw new ArgumentException(ex.Message);
-            }
+
+            throw new ArgumentException(null, nameof(articleText));
         }
 
         public async Task<double> GetArticleRateByArticleTextAsync(string articleText, IReadOnlyDictionary<string, int> afinnDictionary)
         {
             if (!string.IsNullOrEmpty(articleText))
             {
-                using (var client = new HttpClient())
-                {
-                    var httpRequest = new HttpRequestMessage(HttpMethod.Post,
-                        new Uri(_configuration["Ispras:Url"]));
+                using var client = new HttpClient();
+                var httpRequest = new HttpRequestMessage(HttpMethod.Post,
+                    new Uri(_configuration["Ispras:Url"]));
 
-                    httpRequest.Headers.Add("Accept", "application/json");
-                    httpRequest.Content = JsonContent.Create(
-                        new[] { new TextRequestModel() { Text = articleText } });
+                httpRequest.Headers.Add("Accept", "application/json");
+                httpRequest.Content = JsonContent.Create(
+                    new[] { new TextRequestModel() { Text = articleText } });
 
-                    var httpResponse = await client.SendAsync(httpRequest);
-                    var responseStream = await httpResponse.Content.ReadAsStreamAsync();
+                var httpResponse = await client.SendAsync(httpRequest);
+                var responseStream = await httpResponse.Content.ReadAsStreamAsync();
 
-                    using (var stream = new StreamReader(responseStream))
-                    {
-                        var responseData = await stream.ReadToEndAsync();
-                        var responseObject = JsonConvert.DeserializeObject<IsprassResponseObject[]>(responseData);
+                using var stream = new StreamReader(responseStream);
+                var responseData = await stream.ReadToEndAsync();
+                var responseObject = JsonConvert.DeserializeObject<IsprassResponseObject[]>(responseData);
 
-                        return responseObject != null
-                            ? CompareArticleWithAfinnDictionary(responseObject[0].Annotations.Lemma, afinnDictionary)
-                            : Convert.ToDouble(_configuration["Rating:DefaultValue"]);
-                    }
-                }
+                return responseObject != null
+                    ? CompareArticleWithAfinnDictionary(responseObject[0].Annotations.Lemma, afinnDictionary)
+                    : Convert.ToDouble(_configuration["Rating:DefaultValue"]);
             }
             else
             {
                 Log.Warning($"{nameof(articleText)} parametr equals null");
-                throw new ArgumentException(nameof(articleText));
+                throw new ArgumentException(null, nameof(articleText));
             }
         }
 
@@ -354,7 +343,7 @@ namespace NewsAggregator.Business.ServicesImplementations
                     }
                     else if (articleEntity.SourceId == new Guid(_configuration["AvailableRssSources:ShazooId"]))
                     {
-                        articleText = GetArticleTextFromOnliner(htmlDoc.DocumentNode
+                        articleText = GetArticleTextFromShazoo(htmlDoc.DocumentNode
                             .Descendants(0).Where(n => n.HasClass("Entry__content")));
 
                         var patchList = new List<PatchModel>()
@@ -432,9 +421,6 @@ namespace NewsAggregator.Business.ServicesImplementations
                                     && !node.Name.Equals("span")
                                     && !node.Name.Equals("figure")
                                     && !Regex.IsMatch(node.GetAttributeValue("class", ""), @"\s*global-incut\s*")
-                                    && !Regex.IsMatch(node.GetAttributeValue("class", ""), @"\s*incut\s*")
-                                    && !Regex.IsMatch(node.GetAttributeValue("class", ""), @"\s*article-widget__content\s*")
-                                    && !Regex.IsMatch(node.GetAttributeValue("class", ""), @"\s*noopener\s*")
                                     && node.Attributes["style"] == null)
                     .Select(node => node.InnerText)
                     .Aggregate((i, j) => i + Environment.NewLine + j)

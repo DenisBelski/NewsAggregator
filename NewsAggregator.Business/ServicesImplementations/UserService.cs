@@ -145,13 +145,11 @@ namespace NewsAggregator.Business.ServicesImplementations
         {
             var passwordSalt = _configuration["Secret:PasswordSalt"];
 
-            using (System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create())
-            {
-                var inputBytes = System.Text.Encoding.UTF8.GetBytes(password + passwordSalt);
-                var hashBytes = md5.ComputeHash(inputBytes);
+            using System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create();
+            var inputBytes = System.Text.Encoding.UTF8.GetBytes(password + passwordSalt);
+            var hashBytes = md5.ComputeHash(inputBytes);
 
-                return Convert.ToHexString(hashBytes);
-            }
+            return Convert.ToHexString(hashBytes);
         }
 
         public async Task<UserDto?> GetUserByRefreshTokenAsync(Guid refreshToken)

@@ -5,6 +5,6 @@ namespace NewsAggregator.Data.CQS.Commands
 {
     public class AddArticleDataFromRssFeedCommand : IRequest
     {
-        public IEnumerable<ArticleDto>? Articles;
+        public IEnumerable<ArticleDto> Articles { get; set; }
     }
 }

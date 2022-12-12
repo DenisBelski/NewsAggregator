@@ -10,8 +10,6 @@ using Serilog.Events;
 
 namespace NewsAggregatorAspNetCore.Controllers
 {
-    //get filter which allow to watch articles only Users
-    //[Authorize(Roles = "User")]
     public class ArticleController : Controller
     {
         private readonly IConfiguration _configuration;
@@ -89,15 +87,15 @@ namespace NewsAggregatorAspNetCore.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<IActionResult> GetArticlesFromSources(string name)
+        public async Task<IActionResult> GetArticlesFromSources(SourceModel model)
         {
             try
             {
-                if (!string.IsNullOrEmpty(name))
+                if (!string.IsNullOrEmpty(model.Name))
                 {
-                    var sourceDto = _sourceService.GetSourceByName(name); 
+                    var sourceDto = _sourceService.GetSourceByName(model.Name); 
 
-                    if (sourceDto != null && sourceDto.Name == name)
+                    if (sourceDto != null && sourceDto.Name == model.Name)
                     {
                         await _articleService.AggregateArticlesFromSourceWithSpecifiedIdAsync(sourceDto.Id);
                     }
@@ -155,6 +153,46 @@ namespace NewsAggregatorAspNetCore.Controllers
                 }
 
                 return View(model);
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
+                return BadRequest();
+            }
+        }
+
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        public IActionResult ChangeRateOfArticlesToShow()
+        {
+            try
+            {
+                return View();
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
+                return BadRequest();
+            }
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        public async Task<IActionResult> ChangeRateOfArticlesToShow(ChangeArticleRateModel model)
+        {
+            try
+            {
+                if (model.Rate != Convert.ToDouble(_configuration["Rating:AcceptableRating"]))
+                {
+                    var articles = await _articleService.GetArticlesByRateAsync(model.Rate);
+
+                    return articles.Any()
+                        ? View(articles)
+                        : NotFound();
+                }
+
+                return RedirectToAction("PersonalCabinetForAdmin", "Account");
             }
             catch (Exception ex)
             {

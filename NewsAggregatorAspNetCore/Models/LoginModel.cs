@@ -12,6 +12,8 @@ namespace NewsAggregatorAspNetCore.Models
 
         [Required]
         [DataType(DataType.Password)]
+        [MinLength(8)]
+        [MaxLength(30)]
         public string Password { get; set; }
     }
 }
