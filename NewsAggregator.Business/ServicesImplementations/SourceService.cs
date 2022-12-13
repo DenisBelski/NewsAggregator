@@ -41,13 +41,13 @@ public class SourceService : ISourceService
             : null;
     }
 
-    public async Task<IEnumerable<SourceDto>> GetAllSourcesAsync()
+    public async Task<List<SourceDto>> GetAllSourcesAsync()
     {
         var sourceEntities = await _unitOfWork.Sources.GetAllAsync();
 
         return sourceEntities != null
             ? _mapper.Map<List<SourceDto>>(sourceEntities)
-            : Enumerable.Empty<SourceDto>();
+            : new List<SourceDto>();
     }
 
     public async Task DeleteSourceByIdAsync(Guid sourceId)

@@ -32,17 +32,22 @@ namespace NewsAggregatorAspNetCore.Controllers
             _mapper = mapper;
         }
 
-        public async Task<IActionResult> Index()
+        [HttpGet]
+        public async Task<IActionResult> Index(double rate)
         {
             try
             {
                 //var articles = await _articleService.GetArticlesByPageNumberAsync(page);
 
-                var rate = Convert.ToDouble(_configuration["Rating:AcceptableRating"]);
-                var articles = await _articleService.GetArticlesByRateAsync(rate);
+                if (rate == 0)
+                {
+                    rate = Convert.ToDouble(_configuration["Rating:AcceptableRating"]);
+                }
 
-                return articles.Any() 
-                    ? View(articles) 
+                var listArticleDto = await _articleService.GetArticlesByRateAsync(rate);
+
+                return listArticleDto.Any() 
+                    ? View(_mapper.Map<List<ArticleModel>>(listArticleDto)) 
                     : NotFound();
             }
             catch (Exception ex)
@@ -179,17 +184,13 @@ namespace NewsAggregatorAspNetCore.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<IActionResult> ChangeRateOfArticlesToShow(ChangeArticleRateModel model)
+        public IActionResult ChangeRateOfArticlesToShow(ChangeArticleRateModel model)
         {
             try
             {
                 if (model.Rate != Convert.ToDouble(_configuration["Rating:AcceptableRating"]))
                 {
-                    var articles = await _articleService.GetArticlesByRateAsync(model.Rate);
-
-                    return articles.Any()
-                        ? View(articles)
-                        : NotFound();
+                    return RedirectToAction("Index", "Article", new { rate = model.Rate });
                 }
 
                 return RedirectToAction("PersonalCabinetForAdmin", "Account");

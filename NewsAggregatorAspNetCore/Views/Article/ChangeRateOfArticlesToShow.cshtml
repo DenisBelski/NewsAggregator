@@ -1,44 +1,30 @@
 ﻿@model ChangeArticleRateModel
 
 
-
-<h5>Change the rating of articles to display in the news feed</h5>
-
-
-@using (Html.BeginForm("CreateCustomArticle", "Article", FormMethod.Post))
-{
-    <div>
-        @Html.LabelFor(model => model.Rate, new {@class="form-control", placeholder = "Rate"})
-    </div>
-    <br />
-    <div>
-        @Html.EditorFor(model => model.Rate,new {@class="form-control", placeholder = "Rate"} )
-    </div>
-    <br />
-    <input type="submit" class="btn btn-outline-success" style="border:double" value="Submit">
-    <a class="btn btn-outline-secondary" style="border:double" href="~/Account/PersonalCabinetForAdmin/">Back</a>
-}
-
-
-<br />
-
+<h5 align="center">Choose the rating of articles to display in the news feed</h5>
 
 <form asp-controller="Article" asp-action="ChangeRateOfArticlesToShow" method="post">
-    <select name="article_rate" asp-for="Rate">
-
-        <option asp-for="Rate" value="1">-2</option>
-        <option asp-for="Rate" value="2">-1</option>
-        <option asp-for="Rate" value="3">0</option>
-        <option asp-for="Rate" value="4">1</option>
-        <option asp-for="Rate" value="5">2</option>
-    </select>
-    <input class="btn btn-outline-success" type="submit" style="border:double" value="Change feed">
-    <a class="btn btn-outline-secondary" style="border:double" href="~/Account/PersonalCabinetForAdmin/">Back</a>
+    <div align="center" style="font-size:x-large">
+        &#128533
+        <input type="radio" id="rate_1" name="Rate" value="-1.5" aspfor="Rate">
+        <label for="rate_1">&nbsp -1.5</label><br>
+        &#128528
+        <input type="radio" id="rate_2" name="Rate" value="-1">
+        <label for="rate_2">&nbsp-1</label><br>
+        &#128527
+        <input type="radio" id="rate_3" name="Rate" value="0">
+        <label for="rate_3">&nbsp 0</label><br>
+        &#128512
+        <input type="radio" id="rate_4" name="Rate" value="1" aspfor="Rate">
+        <label for="rate_4">&nbsp 1</label><br>
+        &#128513
+        <input type="radio" id="rate_5" name="Rate" value="1.5" aspfor="Rate">
+        <label for="rate_5">&nbsp 1.5</label><br>
+    </div>
+    <div align="center" style="font:italic">
+        <p><em>Only articles with a rating higher than the selected one 
+            <br>will be shown in the feed</em></p>
+        <input class="btn btn-outline-success" type="submit" style="border:double" value="Change news feed">
+        <a class="btn btn-outline-secondary" style="border:double" href="~/Account/PersonalCabinetForAdmin/">Back</a>
+    </div>
 </form>
-
-
-@section Scripts
-{
-    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
-    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
-}

@@ -6,7 +6,7 @@ namespace NewsAggregator.Core.Abstractions
     {
         Task<SourceDto?> GetSourceByIdAsync(Guid? sourceId);
         SourceDto? GetSourceByName(string sourceName);
-        Task<IEnumerable<SourceDto>> GetAllSourcesAsync();
+        Task<List<SourceDto>> GetAllSourcesAsync();
         Task DeleteSourceByIdAsync(Guid sourceId);
     }
 }

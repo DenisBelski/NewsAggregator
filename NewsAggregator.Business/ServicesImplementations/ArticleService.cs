@@ -57,13 +57,13 @@ namespace NewsAggregator.Business.ServicesImplementations
             return -1;
         }
 
-        public async Task<IEnumerable<ArticleDto>> GetArticles()
+        public async Task<List<ArticleDto>> GetArticles()
         {
             var articleEntities = await _unitOfWork.Articles.GetAllAsync();
 
             return articleEntities != null
                 ? _mapper.Map<List<ArticleDto>>(articleEntities)
-                : Enumerable.Empty<ArticleDto>();
+                : new List<ArticleDto>();
         }
 
         public async Task<ArticleDto?> GetArticleByIdAsync(Guid articleId)
@@ -76,7 +76,7 @@ namespace NewsAggregator.Business.ServicesImplementations
                 : null;
         }
 
-        public async Task<IEnumerable<ArticleDto>> GetArticlesByPageNumberAsync(int pageNumber)
+        public async Task<List<ArticleDto>> GetArticlesByPageNumberAsync(int pageNumber)
         {
             var listArticlesDto = await _unitOfWork.Articles
                 .Get()
@@ -86,10 +86,10 @@ namespace NewsAggregator.Business.ServicesImplementations
 
             return listArticlesDto != null
                 ? _mapper.Map<List<ArticleDto>>(listArticlesDto)
-                : Enumerable.Empty<ArticleDto>();
+                : new List<ArticleDto>();
         }
 
-        public async Task<IEnumerable<ArticleDto>> GetArticlesByRateAsync(double? rate)
+        public async Task<List<ArticleDto>> GetArticlesByRateAsync(double? rate)
         {
             if (rate.HasValue)
             {
@@ -102,10 +102,10 @@ namespace NewsAggregator.Business.ServicesImplementations
                 return listArticlesDto;
             }
 
-            return Enumerable.Empty<ArticleDto>();
+            return new List<ArticleDto>();
         }
 
-        public async Task<IEnumerable<ArticleDto>> GetArticlesBySourceIdAsync(Guid? sourceId)
+        public async Task<List<ArticleDto>> GetArticlesBySourceIdAsync(Guid? sourceId)
         {
             var articleEntities = _unitOfWork.Articles.Get();
 
@@ -118,7 +118,7 @@ namespace NewsAggregator.Business.ServicesImplementations
                     .ToList();
             }
 
-            return Enumerable.Empty<ArticleDto>();
+            return new List<ArticleDto>();
         }
 
         public async Task<int> UpdateArticleAsync(ArticleDto articleDto)
