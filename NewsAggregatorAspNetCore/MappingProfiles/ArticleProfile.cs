@@ -11,6 +11,7 @@ namespace NewsAggregatorAspNetCore.MappingProfiles
         {
             CreateMap<Article, ArticleDto>().ReverseMap();
             CreateMap<ArticleDto, ArticleModel>().ReverseMap();
+            CreateMap<ArticleDto, ArticleWithUserRoleModel>().ReverseMap();
             CreateMap<ArticleCreationModel, ArticleDto>();
         }
     }

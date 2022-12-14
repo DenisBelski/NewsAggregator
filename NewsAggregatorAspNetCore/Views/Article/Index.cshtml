@@ -1,6 +1,7 @@
 ﻿@model List<ArticleModel>
 
-<h3 id="article-header">Aggregated articles</h3>
+<h3 id="article-header" align="center"><mark><u>Aggregated articles</u></mark></h3>
+<br />
 
 @foreach (var item in Model)
 {
@@ -13,11 +14,11 @@
             </h2>
             <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse show" aria-labelledby="panelsStayOpen-headingOne">
                 <div>
-                    <span class="badge bg-secondary">@Html.DisplayFor( modelItem => item.Category)</span>
+                    <span class="badge bg-secondary" style="border:double">@Html.DisplayFor( modelItem => item.Category)</span>
                     <br>
                     <p align="justify" style="border-width:medium">@Html.DisplayFor(modelItem => item.ShortDescription)</p>
                     <p style="color:rgba(0,0,0,0.5)">@Html.DisplayFor(modelItem => item.PublicationDate)</p>
-                    <a class="btn btn-outline-secondary" style="align-self:center" href="~/article/details/@item.Id">Read details</a>
+                    <a class="btn btn-outline-success" style="align-self:center; border:double" href="~/article/details/@item.Id">Read details</a>
                 </div>
             </div>
         </div>

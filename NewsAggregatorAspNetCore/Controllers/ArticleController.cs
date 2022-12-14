@@ -16,6 +16,7 @@ namespace NewsAggregatorAspNetCore.Controllers
         private readonly IArticleService _articleService;
         private readonly ISourceService _sourceService;
         private readonly IRssService _rssService;
+        private readonly IUserService _userService;
         private readonly IMapper _mapper;
         private readonly int _pageSize = 20;
 
@@ -23,12 +24,14 @@ namespace NewsAggregatorAspNetCore.Controllers
             IArticleService articleService,
             ISourceService sourceService,
             IRssService rssService,
+            IUserService userService,
             IMapper mapper)
         {
             _configuration = configuration;
             _articleService = articleService;
             _sourceService = sourceService;
             _rssService = rssService;
+            _userService = userService;
             _mapper = mapper;
         }
 
@@ -58,14 +61,23 @@ namespace NewsAggregatorAspNetCore.Controllers
         }
 
         [Authorize(Roles = "User, Admin")]
+        [HttpGet]
         public async Task<IActionResult> Details(Guid id)
         {
             try
             {
+                var userDto = await _userService.GetUserWithRoleByEmailAsync(User.Identity?.Name);
                 var articleDto = await _articleService.GetArticleByIdAsync(id);
+                var articleWithRoleModel = _mapper.Map<ArticleWithUserRoleModel>(articleDto);
+
+                if (userDto != null 
+                    && userDto.RoleName == _configuration["UserRoles:Admin"])
+                {
+                    articleWithRoleModel.IsAdmin = true;
+                }
 
                 return articleDto != null
-                    ? View(_mapper.Map<ArticleModel>(articleDto))
+                    ? View(articleWithRoleModel)
                     : NotFound();
             }
             catch (Exception ex)
@@ -153,6 +165,63 @@ namespace NewsAggregatorAspNetCore.Controllers
                         articleDto.Rate = await _articleService.GetArticleRateByArticleTextAsync(articleDto.ArticleText);
 
                         await _articleService.CreateArticleAsync(articleDto);
+                        return RedirectToAction("PersonalCabinetForAdmin", "Account");
+                    }
+                }
+
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
+                return BadRequest();
+            }
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        public async Task<IActionResult> Edit(Guid id)
+        {
+            try
+            {
+                if (id != Guid.Empty)
+                {
+                    var articleDto = await _articleService.GetArticleByIdAsync(id);
+
+                    return articleDto != null 
+                        ? View(_mapper.Map<ArticleModel>(articleDto)) 
+                        : NotFound();
+                }
+
+                return BadRequest();
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
+                return BadRequest();
+            }
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        public async Task<IActionResult> Edit(ArticleModel model)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var articleDto = _mapper.Map<ArticleDto>(model);
+
+                    if (articleDto != null && articleDto.ArticleText != null)
+                    {
+                        var oldArticle = await _articleService.GetArticleByIdAsync(articleDto.Id);
+
+                        articleDto.PublicationDate = DateTime.Now;
+                        articleDto.SourceId = oldArticle.SourceId;
+                        articleDto.SourceUrl = oldArticle.SourceUrl;
+                        articleDto.Rate = await _articleService.GetArticleRateByArticleTextAsync(articleDto.ArticleText);
+
+                        await _articleService.UpdateArticleAsync(articleDto);
                         return RedirectToAction("PersonalCabinetForAdmin", "Account");
                     }
                 }

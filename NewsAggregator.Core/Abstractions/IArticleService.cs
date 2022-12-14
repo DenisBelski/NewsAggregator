@@ -11,6 +11,7 @@ namespace NewsAggregator.Core.Abstractions
         Task<List<ArticleDto>> GetArticlesByRateAsync(double? rate);
         Task<List<ArticleDto>> GetArticlesBySourceIdAsync(Guid? sourceId);
         Task<int> UpdateArticleAsync(ArticleDto articleDto);
+        
         Task AggregateArticlesFromAllAvailableSourcesAsync();
         Task AggregateArticlesFromSourceWithSpecifiedIdAsync(Guid sourceId);
         Task AddRateToArticlesAsync();

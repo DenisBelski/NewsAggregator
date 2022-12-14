@@ -1,4 +1,4 @@
-﻿@model ArticleModel
+﻿@model ArticleWithUserRoleModel
 
 @{
     ViewData["Title"] = "Article details";
@@ -19,4 +19,10 @@
 </div>
 
 <hr />
-<a class="btn btn-outline-secondary" href="~/article/index/">Back</a>
+
+@if (Model.IsAdmin)
+{
+    <a class="btn btn-outline-success" style="border:double" href="~/article/edit/@Model.Id">Edit article</a>
+}
+
+<a class="btn btn-outline-secondary" style="border:double" href="~/article/index/">Back</a>
