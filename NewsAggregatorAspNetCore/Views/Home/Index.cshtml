@@ -2,40 +2,20 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <img src="~/css/images/main-preview.png" class="img-fluid" alt="Preview should be here">
-    <a class="btn btn-outline-success" style="border:double" href="~/Article/Index/">Get articles preview</a>
-</div>
+<body>
+    <div class="text-center">
+        <img src="~/css/images/main-preview.png" class="img-fluid" alt="Preview should be here">
+        <a class="btn btn-outline-light" asp-controller="Article" asp-action="Index" style="background-color:#FF792B; border:double">Get articles preview</a>
+    </div>
+</body>
 
-
-
-@*
-<div class="box">
-  <p>Hey, don't cut me off like that. I want to speak my mind and don't appreciate being put into a box.</p>
-</div>
 
 @section CssStyles
-{
+    {
     <style>
         body {
-            align-items: center;
-            background: radial-gradient( farthest-side at bottom left, rgba(255, 0, 255, 0.5), #246756 ), radial-gradient( farthest-corner at bottom right, rgba(255, 50, 50, 0.5), #246756 400px );
-            display: flex;
-            height: 100vh;
-            justify-content: center;
-            line-height: 1.5;
-        }
-
-        .box {
-            width: 200px;
-        }
-
-        .box p {
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+            background-image: url(../css/images/newspaper.jpg);
+            background-repeat: repeat;
         }
     </style>
 }
-*@

@@ -148,7 +148,7 @@ namespace NewsAggregatorAspNetCore.Controllers
             try
             {
                 return !string.IsNullOrEmpty(model.Email) 
-                    ? Ok("Oops, this part of the application hasn't been created yet. Just create a new account.")
+                    ? Content("Oops, this part of the application hasn't been created yet. Just create a new account.")
                     : View(model);
             }
             catch (Exception ex)

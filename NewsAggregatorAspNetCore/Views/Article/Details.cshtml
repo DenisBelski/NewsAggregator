@@ -4,25 +4,37 @@
     ViewData["Title"] = "Article details";
 }
 
-<div>
-    <h3>
-        @Model.Title
-    </h3>
+<body class="details">
     <div>
-        <p class="lh-lg fw-light" align="justify">
-            @Model.ArticleText
-        </p>
+        <h3 style="font-family:Calibri">
+            @Model.Title
+            sdfsaf
+        </h3>
+        <div>
+            <p class="lh-lg fw-light" align="justify" style="font-family:Calibri">
+                @Model.ArticleText
+            </p>
+        </div>
+        <h6>
+            @Model.PublicationDate
+        </h6>
     </div>
-    <h6>
-        @Model.PublicationDate
-    </h6>
-</div>
+    <hr />
 
-<hr />
+    @if (Model.IsAdmin)
+    {
+        <a class="btn btn-outline-success" style="border:double" asp-controller="Article" asp-action="Edit" asp-route-id="@Model.Id">Edit article</a>
+    }
+    <a class="btn btn-outline-secondary" style="border:double" asp-controller="Article" asp-action="Index">Back</a>
+</body>
 
-@if (Model.IsAdmin)
-{
-    <a class="btn btn-outline-success" style="border:double" href="~/article/edit/@Model.Id">Edit article</a>
+
+@section CssStyles
+    {
+    <style>
+        body.details {
+            background-image: url(../css/images/article-back.png);
+            background-repeat: repeat;
+        }
+    </style>
 }
-
-<a class="btn btn-outline-secondary" style="border:double" href="~/article/index/">Back</a>

@@ -1,42 +1,55 @@
 ﻿@model ArticleModel
 
-<div>
-    <h5>Edit article</h5>
-    
-    @using (Html.BeginForm("Edit", "Article", FormMethod.Post))
-    {
-        <div>
-            <em>@Html.LabelFor(model => model.Title)</em>
-            @Html.TextBoxFor(model => model.Title,new {@class="form-control", placeholder = "Title"})
-            <span asp-validation-for="Title" class="text-danger"></span>
-        </div>
-        <br />
-        <div>
-            <em>@Html.LabelFor(model => model.Category)</em>
-            @Html.TextBoxFor(model => model.Category,new {@class="form-control", placeholder = "Category"})
-            <span asp-validation-for="Category" class="text-danger"></span>
-        </div>
-        <br />
-        <div>
-            <em>@Html.LabelFor(model => model.ShortDescription)</em>
-            @Html.TextAreaFor(model => model.ShortDescription, new {@class="form-control", placeholder = "Article short description", rows=3})
-            <span asp-validation-for="ShortDescription" class="text-danger"></span>
-        </div>
-        <br />
-        <div>
-            <em>@Html.LabelFor(model => model.ArticleText)</em>
-            @Html.TextAreaFor(model => model.ArticleText,new {@class="form-control", placeholder = "Article text", rows=10} )
-            <span asp-validation-for="ArticleText" class="text-danger"></span>
-        </div>
-        <br />
+<body>
+    <div>
+        <h5>Edit article</h5>
 
-        <input type="submit" class="btn btn-outline-success" style="border:double" value="Submit">
-        <a class="btn btn-outline-secondary" style="border:double" href="~/Article/Index/">Back</a>
-    }
-</div>
+        @using (Html.BeginForm("Edit", "Article", FormMethod.Post))
+        {
+            <div>
+                <em>@Html.LabelFor(model => model.Title)</em>
+                @Html.TextBoxFor(model => model.Title,new {@class="form-control", placeholder = "Title"})
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+            <br />
+            <div>
+                <em>@Html.LabelFor(model => model.Category)</em>
+                @Html.TextBoxFor(model => model.Category,new {@class="form-control", placeholder = "Category"})
+                <span asp-validation-for="Category" class="text-danger"></span>
+            </div>
+            <br />
+            <div>
+                <em>@Html.LabelFor(model => model.ShortDescription)</em>
+                @Html.TextAreaFor(model => model.ShortDescription, new {@class="form-control", placeholder = "Article short description", rows=3})
+                <span asp-validation-for="ShortDescription" class="text-danger"></span>
+            </div>
+            <br />
+            <div>
+                <em>@Html.LabelFor(model => model.ArticleText)</em>
+                @Html.TextAreaFor(model => model.ArticleText,new {@class="form-control", placeholder = "Article text", rows=10} )
+                <span asp-validation-for="ArticleText" class="text-danger"></span>
+            </div>
+            <br />
+
+            <input type="submit" class="btn btn-outline-success" style="border:double" value="Submit">
+            <a class="btn btn-outline-secondary" style="border:double" asp-controller="Article" asp-action="Details" asp-route-id="@Model.Id">Back</a>
+        }
+    </div>
+</body>
+
+@section CssStyles
+    {
+    <style>
+        body {
+            background-image: url(../css/images/article-back.png);
+            background-repeat: repeat;
+        }
+    </style>
+}
 
 @section Scripts
 {
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
     <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
 }
+

@@ -15,43 +15,38 @@ namespace NewsAggregatorAspNetCore.Controllers
         private readonly IConfiguration _configuration;
         private readonly IArticleService _articleService;
         private readonly ISourceService _sourceService;
-        private readonly IRssService _rssService;
         private readonly IUserService _userService;
         private readonly IMapper _mapper;
-        private readonly int _pageSize = 20;
+        private readonly int _pageSize = 7;
 
         public ArticleController(IConfiguration configuration,
             IArticleService articleService,
             ISourceService sourceService,
-            IRssService rssService,
             IUserService userService,
             IMapper mapper)
         {
             _configuration = configuration;
             _articleService = articleService;
             _sourceService = sourceService;
-            _rssService = rssService;
             _userService = userService;
             _mapper = mapper;
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index(double rate)
+        public async Task<IActionResult> Index(int page, double rate)
         {
             try
             {
-                //var articles = await _articleService.GetArticlesByPageNumberAsync(page);
-
                 if (rate == 0)
                 {
                     rate = Convert.ToDouble(_configuration["Rating:AcceptableRating"]);
                 }
 
-                var listArticleDto = await _articleService.GetArticlesByRateAsync(rate);
+                var listArticleDto = await _articleService.GetArticlesByRateByPageNumberAndPageSizeAsync(rate, page, _pageSize);
 
-                return listArticleDto.Any() 
-                    ? View(_mapper.Map<List<ArticleModel>>(listArticleDto)) 
-                    : NotFound();
+                return listArticleDto.Any()
+                    ? View(_mapper.Map<List<ArticleModel>>(listArticleDto))
+                    : Content("There are not many articles, choose a page with a smaller number.");
             }
             catch (Exception ex)
             {

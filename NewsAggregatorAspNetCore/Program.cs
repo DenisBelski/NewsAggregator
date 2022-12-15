@@ -44,35 +44,6 @@ namespace NewsAggregatorAspNetCore
             builder.Services.AddDbContext<NewsAggregatorContext>(
                 optionsBuilder => optionsBuilder.UseSqlServer(connectionString));
 
-            builder.Services.AddHangfire(configuration => configuration
-                .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
-                .UseSimpleAssemblyNameTypeSerializer()
-                .UseRecommendedSerializerSettings()
-                .UseSqlServerStorage(connectionString,
-                    new SqlServerStorageOptions
-                    {
-                        CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
-                        SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
-                        QueuePollInterval = TimeSpan.Zero,
-                        UseRecommendedIsolationLevel = true,
-                        DisableGlobalLocks = true,
-                    }));
-
-            builder.Services.AddHangfire(configuration => configuration
-                .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
-                .UseSimpleAssemblyNameTypeSerializer()
-                .UseRecommendedSerializerSettings()
-                .UseSqlServerStorage(connectionString,
-                    new SqlServerStorageOptions
-                    {
-                        CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
-                        SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
-                        QueuePollInterval = TimeSpan.Zero,
-                        UseRecommendedIsolationLevel = true,
-                        DisableGlobalLocks = true,
-                    }));
-
-            builder.Services.AddHangfireServer();
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
             builder.Services.AddScoped<IUserService, UserService>();
@@ -101,17 +72,19 @@ namespace NewsAggregatorAspNetCore
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-            app.UseHangfireDashboard();
 
             app.UseRouting();
 
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.MapHangfireDashboard();
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
+
+            app.MapControllerRoute(
+                name: "article",
+                pattern: "{controller=Article}/{action=Index}/{page:int=1}");
 
             app.Run();
         }

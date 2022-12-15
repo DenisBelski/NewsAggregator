@@ -76,26 +76,15 @@ namespace NewsAggregator.Business.ServicesImplementations
                 : null;
         }
 
-        public async Task<List<ArticleDto>> GetArticlesByPageNumberAsync(int pageNumber)
-        {
-            var listArticlesDto = await _unitOfWork.Articles
-                .Get()
-                .Skip(pageNumber)
-                .Select(article => _mapper.Map<ArticleDto>(article))
-                .ToListAsync();
-
-            return listArticlesDto != null
-                ? _mapper.Map<List<ArticleDto>>(listArticlesDto)
-                : new List<ArticleDto>();
-        }
-
-        public async Task<List<ArticleDto>> GetArticlesByRateAsync(double? rate)
+        public async Task<List<ArticleDto>> GetArticlesByRateByPageNumberAndPageSizeAsync(double? rate, int pageNumber, int pageSize)
         {
             if (rate.HasValue)
             {
                 var listArticlesDto = await _unitOfWork.Articles
                     .Get()
                     .Where(article => article.Rate != null && article.Rate > rate)
+                    .Skip(pageNumber * pageSize)
+                    .Take(pageSize)
                     .Select(article => _mapper.Map<ArticleDto>(article))
                     .ToListAsync();
 
