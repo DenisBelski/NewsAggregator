@@ -98,15 +98,17 @@ namespace NewsAggregator.WebAPI.Controllers
 
                 if (articleModel.Rate.HasValue)
                 {
-                    var listArticlesWithSpecifiedRate =
-                        await _articleService.GetArticlesByRateAsync(articleModel.Rate);
+                    // add CQS
+                    //var listArticlesWithSpecifiedRate =
+                    //    await _articleService.GetArticlesByRateAsync(articleModel.Rate);
 
-                    return listArticlesWithSpecifiedRate != null
-                        ? Ok(_mapper.Map<List<ArticleResponseModel>>(listArticlesWithSpecifiedRate))
-                        : NotFound(new ErrorModel
-                        {
-                            ErrorMessage = $"No articles found with the specified {nameof(articleModel.Rate)}."
-                        });
+
+                    //return listArticlesWithSpecifiedRate != null
+                    //    ? Ok(_mapper.Map<List<ArticleResponseModel>>(listArticlesWithSpecifiedRate))
+                    //    : NotFound(new ErrorModel
+                    //    {
+                    //        ErrorMessage = $"No articles found with the specified {nameof(articleModel.Rate)}."
+                    //    });
                 }
                 else if (!Guid.Empty.Equals(articleModel.SourceId))
                 {

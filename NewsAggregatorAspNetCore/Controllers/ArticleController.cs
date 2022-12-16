@@ -33,15 +33,11 @@ namespace NewsAggregatorAspNetCore.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index(int page, double rate)
+        public async Task<IActionResult> Index(int page)
         {
             try
             {
-                if (rate == 0)
-                {
-                    rate = Convert.ToDouble(_configuration["Rating:AcceptableRating"]);
-                }
-
+                var rate = Convert.ToDouble(_configuration["Rating:AcceptableRating"]);
                 var listArticleDto = await _articleService.GetArticlesByRateByPageNumberAndPageSizeAsync(rate, page, _pageSize);
 
                 return listArticleDto.Any()
@@ -254,7 +250,8 @@ namespace NewsAggregatorAspNetCore.Controllers
             {
                 if (model.Rate != Convert.ToDouble(_configuration["Rating:AcceptableRating"]))
                 {
-                    return RedirectToAction("Index", "Article", new { rate = model.Rate });
+                    _configuration["Rating:AcceptableRating"] = model.Rate.ToString();
+                    return RedirectToAction("Index", "Article");
                 }
 
                 return RedirectToAction("PersonalCabinetForAdmin", "Account");

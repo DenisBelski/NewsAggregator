@@ -54,31 +54,43 @@ namespace NewsAggregator.Business.ServicesImplementations
                 return await _unitOfWork.Commit();
             }
 
+            Log.Warning($"The logic in {nameof(CreateArticleAsync)} method wasn't implemented, " +
+                $"check the parameter: {nameof(articleDto)}");
+
             return -1;
         }
 
         public async Task<List<ArticleDto>> GetArticles()
         {
-            var articleEntities = await _unitOfWork.Articles.GetAllAsync();
-
-            return articleEntities != null
-                ? _mapper.Map<List<ArticleDto>>(articleEntities)
-                : new List<ArticleDto>();
+            try
+            {
+                var articleEntities = await _unitOfWork.Articles.GetAllAsync();
+                return _mapper.Map<List<ArticleDto>>(articleEntities);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex.Message);
+                throw new InvalidOperationException(ex.Message);
+            }
         }
 
         public async Task<ArticleDto?> GetArticleByIdAsync(Guid articleId)
         {
-            var articleEntity = await _unitOfWork.Articles.GetByIdAsync(articleId);
-            //return _mapper.Map<ArticleDto>(await _mediator.Send(new GetArticleByIdQuery() { Id = id }));
-
-            return articleEntity != null
-                ? _mapper.Map<ArticleDto>(articleEntity) 
-                : null;
+            try
+            {
+                var articleEntity = await _unitOfWork.Articles.GetByIdAsync(articleId);
+                return _mapper.Map<ArticleDto>(articleEntity);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex.Message);
+                throw new ArgumentException(ex.Message, nameof(articleId));
+            }
         }
 
         public async Task<List<ArticleDto>> GetArticlesByRateByPageNumberAndPageSizeAsync(double? rate, int pageNumber, int pageSize)
         {
-            if (rate.HasValue)
+            try
             {
                 var listArticlesDto = await _unitOfWork.Articles
                     .Get()
@@ -90,24 +102,28 @@ namespace NewsAggregator.Business.ServicesImplementations
 
                 return listArticlesDto;
             }
-
-            return new List<ArticleDto>();
+            catch (Exception ex)
+            {
+                Log.Error(ex.Message);
+                throw new ArgumentException(ex.Message, nameof(rate));
+            }
         }
 
         public async Task<List<ArticleDto>> GetArticlesBySourceIdAsync(Guid? sourceId)
         {
-            var articleEntities = _unitOfWork.Articles.Get();
+            var articleEntities = _unitOfWork.Articles.Get()
+                .Where(article => article.SourceId.Equals(sourceId));
 
             if (articleEntities != null && !Guid.Empty.Equals(sourceId))
             {
-                articleEntities = articleEntities.Where(dto => dto.SourceId.Equals(sourceId));
+                var result = await articleEntities
+                    .Select(article => _mapper.Map<ArticleDto>(article))
+                    .ToListAsync();
 
-                return (await articleEntities.ToListAsync())
-                    .Select(articleEntity => _mapper.Map<ArticleDto>(articleEntity))
-                    .ToList();
+                return result;
             }
 
-            return new List<ArticleDto>();
+            throw new ArgumentException(null, nameof(sourceId));
         }
 
         public async Task<int> UpdateArticleAsync(ArticleDto articleDto)
@@ -120,17 +136,25 @@ namespace NewsAggregator.Business.ServicesImplementations
                 return await _unitOfWork.Commit();
             }
 
+            Log.Warning($"The logic in {nameof(UpdateArticleAsync)} method wasn't implemented, " +
+                $"check the parameter: {nameof(articleDto)}");
+
             return -1;
         }
 
         public async Task<int> UpdateOnlyOnleArticleFieldAsync(Guid articleId, List<PatchModel> patchData)
         {
-            await _unitOfWork.Articles.PatchArticleAsync(articleId, patchData);
+            if (!Guid.Empty.Equals(articleId) && patchData != null)
+            {
+                await _unitOfWork.Articles.PatchArticleAsync(articleId, patchData);
+                return await _unitOfWork.Commit();
+            }
 
-            return await _unitOfWork.Commit();
+            Log.Warning($"The logic in {nameof(UpdateOnlyOnleArticleFieldAsync)} method wasn't implemented, " +
+                $"check one of the parameters: {nameof(articleId)}, {nameof(patchData)}");
 
+            return -1;
         }
-
 
         public async Task AggregateArticlesFromAllAvailableSourcesAsync()
         {
@@ -142,7 +166,8 @@ namespace NewsAggregator.Business.ServicesImplementations
             }
             catch (Exception ex)
             {
-                throw new ArgumentException(ex.Message);
+                Log.Error(ex.Message);
+                throw new InvalidOperationException(ex.Message);
             }
         }
 
@@ -159,7 +184,8 @@ namespace NewsAggregator.Business.ServicesImplementations
             }
             catch (Exception ex)
             {
-                throw new ArgumentException(ex.Message);
+                Log.Error(ex.Message);
+                throw new InvalidOperationException(ex.Message);
             }
         }
 
@@ -188,6 +214,7 @@ namespace NewsAggregator.Business.ServicesImplementations
             }
             catch (Exception ex)
             {
+                Log.Error(ex.Message);
                 throw new ArgumentException(ex.Message, nameof(articleId));
             }
         }
@@ -216,7 +243,8 @@ namespace NewsAggregator.Business.ServicesImplementations
             }
             catch (Exception ex)
             {
-                throw new ArgumentException(ex.Message);
+                Log.Error(ex.Message);
+                throw new InvalidOperationException(ex.Message);
             }
         }
 
@@ -231,6 +259,9 @@ namespace NewsAggregator.Business.ServicesImplementations
             {
                 return await GetArticleRateByArticleTextAsync(articleText, afinnDictionary);
             }
+
+            Log.Error($"The logic in {nameof(GetArticleRateByArticleTextAsync)} method wasn't implemented, " +
+                $"check the parameter: {nameof(articleText)}");
 
             throw new ArgumentException(null, nameof(articleText));
         }
@@ -258,11 +289,9 @@ namespace NewsAggregator.Business.ServicesImplementations
                     ? CompareArticleWithAfinnDictionary(responseObject[0].Annotations.Lemma, afinnDictionary)
                     : Convert.ToDouble(_configuration["Rating:DefaultValue"]);
             }
-            else
-            {
-                Log.Warning($"{nameof(articleText)} parametr equals null");
-                throw new ArgumentException(null, nameof(articleText));
-            }
+
+            Log.Warning($"{nameof(articleText)} parametr equals null");
+            throw new ArgumentException(null, nameof(articleText));
         }
 
         public async Task AddArticleTextToArticlesForAllAvailableSourcesAsync()
@@ -282,7 +311,8 @@ namespace NewsAggregator.Business.ServicesImplementations
             }
             catch (Exception ex)
             {
-                throw new ArgumentException(ex.Message);
+                Log.Error(ex.Message);
+                throw new InvalidOperationException(ex.Message);
             }
         }
 
@@ -303,7 +333,8 @@ namespace NewsAggregator.Business.ServicesImplementations
             }
             catch (Exception ex)
             {
-                throw new ArgumentException(ex.Message);
+                Log.Error(ex.Message);
+                throw new ArgumentException(ex.Message, nameof(sourceId));
             }
         }
 
@@ -356,12 +387,13 @@ namespace NewsAggregator.Business.ServicesImplementations
                 else
                 {
                     Log.Warning($"The logic in {nameof(AddArticleTextToArticleBySourceIdAsync)} method wasn't implemented, " +
-                        $"because {nameof(articleId)} parametr equals null");
+                        $"check the parametr: {nameof(articleId)}");
                 }
             }
             catch (Exception ex)
             {
-                throw new ArgumentException(ex.Message);
+                Log.Error(ex.Message);
+                throw new InvalidOperationException(ex.Message);
             }
         }
 
@@ -371,8 +403,8 @@ namespace NewsAggregator.Business.ServicesImplementations
             {
                 return htmlNodes.FirstOrDefault()?
                     .ChildNodes
-                    .Where(node => (node.Name.Equals("p") 
-                                    || node.Name.Equals("div") 
+                    .Where(node => (node.Name.Equals("p")
+                                    || node.Name.Equals("div")
                                     || node.Name.Equals("h2"))
                                     && !node.HasClass("news-reference")
                                     && !node.HasClass("news-banner")
@@ -392,6 +424,9 @@ namespace NewsAggregator.Business.ServicesImplementations
                     .Select(node => node.InnerText)
                     .Aggregate((i, j) => i + Environment.NewLine + j);
             }
+
+            Log.Warning($"The logic in {nameof(GetArticleTextFromOnliner)} method wasn't implemented, " +
+                $"check the parameter: {nameof(htmlNodes)}");
 
             return String.Empty;
         }
@@ -416,6 +451,9 @@ namespace NewsAggregator.Business.ServicesImplementations
                     .Replace("&nbsp;", " ");
             }
 
+            Log.Warning($"The logic in {nameof(GetArticleTextFromDevby)} method wasn't implemented, " +
+                $"check the parameter: {nameof(htmlNodes)}");
+
             return String.Empty;
         }
 
@@ -433,32 +471,43 @@ namespace NewsAggregator.Business.ServicesImplementations
                      .Replace("&quot;", " ");
             }
 
+            Log.Warning($"The logic in {nameof(GetArticleTextFromShazoo)} method wasn't implemented, " +
+                $"check the parameter: {nameof(htmlNodes)}");
+
             return String.Empty;
         }
 
         private double CompareArticleWithAfinnDictionary(List<Lemma> listLemmas, IReadOnlyDictionary<string, int> afinnDictionary)
         {
-            int amountOfEvaluatedWords = 0;
-            double totalTextScore = 0;
-
-            for (int i = 0; i < listLemmas.Count - 1; i++)
+            try
             {
-                foreach (var afinnItem in afinnDictionary)
-                {
-                    if (!string.IsNullOrEmpty(listLemmas[i].Value)
-                        && afinnItem.Key == listLemmas[i].Value)
-                    {
-                        amountOfEvaluatedWords++;
-                        totalTextScore += afinnItem.Value;
+                int amountOfEvaluatedWords = 0;
+                double totalTextScore = 0;
 
-                        break;
+                for (int i = 0; i < listLemmas.Count - 1; i++)
+                {
+                    foreach (var afinnItem in afinnDictionary)
+                    {
+                        if (!string.IsNullOrEmpty(listLemmas[i].Value)
+                            && afinnItem.Key == listLemmas[i].Value)
+                        {
+                            amountOfEvaluatedWords++;
+                            totalTextScore += afinnItem.Value;
+
+                            break;
+                        }
                     }
                 }
-            }
 
-            return amountOfEvaluatedWords != 0 
-                ? Math.Round((totalTextScore / amountOfEvaluatedWords), 2)
-                : Convert.ToDouble(_configuration["Rating:DefaultValue"]);
+                return amountOfEvaluatedWords != 0
+                    ? Math.Round((totalTextScore / amountOfEvaluatedWords), 2)
+                    : Convert.ToDouble(_configuration["Rating:DefaultValue"]);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex.Message);
+                throw new ArgumentException(ex.Message, nameof(listLemmas));
+            }
         }
     }
 }

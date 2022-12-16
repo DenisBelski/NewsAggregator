@@ -19,7 +19,7 @@ namespace NewsAggregator.Business.ServicesImplementations
 
             return role != null 
                 ? role.Name 
-                : string.Empty;
+                : throw new ArgumentException(null, nameof(id));
         }
 
         public async Task<Guid?> GetRoleIdByNameAsync(string name)

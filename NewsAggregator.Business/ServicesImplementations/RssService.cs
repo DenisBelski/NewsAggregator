@@ -8,6 +8,7 @@ using NewsAggregator.Data.Abstractions;
 using NewsAggregator.Data.CQS.Commands;
 using NewsAggregator.DataBase;
 using NewsAggregator.DataBase.Entities;
+using Serilog;
 using System.ServiceModel.Syndication;
 using System.Text.RegularExpressions;
 using System.Xml;
@@ -43,7 +44,8 @@ namespace NewsAggregator.Business.ServicesImplementations
             }
             catch (Exception ex)
             {
-                throw new ArgumentException(ex.Message);
+                Log.Error(ex.Message);
+                throw new InvalidOperationException(ex.Message);
             }
         }
 
@@ -88,6 +90,7 @@ namespace NewsAggregator.Business.ServicesImplementations
             }
             catch (Exception ex)
             {
+                Log.Error(ex.Message);
                 throw new ArgumentException(ex.Message, nameof(sourceId));
             }
         }

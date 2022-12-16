@@ -23,31 +23,55 @@ public class SourceService : ISourceService
 
     public async Task<SourceDto?> GetSourceByIdAsync(Guid? sourceId)
     {
-        var sourceEntity = await _unitOfWork.Sources.GetByIdAsync(sourceId);
+        try
+        {
+            var sourceEntity = await _unitOfWork.Sources.GetByIdAsync(sourceId);
 
-        return sourceEntity != null
-            ? _mapper.Map<SourceDto>(sourceEntity)
-            : null;
+            return sourceEntity != null
+                ? _mapper.Map<SourceDto>(sourceEntity)
+                : null;
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex.Message);
+            throw new ArgumentException(ex.Message, nameof(sourceId));
+        }
     }
 
     public SourceDto? GetSourceByName(string sourceName)
     {
-        var sourceEntity = _unitOfWork.Sources
-            .FindBy(source => source.Name.Equals(sourceName))
-            .FirstOrDefault();
+        try
+        {
+            var sourceEntity = _unitOfWork.Sources
+                .FindBy(source => source.Name.Equals(sourceName))
+                .FirstOrDefault();
 
-        return sourceEntity != null
-            ? _mapper.Map<SourceDto>(sourceEntity)
-            : null;
+            return sourceEntity != null
+                ? _mapper.Map<SourceDto>(sourceEntity)
+                : null;
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex.Message);
+            throw new ArgumentException(ex.Message, nameof(sourceName));
+        }
     }
 
     public async Task<List<SourceDto>> GetAllSourcesAsync()
     {
-        var sourceEntities = await _unitOfWork.Sources.GetAllAsync();
+        try
+        {
+            var sourceEntities = await _unitOfWork.Sources.GetAllAsync();
 
-        return sourceEntities != null
-            ? _mapper.Map<List<SourceDto>>(sourceEntities)
-            : new List<SourceDto>();
+            return sourceEntities != null
+                ? _mapper.Map<List<SourceDto>>(sourceEntities)
+                : new List<SourceDto>();
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex.Message);
+            throw new InvalidOperationException(ex.Message);
+        }
     }
 
     public async Task DeleteSourceByIdAsync(Guid sourceId)
@@ -69,6 +93,7 @@ public class SourceService : ISourceService
         }
         catch (Exception ex)
         {
+            Log.Error(ex.Message);
             throw new ArgumentException(ex.Message, nameof(sourceId));
         }
     }
