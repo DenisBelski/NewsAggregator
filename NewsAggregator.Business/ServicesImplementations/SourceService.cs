@@ -1,10 +1,9 @@
 ﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+using MediatR;
 using NewsAggregator.Core.Abstractions;
 using NewsAggregator.Core.DataTransferObjects;
 using NewsAggregator.Data.Abstractions;
-using NewsAggregator.DataBase.Entities;
+using NewsAggregator.Data.CQS.Queries;
 using Serilog;
 
 namespace NewsAggregator.Business.ServicesImplementations;
@@ -13,19 +12,22 @@ public class SourceService : ISourceService
 {
     private readonly IMapper _mapper;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IMediator _mediator;
 
     public SourceService(IMapper mapper, 
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IMediator mediator)
     {
         _mapper = mapper;
         _unitOfWork = unitOfWork;
+        _mediator = mediator;
     }
 
     public async Task<SourceDto?> GetSourceByIdAsync(Guid? sourceId)
     {
         try
         {
-            var sourceEntity = await _unitOfWork.Sources.GetByIdAsync(sourceId);
+            var sourceEntity = await _mediator.Send(new GetSourceByIdQuery() { Id = sourceId });
 
             return sourceEntity != null
                 ? _mapper.Map<SourceDto>(sourceEntity)

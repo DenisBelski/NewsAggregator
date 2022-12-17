@@ -1,10 +1,7 @@
-using Hangfire;
-using Hangfire.SqlServer;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using NewsAggregator.Business.ServicesImplementations;
-using NewsAggregator.Core;
 using NewsAggregator.Core.Abstractions;
 using NewsAggregator.Data.Abstractions;
 using NewsAggregator.Data.Abstractions.Repositories;
@@ -69,6 +66,9 @@ namespace NewsAggregatorAspNetCore
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+
+            app.UseDeveloperExceptionPage();
+            app.UseStatusCodePagesWithRedirects("/Home/CustomError?code={0}");
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();

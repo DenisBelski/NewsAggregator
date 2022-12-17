@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace NewsAggregatorAspNetCore.Models
+﻿namespace NewsAggregatorAspNetCore.Models
 {
     public class ChangeArticleRateModel
     {

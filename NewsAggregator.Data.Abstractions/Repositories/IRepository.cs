@@ -1,5 +1,4 @@
-﻿using NewsAggregator.Core;
-using NewsAggregator.DataBase.Entities;
+﻿using NewsAggregator.DataBase.Entities;
 using System.Linq.Expressions;
 
 namespace NewsAggregator.Data.Abstractions.Repositories

@@ -233,7 +233,8 @@
         </member>
         <member name="P:NewsAggregator.WebAPI.Models.Requests.GetArticlesRequestModel.Rate">
             <summary>
-            Optional field, available rating for showing articles.
+            Optional field, available rating for showing articles. 
+            Recommended values: from "-2" to "2"
             </summary>
         </member>
         <member name="T:NewsAggregator.WebAPI.Models.Requests.GetSourceRequestModel">
@@ -268,7 +269,7 @@
         </member>
         <member name="P:NewsAggregator.WebAPI.Models.Requests.PatchRequestModel.FieldName">
             <summary>
-            Field name.
+            Field name. Specify one of the allowed values: Title, Category, ShortDescription, ArticleText.
             </summary>
         </member>
         <member name="P:NewsAggregator.WebAPI.Models.Requests.PatchRequestModel.FieldValue">
@@ -334,6 +335,11 @@
         <member name="P:NewsAggregator.WebAPI.Models.Responses.ArticleResponseModel.PublicationDate">
             <summary>
             Article publication date.
+            </summary>
+        </member>
+        <member name="P:NewsAggregator.WebAPI.Models.Responses.ArticleResponseModel.SourceId">
+            <summary>
+            Source id.
             </summary>
         </member>
         <member name="T:NewsAggregator.WebAPI.Models.Responses.ErrorModel">

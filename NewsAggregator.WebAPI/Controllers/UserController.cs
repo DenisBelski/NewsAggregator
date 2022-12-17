@@ -73,7 +73,7 @@ namespace NewsAggregator.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                Log.Error(ex.Message);
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
                 return StatusCode(500, new ErrorModel
                 {
                     ErrorMessage = "The server encountered an unexpected situation."
@@ -132,12 +132,12 @@ namespace NewsAggregator.WebAPI.Controllers
 
                 return BadRequest(new ErrorModel
                 {
-                    ErrorMessage = "Failed to register a user, please check your input"
+                    ErrorMessage = "Failed to register a new user, please check your input"
                 });
             }
             catch (Exception ex)
             {
-                Log.Error(ex.Message);
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
                 return StatusCode(500, new ErrorModel
                 {
                     ErrorMessage = "The server encountered an unexpected situation."

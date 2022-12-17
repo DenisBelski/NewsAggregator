@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using NewsAggregator.Core.Abstractions;
 using NewsAggregator.WebAPI.Models.Requests;
 using NewsAggregator.WebAPI.Models.Responses;
@@ -67,7 +66,7 @@ namespace NewsAggregator.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                Log.Error(ex.Message);
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
                 return StatusCode(500, new ErrorModel
                 {
                     ErrorMessage = "The server encountered an unexpected situation."
@@ -83,33 +82,27 @@ namespace NewsAggregator.WebAPI.Controllers
         [Route("Refresh")]
         [HttpPost]
         [ProducesResponseType(typeof(TokenResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestModel requestModel)
         {
             try
             {
-                if (!Guid.Empty.Equals(requestModel.RefreshToken))
+                var userDto = await _userService.GetUserByRefreshTokenAsync(requestModel.RefreshToken);
+
+                if (userDto == null)
                 {
-                    var userDto = await _userService.GetUserByRefreshTokenAsync(requestModel.RefreshToken);
-
-                    if (userDto == null)
-                    {
-                        return NotFound(new ErrorModel() { ErrorMessage = "User does't exist." });
-                    }
-
-                    var tokenResponse = await _jwtUtil.GenerateTokenAsync(userDto);
-                    await _jwtUtil.RemoveRefreshTokenAsync(requestModel.RefreshToken);
-
-                    return Ok(tokenResponse);
+                    return NotFound(new ErrorModel() { ErrorMessage = "User does't exist." });
                 }
 
-                return BadRequest(new ErrorModel { ErrorMessage = "Failed, please check your input." });
+                var tokenResponse = await _jwtUtil.GenerateTokenAsync(userDto);
+                await _jwtUtil.RemoveRefreshTokenAsync(requestModel.RefreshToken);
+
+                return Ok(tokenResponse);
             }
             catch (Exception ex)
             {
-                Log.Error(ex.Message);
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
                 return StatusCode(500, new ErrorModel
                 {
                     ErrorMessage = "The server encountered an unexpected situation."
@@ -125,23 +118,17 @@ namespace NewsAggregator.WebAPI.Controllers
         [Route("Revoke")]
         [HttpPost]
         [ProducesResponseType(typeof(SuccessModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> RevokeToken([FromBody] RefreshTokenRequestModel requestModel)
         {
             try
             {
-                if (!Guid.Empty.Equals(requestModel.RefreshToken))
-                {
-                    await _jwtUtil.RemoveRefreshTokenAsync(requestModel.RefreshToken);
-                    return Ok(new SuccessModel { DetailMessage = "Token revoked successfully." });
-                }
-
-                return BadRequest(new ErrorModel { ErrorMessage = "Failed, please check your input." });
+                await _jwtUtil.RemoveRefreshTokenAsync(requestModel.RefreshToken);
+                return Ok(new SuccessModel { DetailMessage = "Token revoked successfully." });
             }
             catch (Exception ex)
             {
-                Log.Error(ex.Message);
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
                 return StatusCode(500, new ErrorModel
                 {
                     ErrorMessage = "The server encountered an unexpected situation."

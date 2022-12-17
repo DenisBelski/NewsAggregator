@@ -4,7 +4,7 @@ namespace NewsAggregator.Data.CQS.Commands
 {
     public class AddRefreshTokenCommand : IRequest
     {
-        public Guid TokenValue;
-        public Guid UserId;
+        public Guid TokenValue { get; set; }
+        public Guid UserId { get; set; }
     }
 }

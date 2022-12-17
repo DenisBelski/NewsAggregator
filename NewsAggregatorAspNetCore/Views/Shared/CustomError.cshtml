@@ -1,0 +1,34 @@
+﻿@{
+    Layout = null;
+}
+
+@{ ViewData["Title"] = "Status Code @ViewBag.ErrorStatusCode"; }
+
+<body style="background-color:darkslategrey; color:white" align="center">
+    <!-- prevent favicon.ico from being requested. -->
+    <link rel="icon" href="data:,">
+    <h1>Something was wrong.</h1>
+
+    @if (ViewBag.ErrorStatusCode != 0)
+    {
+    <h2 class="text-danger">Status Code: @ViewBag.ErrorStatusCode</h2>
+    }
+
+    <h2 class="text-danger"> @ViewBag.ErrorMessage</h2>
+
+    @if (ViewBag.ShowRequestId)
+    {
+        <h3>Request ID: <code>@ViewBag.RequestId</code></h3>
+    }
+
+    <div class="img">
+        <img src="~/css/images/error-car.png" class="img-fluid" alt="El Delorean, El Doc y Marti McFly">
+        <br />
+        <img src="~/css/images/error-back.png" class="img-fluid" alt="Back to the Homepage">
+    </div>
+    <br />
+    <a class="btn btn-success" style="background-color:#FF792B; color:white; border:double; font-size:x-large" href="~/home/index">YES</a>
+    <br />
+    <br />
+    <a class="btn btn-warning" style="background-color:#636D7B; color:white; border:double; font-size:x-large" href="https://www.youtube.com/watch?v=G3AfIvJBcGo">NO</a>
+</body>

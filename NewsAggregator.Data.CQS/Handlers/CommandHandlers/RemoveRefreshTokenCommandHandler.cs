@@ -22,8 +22,12 @@ namespace NewsAggregator.Data.CQS.Handlers.CommandHandlers
                 .FirstOrDefaultAsync(rt => command.TokenValue.Equals(rt.Token),
                     cancellationToken);
 
-            _context.RefreshTokens.Remove(refreshToken);
-            await _context.SaveChangesAsync(cancellationToken);
+            if (refreshToken != null)
+            {
+                _context.RefreshTokens.Remove(refreshToken);
+                await _context.SaveChangesAsync(cancellationToken);
+            }
+
             return Unit.Value;
         }
     }

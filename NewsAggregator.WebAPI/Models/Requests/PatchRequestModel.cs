@@ -8,13 +8,15 @@ namespace NewsAggregator.WebAPI.Models.Requests
     public class PatchRequestModel
     {
         /// <summary>
-        /// Field name.
+        /// Field name. Specify one of the allowed values: Title, Category, ShortDescription, ArticleText.
         /// </summary>
+        [Required]
         public string? FieldName { get; set; }
 
         /// <summary>
         /// Field value.
         /// </summary>
+        [Required]
         public string? FieldValue { get; set; }
     }
 }

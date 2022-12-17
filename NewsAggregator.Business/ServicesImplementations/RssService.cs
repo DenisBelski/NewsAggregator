@@ -1,12 +1,9 @@
 ﻿using AutoMapper;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using NewsAggregator.Core.Abstractions;
 using NewsAggregator.Core.DataTransferObjects;
 using NewsAggregator.Data.Abstractions;
-using NewsAggregator.Data.CQS.Commands;
-using NewsAggregator.DataBase;
 using NewsAggregator.DataBase.Entities;
 using Serilog;
 using System.ServiceModel.Syndication;

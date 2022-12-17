@@ -1,6 +1,7 @@
-﻿namespace NewsAggregator.Core;
-
-public class TextRequestModel
+﻿namespace NewsAggregator.Core
 {
-    public string Text { get; set; }
+    public class TextRequestModel
+    {
+        public string Text { get; set; }
+    }
 }

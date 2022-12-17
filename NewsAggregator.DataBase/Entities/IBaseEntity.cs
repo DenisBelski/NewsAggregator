@@ -1,6 +1,7 @@
-﻿namespace NewsAggregator.DataBase.Entities;
-
-public interface IBaseEntity
+﻿namespace NewsAggregator.DataBase.Entities
 {
-    public Guid Id { get; set; }
+    public interface IBaseEntity
+    {
+        public Guid Id { get; set; }
+    }
 }

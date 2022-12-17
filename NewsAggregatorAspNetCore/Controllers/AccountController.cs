@@ -39,7 +39,7 @@ namespace NewsAggregatorAspNetCore.Controllers
             catch (Exception ex)
             {
                 Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
-                return BadRequest();
+                return RedirectToAction("CustomError", "Home", new { statusCode = 500 });
             }
         }
 
@@ -61,7 +61,7 @@ namespace NewsAggregatorAspNetCore.Controllers
             catch (Exception ex)
             {
                 Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
-                return BadRequest();
+                return RedirectToAction("CustomError", "Home", new { statusCode = 500 });
             }
         }
 
@@ -75,7 +75,7 @@ namespace NewsAggregatorAspNetCore.Controllers
             catch (Exception ex)
             {
                 Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
-                return BadRequest();
+                return RedirectToAction("CustomError", "Home", new { statusCode = 500 });
             }
         }
 
@@ -109,7 +109,7 @@ namespace NewsAggregatorAspNetCore.Controllers
             catch (Exception ex)
             {
                 Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
-                return StatusCode(500);
+                return RedirectToAction("CustomError", "Home", new { statusCode = 500 });
             }
         }
 
@@ -124,7 +124,7 @@ namespace NewsAggregatorAspNetCore.Controllers
             catch (Exception ex)
             {
                 Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
-                return StatusCode(500);
+                return RedirectToAction("CustomError", "Home", new { statusCode = 500 });
             }
         }
 
@@ -138,7 +138,7 @@ namespace NewsAggregatorAspNetCore.Controllers
             catch (Exception ex)
             {
                 Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
-                return StatusCode(500);
+                return RedirectToAction("CustomError", "Home", new { statusCode = 500 });
             }
         }
 
@@ -154,7 +154,7 @@ namespace NewsAggregatorAspNetCore.Controllers
             catch (Exception ex)
             {
                 Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
-                return StatusCode(500);
+                return RedirectToAction("CustomError", "Home", new { statusCode = 500 });
             }
         }
 
@@ -168,7 +168,7 @@ namespace NewsAggregatorAspNetCore.Controllers
             catch (Exception ex)
             {
                 Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
-                return StatusCode(500);
+                return RedirectToAction("CustomError", "Home", new { statusCode = 500 });
             }
         }
 
@@ -186,7 +186,7 @@ namespace NewsAggregatorAspNetCore.Controllers
             catch (Exception ex)
             {
                 Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
-                return StatusCode(500);
+                return RedirectToAction("CustomError", "Home", new { statusCode = 500 });
             }
         }
 
@@ -200,12 +200,13 @@ namespace NewsAggregatorAspNetCore.Controllers
 
                 return !string.IsNullOrEmpty(userEmail)
                     ? Ok(_mapper.Map<UserDataModel>(await _userService.GetUserWithRoleByEmailAsync(userEmail)))
-                    : BadRequest();
+                    : RedirectToAction("CustomError", "Home", new { statusCode = 404 });
+
             }
             catch (Exception ex)
             {
                 Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
-                return StatusCode(500);
+                return RedirectToAction("CustomError", "Home", new { statusCode = 500 });
             }
         }
 
@@ -222,14 +223,42 @@ namespace NewsAggregatorAspNetCore.Controllers
             catch (Exception ex)
             {
                 Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
-                return StatusCode(500);
+                return RedirectToAction("CustomError", "Home", new { statusCode = 500 });
             }
         }
 
         [HttpGet]
         public async Task<IActionResult> UserLoginPreviewAsync()
         {
-            if (User.Identities.Any(identity => identity.IsAuthenticated))
+            try
+            {
+                if (User.Identities.Any(identity => identity.IsAuthenticated))
+                {
+                    var userEmail = User.Identity?.Name;
+
+                    if (string.IsNullOrEmpty(userEmail))
+                    {
+                        return BadRequest();
+                    }
+
+                    var userDto = await _userService.GetUserWithRoleByEmailAsync(userEmail);
+                    return View(_mapper.Map<UserDataModel>(userDto));
+                }
+
+                return View();
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
+                return RedirectToAction("CustomError", "Home", new { statusCode = 500 });
+            }
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        public async Task<IActionResult> PersonalCabinetForAdmin()
+        {
+            try
             {
                 var userEmail = User.Identity?.Name;
 
@@ -241,23 +270,11 @@ namespace NewsAggregatorAspNetCore.Controllers
                 var userDto = await _userService.GetUserWithRoleByEmailAsync(userEmail);
                 return View(_mapper.Map<UserDataModel>(userDto));
             }
-
-            return View();
-        }
-
-        [Authorize(Roles = "Admin")]
-        [HttpGet]
-        public async Task<IActionResult> PersonalCabinetForAdmin()
-        {
-            var userEmail = User.Identity?.Name;
-
-            if (string.IsNullOrEmpty(userEmail))
+            catch (Exception ex)
             {
-                return BadRequest();
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
+                return RedirectToAction("CustomError", "Home", new { statusCode = 500 });
             }
-
-            var userDto = await _userService.GetUserWithRoleByEmailAsync(userEmail);
-            return View(_mapper.Map<UserDataModel>(userDto));
         }
 
         private async Task AuthenticateAsync(string email)

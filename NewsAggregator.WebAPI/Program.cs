@@ -9,6 +9,7 @@ using NewsAggregator.Core.Abstractions;
 using NewsAggregator.Data.Abstractions;
 using NewsAggregator.Data.Abstractions.Repositories;
 using NewsAggregator.Data.CQS.Commands;
+using NewsAggregator.Data.CQS.Handlers.CommandHandlers;
 using NewsAggregator.Data.Repositories;
 using NewsAggregator.Data.Repositories.Implementations;
 using NewsAggregator.DataBase;
@@ -74,11 +75,7 @@ namespace NewsAggregator.WebAPI
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IJwtUtil, JwtUtilSha256>();
 
-            builder.Services.AddMediatR(typeof(AddArticleDataFromRssFeedCommand).Assembly);
-            builder.Services.AddMediatR(typeof(UpdateArticleTextCommand).Assembly);
-            //builder.Services.AddMediatR(Assembly.GetExecutingAssembly());
-            //builder.Services.AddMediatR(AppDomain.CurrentDomain.GetAssemblies());
-
+            builder.Services.AddMediatR(typeof(AddRefreshTokenCommandHandler).Assembly);
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();

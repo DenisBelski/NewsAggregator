@@ -6,23 +6,23 @@ using NewsAggregator.DataBase.Entities;
 
 namespace NewsAggregator.Data.CQS.Handlers.QueryHandlers
 {
-    public class GetArticleByIdQueryHandler : IRequestHandler<GetArticleByIdQuery, Article?>
+    public class GetSourceByIdQueryHandler : IRequestHandler<GetSourceByIdQuery, Source?>
     {
         private readonly NewsAggregatorContext _context;
 
-        public GetArticleByIdQueryHandler(NewsAggregatorContext context)
+        public GetSourceByIdQueryHandler(NewsAggregatorContext context)
         {
             _context = context;
         }
 
-        public async Task<Article?> Handle(GetArticleByIdQuery request,
+        public async Task<Source?> Handle(GetSourceByIdQuery request,
             CancellationToken cancellationToken)
         {
-            var article = await _context.Articles
+            var source = await _context.Sources
                 .AsNoTracking()
-                .FirstOrDefaultAsync(currentArticle => currentArticle.Id.Equals(request.Id), cancellationToken);
+                .FirstOrDefaultAsync(source => source.Id.Equals(request.Id), cancellationToken);
 
-            return article;
+            return source;
         }
     }
 }

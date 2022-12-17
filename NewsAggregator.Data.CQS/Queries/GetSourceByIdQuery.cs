@@ -3,8 +3,8 @@ using NewsAggregator.DataBase.Entities;
 
 namespace NewsAggregator.Data.CQS.Queries
 {
-    public class GetArticleByIdQuery : IRequest<Article?>
+    public class GetSourceByIdQuery : IRequest<Source?>
     {
-        public Guid Id { get; set; }
+        public Guid? Id { get; set; }
     }
 }

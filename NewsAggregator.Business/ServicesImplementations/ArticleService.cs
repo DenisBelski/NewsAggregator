@@ -10,16 +10,12 @@ using NewsAggregator.Core.DataTransferObjects;
 using NewsAggregator.Data.Abstractions;
 using NewsAggregator.Data.CQS.Commands;
 using NewsAggregator.Data.CQS.Queries;
-using NewsAggregator.DataBase;
+using NewsAggregator.Data.CQS.Handlers.QueryHandlers;
 using NewsAggregator.DataBase.Entities;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using Serilog;
-using System.Diagnostics;
 using System.Net.Http.Json;
-using System.ServiceModel.Syndication;
 using System.Text.RegularExpressions;
-using System.Xml;
 
 namespace NewsAggregator.Business.ServicesImplementations
 {
@@ -88,6 +84,20 @@ namespace NewsAggregator.Business.ServicesImplementations
             }
         }
 
+        public async Task<List<ArticleDto>> GetArticlesByRateAsync(double? rate)
+        {
+            try
+            {
+                var listArticleEntities = await _mediator.Send(new GetArticlesByRateQuery() { Rate = rate });
+                return _mapper.Map<List<ArticleDto>>(listArticleEntities);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex.Message);
+                throw new ArgumentException(ex.Message, nameof(rate));
+            }
+        }
+
         public async Task<List<ArticleDto>> GetArticlesByRateByPageNumberAndPageSizeAsync(double? rate, int pageNumber, int pageSize)
         {
             try
@@ -111,19 +121,11 @@ namespace NewsAggregator.Business.ServicesImplementations
 
         public async Task<List<ArticleDto>> GetArticlesBySourceIdAsync(Guid? sourceId)
         {
-            var articleEntities = _unitOfWork.Articles.Get()
-                .Where(article => article.SourceId.Equals(sourceId));
+            var listArticleEntities = await _mediator.Send(new GetArticlesBySourceIdQuery() { SourceId = sourceId });
 
-            if (articleEntities != null && !Guid.Empty.Equals(sourceId))
-            {
-                var result = await articleEntities
-                    .Select(article => _mapper.Map<ArticleDto>(article))
-                    .ToListAsync();
-
-                return result;
-            }
-
-            throw new ArgumentException(null, nameof(sourceId));
+            return listArticleEntities != null
+                ? _mapper.Map<List<ArticleDto>>(listArticleEntities)
+                : throw new ArgumentException(null, nameof(sourceId));
         }
 
         public async Task<int> UpdateArticleAsync(ArticleDto articleDto)
@@ -144,7 +146,7 @@ namespace NewsAggregator.Business.ServicesImplementations
 
         public async Task<int> UpdateOnlyOnleArticleFieldAsync(Guid articleId, List<PatchModel> patchData)
         {
-            if (!Guid.Empty.Equals(articleId) && patchData != null)
+            if (patchData != null)
             {
                 await _unitOfWork.Articles.PatchArticleAsync(articleId, patchData);
                 return await _unitOfWork.Commit();

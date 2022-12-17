@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using NewsAggregator.Core.Abstractions;
-using NewsAggregator.Core.DataTransferObjects;
 using NewsAggregator.WebAPI.Models.Requests;
 using NewsAggregator.WebAPI.Models.Responses;
 using Serilog;
@@ -37,30 +36,24 @@ namespace NewsAggregator.WebAPI.Controllers
         /// <returns></returns>
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(SourceResponseModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetSourceById(Guid id)
         {
             try
             {
-                if (!Guid.Empty.Equals(id))
-                {
-                    var sourceDto = await _sourceService.GetSourceByIdAsync(id);
+                var sourceDto = await _sourceService.GetSourceByIdAsync(id);
 
-                    return sourceDto != null
-                        ? Ok(_mapper.Map<SourceResponseModel>(sourceDto))
-                        : NotFound(new ErrorModel
-                        {
-                            ErrorMessage = $"No sources found with the specified {nameof(id)}."
-                        });
-                }
-
-                return BadRequest(new ErrorModel { ErrorMessage = "Failed, please check your input." });
+                return sourceDto != null
+                    ? Ok(_mapper.Map<SourceResponseModel>(sourceDto))
+                    : NotFound(new ErrorModel
+                    {
+                        ErrorMessage = $"No sources found with the specified {nameof(id)}."
+                    });
             }
             catch (Exception ex)
             {
-                Log.Error(ex.Message);
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
                 return StatusCode(500, new ErrorModel
                 {
                     ErrorMessage = "The server encountered an unexpected situation."
@@ -97,7 +90,7 @@ namespace NewsAggregator.WebAPI.Controllers
                         ? Ok(_mapper.Map<SourceResponseModel>(sourceWithSpecifiedName))
                         : BadRequest(new ErrorModel
                         {
-                            ErrorMessage = $"Source with specified name '{nameof(sourceModel.Name)}' doesn't exist."
+                            ErrorMessage = $"Source with specified '{nameof(sourceModel.Name)}' doesn't exist."
                         });
                 }
 
@@ -105,7 +98,7 @@ namespace NewsAggregator.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                Log.Error(ex.Message);
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
                 return StatusCode(500, new ErrorModel
                 {
                     ErrorMessage = "The server encountered an unexpected situation."
@@ -120,35 +113,29 @@ namespace NewsAggregator.WebAPI.Controllers
         /// <returns></returns>
         [HttpDelete("{id}")]
         [ProducesDefaultResponseType]
-        [ProducesResponseType(typeof(SuccessModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(SuccessModel), StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> DeleteSource(Guid id)
         {
             try
             {
-                if (!Guid.Empty.Equals(id))
+                var sourceDto = await _sourceService.GetSourceByIdAsync(id);
+
+                if (sourceDto == null)
                 {
-                    var sourceForRemove = await _sourceService.GetSourceByIdAsync(id);
-
-                    if (sourceForRemove == null)
+                    return NotFound(new ErrorModel
                     {
-                        return NotFound(new ErrorModel
-                        {
-                            ErrorMessage = $"No sources found with the specified {nameof(id)}"
-                        });
-                    }
-
-                    await _sourceService.DeleteSourceByIdAsync(sourceForRemove.Id);
-                    return Ok(new SuccessModel { DetailMessage = "Source deleted successfully." });
+                        ErrorMessage = $"No sources found with the specified {nameof(id)}"
+                    });
                 }
 
-                return BadRequest(new ErrorModel { ErrorMessage = "Failed, please check your input" });
+                await _sourceService.DeleteSourceByIdAsync(sourceDto.Id);
+                return StatusCode(204, new SuccessModel { DetailMessage = "Source deleted successfully." });
             }
             catch (Exception ex)
             {
-                Log.Error(ex.Message);
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
                 return StatusCode(500, new ErrorModel
                 {
                     ErrorMessage = "The server encountered an unexpected situation."

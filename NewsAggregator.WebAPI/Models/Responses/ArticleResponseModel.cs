@@ -29,5 +29,10 @@
         /// Article publication date.
         /// </summary>
         public DateTime PublicationDate { get; set; }
+
+        /// <summary>
+        /// Source id.
+        /// </summary>
+        public Guid SourceId { get; set; }
     }
 }

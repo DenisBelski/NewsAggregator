@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Hangfire;
 using Microsoft.AspNetCore.Mvc;
 using NewsAggregator.Core;
 using NewsAggregator.Core.Abstractions;
@@ -45,32 +44,23 @@ namespace NewsAggregator.WebAPI.Controllers
         [ProducesResponseType(typeof(ArticleResponseModel), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetArticleById(Guid id)
         {
             try
             {
-                if (!Guid.Empty.Equals(id))
-                {
-                    var articleDto = await _articleService.GetArticleByIdAsync(id);
+                var articleDto = await _articleService.GetArticleByIdAsync(id);
 
-                    return articleDto != null
-                        ? Ok(_mapper.Map<ArticleResponseModel>(articleDto))
-                        : NotFound(new ErrorModel
-                        {
-                            ErrorMessage = $"No articles found with the specified {nameof(id)}"
-                        });
-                }
-
-                return BadRequest(new ErrorModel { ErrorMessage = "Failed, please check your input." });
+                return articleDto != null
+                    ? Ok(_mapper.Map<ArticleResponseModel>(articleDto))
+                    : NotFound(new ErrorModel
+                    {
+                        ErrorMessage = $"No articles found with the specified {nameof(id)}"
+                    });
             }
             catch (Exception ex)
             {
-                Log.Error(ex.Message);
-                return StatusCode(500, new ErrorModel
-                {
-                    ErrorMessage = "The server encountered an unexpected situation."
-                });
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
+                return BadRequest(new ErrorModel { ErrorMessage = "Failed, please check your input." });
             }
         }
 
@@ -80,9 +70,7 @@ namespace NewsAggregator.WebAPI.Controllers
         /// <param name="articleModel">Assign articles a minimum rating to display or specify source id.</param>
         /// <returns></returns>
         [HttpGet]
-        [ProducesResponseType(typeof(ArticleResponseModel), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(List<ArticleResponseModel>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetArticles([FromQuery] GetArticlesRequestModel articleModel)
@@ -98,28 +86,27 @@ namespace NewsAggregator.WebAPI.Controllers
 
                 if (articleModel.Rate.HasValue)
                 {
-                    // add CQS
-                    //var listArticlesWithSpecifiedRate =
-                    //    await _articleService.GetArticlesByRateAsync(articleModel.Rate);
+                    var listArticlesWithSpecifiedRate =
+                        await _articleService.GetArticlesByRateAsync(articleModel.Rate);
 
 
-                    //return listArticlesWithSpecifiedRate != null
-                    //    ? Ok(_mapper.Map<List<ArticleResponseModel>>(listArticlesWithSpecifiedRate))
-                    //    : NotFound(new ErrorModel
-                    //    {
-                    //        ErrorMessage = $"No articles found with the specified {nameof(articleModel.Rate)}."
-                    //    });
+                    return listArticlesWithSpecifiedRate.Any()
+                        ? Ok(_mapper.Map<List<ArticleResponseModel>>(listArticlesWithSpecifiedRate))
+                        : NotFound(new ErrorModel
+                        {
+                            ErrorMessage = $"No articles found with the specified {nameof(articleModel.Rate)}."
+                        });
                 }
-                else if (!Guid.Empty.Equals(articleModel.SourceId))
+                else if (articleModel.SourceId != null)
                 {
                     var listArticlesWithSpecifiedSource =
                         await _articleService.GetArticlesBySourceIdAsync(articleModel.SourceId);
 
-                    return listArticlesWithSpecifiedSource != null
+                    return listArticlesWithSpecifiedSource.Any()
                         ? Ok(_mapper.Map<List<ArticleResponseModel>>(listArticlesWithSpecifiedSource))
-                        : BadRequest(new ErrorModel
+                        : NotFound(new ErrorModel
                         {
-                            ErrorMessage = $"Articles with specified name '{nameof(articleModel.SourceId)}' doesn't exist."
+                            ErrorMessage = $"No articles found with the specified {nameof(articleModel.SourceId)}."
                         });
                 }
 
@@ -127,7 +114,7 @@ namespace NewsAggregator.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                Log.Error(ex.Message);
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
                 return StatusCode(500, new ErrorModel
                 {
                     ErrorMessage = "The server encountered an unexpected situation."
@@ -145,7 +132,7 @@ namespace NewsAggregator.WebAPI.Controllers
         [ProducesResponseType(typeof(ArticleResponseModel), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> CreateCustomArticle(Guid id, [FromBody] AddOrUpdateArticleRequestModel articleModel)
+        public async Task<IActionResult> CreateCustomArticle(Guid id, [FromQuery] AddOrUpdateArticleRequestModel articleModel)
         {
             try
             {
@@ -157,7 +144,7 @@ namespace NewsAggregator.WebAPI.Controllers
                     var customArticle = new ArticleDto()
                     {
                         Id = id,
-                        PublicationDate = DateTime.Now,
+                        PublicationDate = DateTime.UtcNow,
                         SourceId = new Guid(_configuration["CustomSource:SourceId"]),
                         SourceUrl = _configuration["CustomSource:SourceUrl"],
                         Rate = await _articleService.GetArticleRateByArticleTextAsync(articleModel.ArticleText),
@@ -181,7 +168,7 @@ namespace NewsAggregator.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                Log.Error(ex.Message);
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
                 return StatusCode(500, new ErrorModel
                 {
                     ErrorMessage = "The server encountered an unexpected situation."
@@ -252,7 +239,7 @@ namespace NewsAggregator.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                Log.Error(ex.Message);
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
                 return StatusCode(500, new ErrorModel
                 {
                     ErrorMessage = "The server encountered an unexpected situation."
@@ -271,7 +258,7 @@ namespace NewsAggregator.WebAPI.Controllers
         [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateArticle(Guid id, [FromBody] PatchRequestModel patchRequestModel)
+        public async Task<IActionResult> UpdateArticle(Guid id, [FromQuery] PatchRequestModel patchRequestModel)
         {
             try
             {
@@ -285,6 +272,8 @@ namespace NewsAggregator.WebAPI.Controllers
                     });
                 }
 
+                var result = 0;
+
                 if (!string.IsNullOrEmpty(patchRequestModel.FieldName)
                     && !string.IsNullOrEmpty(patchRequestModel.FieldValue))
                 {
@@ -297,28 +286,22 @@ namespace NewsAggregator.WebAPI.Controllers
                         }
                     };
 
-                    //rewrite to CQS
-                    var result = await _articleService.UpdateOnlyOnleArticleFieldAsync(articleForChanges.Id, patchList);
-
-                    return result > 0 
-                        ? Ok(new SuccessModel
-                        {
-                            DetailMessage = $"Article with specified {nameof(id)} successfully modified."
-                        }) 
-                        : StatusCode(405, new ErrorModel
-                        {
-                            ErrorMessage = "The request HTTP method cannot be used for that resource."
-                        });
+                    result = await _articleService.UpdateOnlyOnleArticleFieldAsync(articleForChanges.Id, patchList);
                 }
 
-                return BadRequest(new ErrorModel
-                {
-                    ErrorMessage = "Failed to update article, please check your input."
-                });
+                return result > 0
+                    ? Ok(new SuccessModel
+                    {
+                        DetailMessage = $"Article with specified {nameof(id)} successfully modified."
+                    })
+                    : BadRequest(new ErrorModel
+                    {
+                        ErrorMessage = "Failed to update article, please check your input."
+                    });
             }
             catch (Exception ex)
             {
-                Log.Error(ex.Message);
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
                 return StatusCode(500, new ErrorModel
                 {
                     ErrorMessage = "The server encountered an unexpected situation."

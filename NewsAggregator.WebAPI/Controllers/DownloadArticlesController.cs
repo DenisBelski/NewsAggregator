@@ -1,9 +1,6 @@
-﻿using AutoMapper;
-using Hangfire;
+﻿using Hangfire;
 using Microsoft.AspNetCore.Mvc;
 using NewsAggregator.Core.Abstractions;
-using NewsAggregator.Core.DataTransferObjects;
-using NewsAggregator.WebAPI.Models.Requests;
 using NewsAggregator.WebAPI.Models.Responses;
 using Serilog;
 
@@ -61,7 +58,7 @@ namespace NewsAggregator.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                Log.Error(ex.Message);
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
                 return StatusCode(500, new ErrorModel
                 {
                     ErrorMessage = "The server encountered an unexpected situation."

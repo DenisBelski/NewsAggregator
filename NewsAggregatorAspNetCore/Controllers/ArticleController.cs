@@ -42,12 +42,12 @@ namespace NewsAggregatorAspNetCore.Controllers
 
                 return listArticleDto.Any()
                     ? View(_mapper.Map<List<ArticleModel>>(listArticleDto))
-                    : Content("There are not many articles, choose a page with a smaller number.");
+                    : RedirectToAction("CustomError", "Home", new { statusCode = 404 });
             }
             catch (Exception ex)
             {
                 Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
-                return NotFound();
+                return RedirectToAction("CustomError", "Home", new { statusCode = 500 });
             }
         }
 
@@ -61,20 +61,20 @@ namespace NewsAggregatorAspNetCore.Controllers
                 var articleDto = await _articleService.GetArticleByIdAsync(id);
                 var articleWithRoleModel = _mapper.Map<ArticleWithUserRoleModel>(articleDto);
 
-                if (userDto != null 
+                if (userDto != null
+                    && articleDto != null
                     && userDto.RoleName == _configuration["UserRoles:Admin"])
                 {
                     articleWithRoleModel.IsAdmin = true;
+                    return View(articleWithRoleModel);
                 }
 
-                return articleDto != null
-                    ? View(articleWithRoleModel)
-                    : NotFound();
+                return RedirectToAction("CustomError", "Home", new { statusCode = 404 });
             }
             catch (Exception ex)
             {
                 Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
-                return RedirectToAction("Error", "Internal");
+                return RedirectToAction("CustomError", "Home", new { statusCode = 500 });
             }
         }
 
@@ -89,7 +89,7 @@ namespace NewsAggregatorAspNetCore.Controllers
             catch (Exception ex)
             {
                 Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
-                return BadRequest();
+                return RedirectToAction("CustomError", "Home", new { statusCode = 500 });
             }
         }
 
@@ -118,7 +118,7 @@ namespace NewsAggregatorAspNetCore.Controllers
             catch (Exception ex)
             {
                 Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
-                return BadRequest();
+                return RedirectToAction("CustomError", "Home", new { statusCode = 500 });
             }
         }
 
@@ -133,7 +133,7 @@ namespace NewsAggregatorAspNetCore.Controllers
             catch (Exception ex)
             {
                 Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
-                return BadRequest();
+                return RedirectToAction("CustomError", "Home", new { statusCode = 500 });
             }
         }
 
@@ -165,7 +165,7 @@ namespace NewsAggregatorAspNetCore.Controllers
             catch (Exception ex)
             {
                 Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
-                return BadRequest();
+                return RedirectToAction("CustomError", "Home", new { statusCode = 500 });
             }
         }
 
@@ -175,7 +175,7 @@ namespace NewsAggregatorAspNetCore.Controllers
         {
             try
             {
-                if (id != Guid.Empty)
+                if (!Guid.Empty.Equals(id))
                 {
                     var articleDto = await _articleService.GetArticleByIdAsync(id);
 
@@ -184,12 +184,12 @@ namespace NewsAggregatorAspNetCore.Controllers
                         : NotFound();
                 }
 
-                return BadRequest();
+                return RedirectToAction("CustomError", "Home", new { statusCode = 400 });
             }
             catch (Exception ex)
             {
                 Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
-                return BadRequest();
+                return RedirectToAction("CustomError", "Home", new { statusCode = 500 });
             }
         }
 
@@ -222,7 +222,7 @@ namespace NewsAggregatorAspNetCore.Controllers
             catch (Exception ex)
             {
                 Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
-                return BadRequest();
+                return RedirectToAction("CustomError", "Home", new { statusCode = 500 });
             }
         }
 
@@ -238,7 +238,7 @@ namespace NewsAggregatorAspNetCore.Controllers
             catch (Exception ex)
             {
                 Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
-                return BadRequest();
+                return RedirectToAction("CustomError", "Home", new { statusCode = 500 });
             }
         }
 
@@ -259,7 +259,7 @@ namespace NewsAggregatorAspNetCore.Controllers
             catch (Exception ex)
             {
                 Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
-                return BadRequest();
+                return RedirectToAction("CustomError", "Home", new { statusCode = 500 });
             }
         }
     }
