@@ -34,7 +34,7 @@ namespace NewsAggregator.WebAPI.Utils
         /// </summary>
         /// <param name="userDto">Contains user id, email, password hash, role id and role name.</param>
         /// <returns></returns>
-        public async Task<TokenResponse> GenerateTokenAsync(UserDto userDto)
+        public async Task<TokenResponseModel> GenerateTokenAsync(UserDto userDto)
         {
             var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Token:JwtSecret"]));
             var credentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
@@ -66,7 +66,7 @@ namespace NewsAggregator.WebAPI.Utils
                 TokenValue = refreshTokenValue
             });
 
-            return new TokenResponse()
+            return new TokenResponseModel()
             {
                 AccessToken = accessToken,
                 Role = userDto.RoleName,

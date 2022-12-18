@@ -3,7 +3,7 @@
     /// <summary>
     /// Model for returning success messages from api.
     /// </summary>
-    public class SuccessModel
+    public class SuccessResponseModel
     {
         /// <summary>
         /// Success detail message.

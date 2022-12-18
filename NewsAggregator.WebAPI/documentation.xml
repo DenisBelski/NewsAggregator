@@ -96,6 +96,7 @@
             <summary>
             Get all sources or get source by name.
             </summary>
+            <param name="sourceModel">Contains source name.</param>
             <returns></returns>
         </member>
         <member name="M:NewsAggregator.WebAPI.Controllers.SourcesController.DeleteSource(System.Guid)">
@@ -244,7 +245,7 @@
         </member>
         <member name="P:NewsAggregator.WebAPI.Models.Requests.GetSourceRequestModel.Name">
             <summary>
-            Source name.
+            Optional field, source name. Specify a name from one of the available sources: Onliner, Devby, Shazoo, Custom.
             </summary>
         </member>
         <member name="T:NewsAggregator.WebAPI.Models.Requests.LoginUserRequestModel">
@@ -294,17 +295,17 @@
         </member>
         <member name="P:NewsAggregator.WebAPI.Models.Requests.RegisterUserRequestModel.Email">
             <summary>
-            User email.
+            User email. Type: <see cref="F:System.ComponentModel.DataAnnotations.DataType.EmailAddress"/>.
             </summary>
         </member>
         <member name="P:NewsAggregator.WebAPI.Models.Requests.RegisterUserRequestModel.Password">
             <summary>
-            User password.
+            User password. Type: <see cref="F:System.ComponentModel.DataAnnotations.DataType.Password"/>. MinLength: 8.
             </summary>
         </member>
         <member name="P:NewsAggregator.WebAPI.Models.Requests.RegisterUserRequestModel.PasswordConfirmation">
             <summary>
-            User password confirmation.
+            User password confirmation. Must be equal to the password field.
             </summary>
         </member>
         <member name="T:NewsAggregator.WebAPI.Models.Responses.ArticleResponseModel">
@@ -342,12 +343,12 @@
             Source id.
             </summary>
         </member>
-        <member name="T:NewsAggregator.WebAPI.Models.Responses.ErrorModel">
+        <member name="T:NewsAggregator.WebAPI.Models.Responses.ErrorResponseModel">
             <summary>
             Model for returning errors from api.
             </summary>
         </member>
-        <member name="P:NewsAggregator.WebAPI.Models.Responses.ErrorModel.ErrorMessage">
+        <member name="P:NewsAggregator.WebAPI.Models.Responses.ErrorResponseModel.ErrorMessage">
             <summary>
             Error message.
             </summary>
@@ -377,42 +378,42 @@
             Source Rss Url
             </summary>
         </member>
-        <member name="T:NewsAggregator.WebAPI.Models.Responses.SuccessModel">
+        <member name="T:NewsAggregator.WebAPI.Models.Responses.SuccessResponseModel">
             <summary>
             Model for returning success messages from api.
             </summary>
         </member>
-        <member name="P:NewsAggregator.WebAPI.Models.Responses.SuccessModel.DetailMessage">
+        <member name="P:NewsAggregator.WebAPI.Models.Responses.SuccessResponseModel.DetailMessage">
             <summary>
             Success detail message.
             </summary>
         </member>
-        <member name="T:NewsAggregator.WebAPI.Models.Responses.TokenResponse">
+        <member name="T:NewsAggregator.WebAPI.Models.Responses.TokenResponseModel">
             <summary>
             Response model for returning token data.
             </summary>
         </member>
-        <member name="P:NewsAggregator.WebAPI.Models.Responses.TokenResponse.AccessToken">
+        <member name="P:NewsAggregator.WebAPI.Models.Responses.TokenResponseModel.AccessToken">
             <summary>
             Access token.
             </summary>
         </member>
-        <member name="P:NewsAggregator.WebAPI.Models.Responses.TokenResponse.Role">
+        <member name="P:NewsAggregator.WebAPI.Models.Responses.TokenResponseModel.Role">
             <summary>
             Role.
             </summary>
         </member>
-        <member name="P:NewsAggregator.WebAPI.Models.Responses.TokenResponse.UserId">
+        <member name="P:NewsAggregator.WebAPI.Models.Responses.TokenResponseModel.UserId">
             <summary>
             User id.
             </summary>
         </member>
-        <member name="P:NewsAggregator.WebAPI.Models.Responses.TokenResponse.TokenExpiration">
+        <member name="P:NewsAggregator.WebAPI.Models.Responses.TokenResponseModel.TokenExpiration">
             <summary>
             Token expiration.
             </summary>
         </member>
-        <member name="P:NewsAggregator.WebAPI.Models.Responses.TokenResponse.RefreshToken">
+        <member name="P:NewsAggregator.WebAPI.Models.Responses.TokenResponseModel.RefreshToken">
             <summary>
             Refresh token.
             </summary>

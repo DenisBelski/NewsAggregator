@@ -45,7 +45,6 @@ namespace NewsAggregator.WebAPI
             builder.Services.AddDbContext<NewsAggregatorContext>(
                 optionsBuilder => optionsBuilder.UseSqlServer(connectionString));
 
-            //!!! Read documentation. Adding Dashboard UI. Dashboard authorization must be configured in order to allow remote access.
             builder.Services.AddHangfire(configuration => configuration
                 .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
                 .UseSimpleAssemblyNameTypeSerializer()
@@ -75,7 +74,7 @@ namespace NewsAggregator.WebAPI
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IJwtUtil, JwtUtilSha256>();
 
-            builder.Services.AddMediatR(typeof(AddRefreshTokenCommandHandler).Assembly);
+            builder.Services.AddMediatR(typeof(AddRefreshTokenCommand).Assembly);
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();

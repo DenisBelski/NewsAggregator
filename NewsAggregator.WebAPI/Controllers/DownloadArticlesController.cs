@@ -33,8 +33,8 @@ namespace NewsAggregator.WebAPI.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost]
-        [ProducesResponseType(typeof(SuccessModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(SuccessResponseModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponseModel), StatusCodes.Status500InternalServerError)]
         public IActionResult AddArticlesFromAllAvailableSourcesToTheStorage()
         {
             try
@@ -51,7 +51,7 @@ namespace NewsAggregator.WebAPI.Controllers
                     => _articleService.AddRateToArticlesAsync(),
                     "40,10 */1 * * *");
 
-                return Ok(new SuccessModel
+                return Ok(new SuccessResponseModel
                 {
                     DetailMessage = "Recurring jobs added successfully to Hangfire dashboard"
                 });
@@ -59,7 +59,7 @@ namespace NewsAggregator.WebAPI.Controllers
             catch (Exception ex)
             {
                 Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
-                return StatusCode(500, new ErrorModel
+                return StatusCode(500, new ErrorResponseModel
                 {
                     ErrorMessage = "The server encountered an unexpected situation."
                 });

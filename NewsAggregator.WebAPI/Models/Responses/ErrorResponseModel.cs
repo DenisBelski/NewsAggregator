@@ -3,7 +3,7 @@
     /// <summary>
     /// Model for returning errors from api.
     /// </summary>
-    public class ErrorModel
+    public class ErrorResponseModel
     {
         /// <summary>
         /// Error message.

@@ -1,4 +1,6 @@
-﻿namespace NewsAggregator.WebAPI.Models.Requests
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace NewsAggregator.WebAPI.Models.Requests
 {
     /// <summary>
     /// Request model for user login.
@@ -8,11 +10,13 @@
         /// <summary>
         /// User email.
         /// </summary>
+        [Required]
         public string? Email { get; set; }
 
         /// <summary>
         /// User password.
         /// </summary>
+        [Required]
         public string? Password { get; set; }
     }
 }

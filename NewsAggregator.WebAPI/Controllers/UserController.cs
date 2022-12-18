@@ -51,8 +51,8 @@ namespace NewsAggregator.WebAPI.Controllers
         [HttpGet]
         [Authorize]
         [ProducesResponseType(typeof(UserResponseModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponseModel), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorResponseModel), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Get()
         {
             try
@@ -69,12 +69,12 @@ namespace NewsAggregator.WebAPI.Controllers
                     return Ok(_mapper.Map<List<UserResponseModel>>(listUsers));
                 }
 
-                return NotFound(new ErrorModel { ErrorMessage = "No users found in the storage" });
+                return NotFound(new ErrorResponseModel { ErrorMessage = "No users found in the storage" });
             }
             catch (Exception ex)
             {
                 Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
-                return StatusCode(500, new ErrorModel
+                return StatusCode(500, new ErrorResponseModel
                 {
                     ErrorMessage = "The server encountered an unexpected situation."
                 });
@@ -87,11 +87,11 @@ namespace NewsAggregator.WebAPI.Controllers
         /// <param name="userModel">Contains user email, password and password confirmation.</param>
         /// <returns></returns>
         [HttpPost]
-        [ProducesResponseType(typeof(TokenResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status409Conflict)]
-        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Create([FromBody] RegisterUserRequestModel userModel)
+        [ProducesResponseType(typeof(TokenResponseModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponseModel), StatusCodes.Status409Conflict)]
+        [ProducesResponseType(typeof(ErrorResponseModel), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponseModel), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> Create([FromQuery] RegisterUserRequestModel userModel)
         {
             try
             {
@@ -103,17 +103,15 @@ namespace NewsAggregator.WebAPI.Controllers
                     var userDto = _mapper.Map<UserDto>(userModel);
                     var userWithSameEmailExists = await _userService.IsUserExists(userModel.Email);
 
-                    if (userRoleId != null
-                        && userDto != null
-                        && !userWithSameEmailExists
-                        && userModel.Password.Equals(userModel.PasswordConfirmation))
+                    if (userDto != null
+                        && !userWithSameEmailExists)
                     {
                         userDto.RoleId = userRoleId.Value;
                         var result = await _userService.RegisterUser(userDto, userModel.Password);
 
-                        if (result <= 0)
+                        if (result == 0)
                         {
-                            return Conflict(new ErrorModel
+                            return Conflict(new ErrorResponseModel
                             {
                                 ErrorMessage = $"User with specify {nameof(userModel.Email)} already exists"
                             });
@@ -123,14 +121,14 @@ namespace NewsAggregator.WebAPI.Controllers
 
                         return userInDbDto != null
                             ? Ok(await _jwtUtil.GenerateTokenAsync(userInDbDto))
-                            : StatusCode(503, new ErrorModel
+                            : StatusCode(503, new ErrorResponseModel
                             {
                                 ErrorMessage = "The server is not ready to handle the request."
                             });
                     }
                 }
 
-                return BadRequest(new ErrorModel
+                return BadRequest(new ErrorResponseModel
                 {
                     ErrorMessage = "Failed to register a new user, please check your input"
                 });
@@ -138,7 +136,7 @@ namespace NewsAggregator.WebAPI.Controllers
             catch (Exception ex)
             {
                 Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
-                return StatusCode(500, new ErrorModel
+                return StatusCode(500, new ErrorResponseModel
                 {
                     ErrorMessage = "The server encountered an unexpected situation."
                 });

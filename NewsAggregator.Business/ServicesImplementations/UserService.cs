@@ -186,7 +186,7 @@ namespace NewsAggregator.Business.ServicesImplementations
         {
             var userDto = await _mediator.Send(new GetUserByRefreshTokenQuery() { RefreshToken = refreshToken });
 
-            return userDto ?? throw new ArgumentException(null, nameof(refreshToken));
+            return userDto;
         }
     }
 }

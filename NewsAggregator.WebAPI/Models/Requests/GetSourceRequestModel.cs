@@ -6,7 +6,7 @@
     public class GetSourceRequestModel
     {
         /// <summary>
-        /// Source name.
+        /// Optional field, source name. Specify a name from one of the available sources: Onliner, Devby, Shazoo, Custom.
         /// </summary>
         public string? Name { get; set; }
     }

@@ -36,8 +36,8 @@ namespace NewsAggregator.WebAPI.Controllers
         /// <returns></returns>
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(SourceResponseModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponseModel), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorResponseModel), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetSourceById(Guid id)
         {
             try
@@ -46,7 +46,7 @@ namespace NewsAggregator.WebAPI.Controllers
 
                 return sourceDto != null
                     ? Ok(_mapper.Map<SourceResponseModel>(sourceDto))
-                    : NotFound(new ErrorModel
+                    : NotFound(new ErrorResponseModel
                     {
                         ErrorMessage = $"No sources found with the specified {nameof(id)}."
                     });
@@ -54,7 +54,7 @@ namespace NewsAggregator.WebAPI.Controllers
             catch (Exception ex)
             {
                 Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
-                return StatusCode(500, new ErrorModel
+                return StatusCode(500, new ErrorResponseModel
                 {
                     ErrorMessage = "The server encountered an unexpected situation."
                 });
@@ -64,13 +64,14 @@ namespace NewsAggregator.WebAPI.Controllers
         /// <summary>
         /// Get all sources or get source by name.
         /// </summary>
+        /// <param name="sourceModel">Contains source name.</param>
         /// <returns></returns>
         [HttpGet]
         [ProducesResponseType(typeof(SourceResponseModel), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(List<SourceResponseModel>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponseModel), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponseModel), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorResponseModel), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetSources([FromQuery] GetSourceRequestModel sourceModel)
         {
             try
@@ -79,7 +80,7 @@ namespace NewsAggregator.WebAPI.Controllers
 
                 if (!listSources.Any())
                 {
-                    return NotFound(new ErrorModel { ErrorMessage = "Sources not found." });
+                    return NotFound(new ErrorResponseModel { ErrorMessage = "Sources not found." });
                 }
 
                 if (!string.IsNullOrEmpty(sourceModel.Name))
@@ -88,7 +89,7 @@ namespace NewsAggregator.WebAPI.Controllers
 
                     return sourceWithSpecifiedName != null
                         ? Ok(_mapper.Map<SourceResponseModel>(sourceWithSpecifiedName))
-                        : BadRequest(new ErrorModel
+                        : BadRequest(new ErrorResponseModel
                         {
                             ErrorMessage = $"Source with specified '{nameof(sourceModel.Name)}' doesn't exist."
                         });
@@ -99,7 +100,7 @@ namespace NewsAggregator.WebAPI.Controllers
             catch (Exception ex)
             {
                 Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
-                return StatusCode(500, new ErrorModel
+                return StatusCode(500, new ErrorResponseModel
                 {
                     ErrorMessage = "The server encountered an unexpected situation."
                 });
@@ -113,9 +114,9 @@ namespace NewsAggregator.WebAPI.Controllers
         /// <returns></returns>
         [HttpDelete("{id}")]
         [ProducesDefaultResponseType]
-        [ProducesResponseType(typeof(SuccessModel), StatusCodes.Status204NoContent)]
-        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(SuccessResponseModel), StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ErrorResponseModel), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorResponseModel), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> DeleteSource(Guid id)
         {
             try
@@ -124,19 +125,19 @@ namespace NewsAggregator.WebAPI.Controllers
 
                 if (sourceDto == null)
                 {
-                    return NotFound(new ErrorModel
+                    return NotFound(new ErrorResponseModel
                     {
                         ErrorMessage = $"No sources found with the specified {nameof(id)}"
                     });
                 }
 
                 await _sourceService.DeleteSourceByIdAsync(sourceDto.Id);
-                return StatusCode(204, new SuccessModel { DetailMessage = "Source deleted successfully." });
+                return StatusCode(204, new SuccessResponseModel { DetailMessage = "Source deleted successfully." });
             }
             catch (Exception ex)
             {
                 Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
-                return StatusCode(500, new ErrorModel
+                return StatusCode(500, new ErrorResponseModel
                 {
                     ErrorMessage = "The server encountered an unexpected situation."
                 });

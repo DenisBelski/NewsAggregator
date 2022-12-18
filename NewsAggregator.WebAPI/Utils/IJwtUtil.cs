@@ -13,7 +13,7 @@ namespace NewsAggregator.WebAPI.Utils
         /// </summary>
         /// <param name="userDto"></param>
         /// <returns></returns>
-        Task<TokenResponse> GenerateTokenAsync(UserDto userDto);
+        Task<TokenResponseModel> GenerateTokenAsync(UserDto userDto);
 
         /// <summary>
         /// Method for removing refresh token.

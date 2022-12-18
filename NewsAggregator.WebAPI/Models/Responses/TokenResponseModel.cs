@@ -3,7 +3,7 @@
     /// <summary>
     /// Response model for returning token data.
     /// </summary>
-    public class TokenResponse
+    public class TokenResponseModel
     {
         /// <summary>
         /// Access token.

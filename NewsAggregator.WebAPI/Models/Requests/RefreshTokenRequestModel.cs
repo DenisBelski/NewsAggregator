@@ -1,4 +1,6 @@
-﻿namespace NewsAggregator.WebAPI.Models.Requests
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace NewsAggregator.WebAPI.Models.Requests
 {
     /// <summary>
     /// Request model for refresh token.
@@ -8,6 +10,7 @@
         /// <summary>
         /// Refresh token.
         /// </summary>
+        [Required]
         public Guid RefreshToken { get; set; }
     }
 }

@@ -36,11 +36,11 @@ namespace NewsAggregator.WebAPI.Controllers
         /// <returns></returns>
         [Route("Create")]
         [HttpPost]
-        [ProducesResponseType(typeof(TokenResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> CreateJwtToken([FromBody] LoginUserRequestModel requestModel)
+        [ProducesResponseType(typeof(TokenResponseModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponseModel), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponseModel), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorResponseModel), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> CreateJwtToken([FromQuery] LoginUserRequestModel requestModel)
         {
             try
             {
@@ -51,7 +51,7 @@ namespace NewsAggregator.WebAPI.Controllers
 
                     if (userDto == null)
                     {
-                        return NotFound(new ErrorModel() { ErrorMessage = "User does't exist." });
+                        return NotFound(new ErrorResponseModel() { ErrorMessage = "User does't exist." });
                     }
 
                     var isPassCorrect = await _userService
@@ -59,15 +59,15 @@ namespace NewsAggregator.WebAPI.Controllers
 
                     return isPassCorrect
                         ? Ok(await _jwtUtil.GenerateTokenAsync(userDto))
-                        : BadRequest(new ErrorModel() { ErrorMessage = "Password is incorrect." });
+                        : BadRequest(new ErrorResponseModel() { ErrorMessage = "Password is incorrect." });
                 }
 
-                return BadRequest(new ErrorModel() { ErrorMessage = "Request model isn't valid." });
+                return BadRequest(new ErrorResponseModel() { ErrorMessage = "Request model isn't valid." });
             }
             catch (Exception ex)
             {
                 Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
-                return StatusCode(500, new ErrorModel
+                return StatusCode(500, new ErrorResponseModel
                 {
                     ErrorMessage = "The server encountered an unexpected situation."
                 });
@@ -81,10 +81,10 @@ namespace NewsAggregator.WebAPI.Controllers
         /// <returns></returns>
         [Route("Refresh")]
         [HttpPost]
-        [ProducesResponseType(typeof(TokenResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestModel requestModel)
+        [ProducesResponseType(typeof(TokenResponseModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponseModel), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorResponseModel), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> RefreshToken([FromQuery] RefreshTokenRequestModel requestModel)
         {
             try
             {
@@ -92,7 +92,10 @@ namespace NewsAggregator.WebAPI.Controllers
 
                 if (userDto == null)
                 {
-                    return NotFound(new ErrorModel() { ErrorMessage = "User does't exist." });
+                    return NotFound(new ErrorResponseModel() 
+                    { 
+                        ErrorMessage = "User with specified token id does't exist."
+                    });
                 }
 
                 var tokenResponse = await _jwtUtil.GenerateTokenAsync(userDto);
@@ -103,7 +106,7 @@ namespace NewsAggregator.WebAPI.Controllers
             catch (Exception ex)
             {
                 Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
-                return StatusCode(500, new ErrorModel
+                return StatusCode(500, new ErrorResponseModel
                 {
                     ErrorMessage = "The server encountered an unexpected situation."
                 });
@@ -117,19 +120,30 @@ namespace NewsAggregator.WebAPI.Controllers
         /// <returns></returns>
         [Route("Revoke")]
         [HttpPost]
-        [ProducesResponseType(typeof(SuccessModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> RevokeToken([FromBody] RefreshTokenRequestModel requestModel)
+        [ProducesResponseType(typeof(SuccessResponseModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponseModel), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorResponseModel), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> RevokeToken([FromQuery] RefreshTokenRequestModel requestModel)
         {
             try
             {
+                var userDto = await _userService.GetUserByRefreshTokenAsync(requestModel.RefreshToken);
+
+                if (userDto == null)
+                {
+                    return NotFound(new ErrorResponseModel() 
+                    { 
+                        ErrorMessage = "User with specified token id does't exist." 
+                    });
+                }
+
                 await _jwtUtil.RemoveRefreshTokenAsync(requestModel.RefreshToken);
-                return Ok(new SuccessModel { DetailMessage = "Token revoked successfully." });
+                return Ok(new SuccessResponseModel { DetailMessage = "Token revoked successfully." });
             }
             catch (Exception ex)
             {
                 Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
-                return StatusCode(500, new ErrorModel
+                return StatusCode(500, new ErrorResponseModel
                 {
                     ErrorMessage = "The server encountered an unexpected situation."
                 });
