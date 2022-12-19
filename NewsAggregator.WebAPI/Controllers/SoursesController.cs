@@ -85,7 +85,7 @@ namespace NewsAggregator.WebAPI.Controllers
 
                 if (!string.IsNullOrEmpty(sourceModel.Name))
                 {
-                    var sourceWithSpecifiedName = _sourceService.GetSourceByName(sourceModel.Name);
+                    var sourceWithSpecifiedName = _sourceService.GetSourceByNameAsync(sourceModel.Name);
 
                     return sourceWithSpecifiedName != null
                         ? Ok(_mapper.Map<SourceResponseModel>(sourceWithSpecifiedName))

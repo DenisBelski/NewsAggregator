@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using NewsAggregator.Core.Abstractions;
 using NewsAggregator.Core.DataTransferObjects;
 using NewsAggregator.Data.Abstractions;
@@ -40,13 +41,13 @@ public class SourceService : ISourceService
         }
     }
 
-    public SourceDto? GetSourceByName(string sourceName)
+    public async Task<SourceDto?> GetSourceByNameAsync(string sourceName)
     {
         try
         {
-            var sourceEntity = _unitOfWork.Sources
+            var sourceEntity = await _unitOfWork.Sources
                 .FindBy(source => source.Name.Equals(sourceName))
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
 
             return sourceEntity != null
                 ? _mapper.Map<SourceDto>(sourceEntity)

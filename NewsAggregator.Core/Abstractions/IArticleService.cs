@@ -5,7 +5,7 @@ namespace NewsAggregator.Core.Abstractions
     public interface IArticleService
     {
         Task<int> CreateArticleAsync(ArticleDto articleDto);
-        Task<List<ArticleDto>> GetArticles();
+        Task<List<ArticleDto>> GetArticlesAsync();
         Task<ArticleDto?> GetArticleByIdAsync(Guid articleId);
         Task<List<ArticleDto>> GetArticlesByRateAsync(double? rate);
         Task<List<ArticleDto>> GetArticlesByRateByPageNumberAndPageSizeAsync(double? rate, int pageNumber, int pageSize);

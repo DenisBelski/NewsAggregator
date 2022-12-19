@@ -77,7 +77,7 @@ namespace NewsAggregator.WebAPI.Controllers
         {
             try
             {
-                var listArticles = await _articleService.GetArticles();
+                var listArticles = await _articleService.GetArticlesAsync();
 
                 if (!listArticles.Any())
                 {

@@ -8,9 +8,7 @@ using NewsAggregator.Core;
 using NewsAggregator.Core.Abstractions;
 using NewsAggregator.Core.DataTransferObjects;
 using NewsAggregator.Data.Abstractions;
-using NewsAggregator.Data.CQS.Commands;
 using NewsAggregator.Data.CQS.Queries;
-using NewsAggregator.Data.CQS.Handlers.QueryHandlers;
 using NewsAggregator.DataBase.Entities;
 using Newtonsoft.Json;
 using Serilog;
@@ -47,7 +45,9 @@ namespace NewsAggregator.Business.ServicesImplementations
             if (articleEntity != null)
             {
                 await _unitOfWork.Articles.AddAsync(articleEntity);
-                return await _unitOfWork.Commit();
+                var result = await _unitOfWork.Commit();
+
+                return result;
             }
 
             Log.Warning($"The logic in {nameof(CreateArticleAsync)} method wasn't implemented, " +
@@ -56,7 +56,7 @@ namespace NewsAggregator.Business.ServicesImplementations
             return -1;
         }
 
-        public async Task<List<ArticleDto>> GetArticles()
+        public async Task<List<ArticleDto>> GetArticlesAsync()
         {
             try
             {
@@ -135,7 +135,9 @@ namespace NewsAggregator.Business.ServicesImplementations
             if (articleEntity != null)
             {
                 _unitOfWork.Articles.Update(articleEntity);
-                return await _unitOfWork.Commit();
+                var result = await _unitOfWork.Commit();
+
+                return result;
             }
 
             Log.Warning($"The logic in {nameof(UpdateArticleAsync)} method wasn't implemented, " +
@@ -149,7 +151,9 @@ namespace NewsAggregator.Business.ServicesImplementations
             if (patchData != null)
             {
                 await _unitOfWork.Articles.PatchArticleAsync(articleId, patchData);
-                return await _unitOfWork.Commit();
+                var result = await _unitOfWork.Commit();
+
+                return result;
             }
 
             Log.Warning($"The logic in {nameof(UpdateOnlyOnleArticleFieldAsync)} method wasn't implemented, " +
@@ -259,7 +263,9 @@ namespace NewsAggregator.Business.ServicesImplementations
 
             if (afinnDictionary != null && !string.IsNullOrEmpty(articleText))
             {
-                return await GetArticleRateByArticleTextAsync(articleText, afinnDictionary);
+                var result = await GetArticleRateByArticleTextAsync(articleText, afinnDictionary);
+
+                return result;
             }
 
             Log.Error($"The logic in {nameof(GetArticleRateByArticleTextAsync)} method wasn't implemented, " +

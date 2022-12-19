@@ -57,7 +57,14 @@ namespace NewsAggregatorAspNetCore.Controllers
         {
             try
             {
-                var userDto = await _userService.GetUserWithRoleByEmailAsync(User.Identity?.Name);
+                var userEmail = User.Identity?.Name;
+
+                if (string.IsNullOrEmpty(userEmail))
+                {
+                    return RedirectToAction("CustomError", "Home");
+                }
+
+                var userDto = await _userService.GetUserWithRoleByEmailAsync(userEmail);
                 var articleDto = await _articleService.GetArticleByIdAsync(id);
                 var articleWithRoleModel = _mapper.Map<ArticleWithUserRoleModel>(articleDto);
 
@@ -66,10 +73,9 @@ namespace NewsAggregatorAspNetCore.Controllers
                     && userDto.RoleName == _configuration["UserRoles:Admin"])
                 {
                     articleWithRoleModel.IsAdmin = true;
-                    return View(articleWithRoleModel);
                 }
 
-                return RedirectToAction("CustomError", "Home", new { statusCode = 404 });
+                return View(articleWithRoleModel);
             }
             catch (Exception ex)
             {
@@ -101,7 +107,7 @@ namespace NewsAggregatorAspNetCore.Controllers
             {
                 if (!string.IsNullOrEmpty(model.Name))
                 {
-                    var sourceDto = _sourceService.GetSourceByName(model.Name); 
+                    var sourceDto = await _sourceService.GetSourceByNameAsync(model.Name); 
 
                     if (sourceDto != null && sourceDto.Name == model.Name)
                     {
@@ -175,16 +181,11 @@ namespace NewsAggregatorAspNetCore.Controllers
         {
             try
             {
-                if (!Guid.Empty.Equals(id))
-                {
-                    var articleDto = await _articleService.GetArticleByIdAsync(id);
+                var articleDto = await _articleService.GetArticleByIdAsync(id);
 
-                    return articleDto != null 
-                        ? View(_mapper.Map<ArticleModel>(articleDto)) 
-                        : NotFound();
-                }
-
-                return RedirectToAction("CustomError", "Home", new { statusCode = 400 });
+                return articleDto != null 
+                    ? View(_mapper.Map<ArticleModel>(articleDto)) 
+                    : RedirectToAction("CustomError", "Home", new { statusCode = 404 });
             }
             catch (Exception ex)
             {
@@ -199,22 +200,19 @@ namespace NewsAggregatorAspNetCore.Controllers
         {
             try
             {
-                if (ModelState.IsValid)
+                var newArticleDto = _mapper.Map<ArticleDto>(model);
+
+                if (newArticleDto != null && newArticleDto.ArticleText != null)
                 {
-                    var articleDto = _mapper.Map<ArticleDto>(model);
+                    var oldArticleDto = await _articleService.GetArticleByIdAsync(newArticleDto.Id);
 
-                    if (articleDto != null && articleDto.ArticleText != null)
-                    {
-                        var oldArticle = await _articleService.GetArticleByIdAsync(articleDto.Id);
+                    newArticleDto.PublicationDate = DateTime.Now;
+                    newArticleDto.SourceId = oldArticleDto.SourceId;
+                    newArticleDto.SourceUrl = oldArticleDto.SourceUrl;
+                    newArticleDto.Rate = await _articleService.GetArticleRateByArticleTextAsync(newArticleDto.ArticleText);
 
-                        articleDto.PublicationDate = DateTime.Now;
-                        articleDto.SourceId = oldArticle.SourceId;
-                        articleDto.SourceUrl = oldArticle.SourceUrl;
-                        articleDto.Rate = await _articleService.GetArticleRateByArticleTextAsync(articleDto.ArticleText);
-
-                        await _articleService.UpdateArticleAsync(articleDto);
-                        return RedirectToAction("PersonalCabinetForAdmin", "Account");
-                    }
+                    await _articleService.UpdateArticleAsync(newArticleDto);
+                    return RedirectToAction("PersonalCabinetForAdmin", "Account");
                 }
 
                 return View(model);
@@ -225,7 +223,6 @@ namespace NewsAggregatorAspNetCore.Controllers
                 return RedirectToAction("CustomError", "Home", new { statusCode = 500 });
             }
         }
-
 
         [Authorize(Roles = "Admin")]
         [HttpGet]

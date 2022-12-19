@@ -190,6 +190,24 @@ namespace NewsAggregatorAspNetCore.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<IActionResult> CheckPassword(string password, string email)
+        {
+            try
+            {
+                var isPasswordCorrect = await _userService.CheckUserPassword(email, password);
+
+                return isPasswordCorrect
+                    ? Ok(true)
+                    : Ok(false);
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"{ex.Message}. {Environment.NewLine} {ex.StackTrace}");
+                return RedirectToAction("CustomError", "Home", new { statusCode = 500 });
+            }
+        }
+
         [HttpGet]
         [Authorize]
         public async Task<IActionResult> GetUserData()
@@ -198,10 +216,13 @@ namespace NewsAggregatorAspNetCore.Controllers
             {
                 var userEmail = User.Identity?.Name;
 
-                return !string.IsNullOrEmpty(userEmail)
-                    ? Ok(_mapper.Map<UserDataModel>(await _userService.GetUserWithRoleByEmailAsync(userEmail)))
-                    : RedirectToAction("CustomError", "Home", new { statusCode = 404 });
+                if (string.IsNullOrEmpty(userEmail))
+                {
+                    return RedirectToAction("CustomError", "Home", new { statusCode = 404 });
+                }
 
+                var userDto = await _userService.GetUserWithRoleByEmailAsync(userEmail);
+                return View(_mapper.Map<UserDataModel>(userDto));
             }
             catch (Exception ex)
             {
@@ -238,7 +259,7 @@ namespace NewsAggregatorAspNetCore.Controllers
 
                     if (string.IsNullOrEmpty(userEmail))
                     {
-                        return BadRequest();
+                        return RedirectToAction("CustomError", "Home", new { statusCode = 404 });
                     }
 
                     var userDto = await _userService.GetUserWithRoleByEmailAsync(userEmail);
@@ -264,7 +285,7 @@ namespace NewsAggregatorAspNetCore.Controllers
 
                 if (string.IsNullOrEmpty(userEmail))
                 {
-                    return BadRequest();
+                    return RedirectToAction("CustomError", "Home", new { statusCode = 404 });
                 }
 
                 var userDto = await _userService.GetUserWithRoleByEmailAsync(userEmail);
