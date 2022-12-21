@@ -91,7 +91,7 @@ namespace NewsAggregator.WebAPI.Controllers
         [ProducesResponseType(typeof(ErrorResponseModel), StatusCodes.Status409Conflict)]
         [ProducesResponseType(typeof(ErrorResponseModel), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponseModel), StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Create([FromQuery] RegisterUserRequestModel userModel)
+        public async Task<IActionResult> Create([FromBody] RegisterUserRequestModel userModel)
         {
             try
             {

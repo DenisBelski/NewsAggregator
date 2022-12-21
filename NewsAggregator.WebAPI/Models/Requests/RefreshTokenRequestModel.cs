@@ -10,7 +10,6 @@ namespace NewsAggregator.WebAPI.Models.Requests
         /// <summary>
         /// Refresh token.
         /// </summary>
-        [Required]
         public Guid RefreshToken { get; set; }
     }
 }

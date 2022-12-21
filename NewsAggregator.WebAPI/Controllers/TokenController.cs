@@ -40,7 +40,7 @@ namespace NewsAggregator.WebAPI.Controllers
         [ProducesResponseType(typeof(ErrorResponseModel), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponseModel), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorResponseModel), StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> CreateJwtToken([FromQuery] LoginUserRequestModel requestModel)
+        public async Task<IActionResult> CreateJwtToken([FromBody] LoginUserRequestModel requestModel)
         {
             try
             {
@@ -84,7 +84,7 @@ namespace NewsAggregator.WebAPI.Controllers
         [ProducesResponseType(typeof(TokenResponseModel), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponseModel), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorResponseModel), StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> RefreshToken([FromQuery] RefreshTokenRequestModel requestModel)
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestModel requestModel)
         {
             try
             {
