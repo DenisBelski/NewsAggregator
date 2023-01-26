@@ -11,8 +11,8 @@
 **Database:** Microsoft SQL Server 2019  
   
 **Key technologies:**
-* ASP.NET MVC
-* ASP.NET Web API
+* ASP.NET Core MVC
+* ASP.NET Core Web API
 * Entity Framework Core  
   
 **Applied patterns and principles:**
